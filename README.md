@@ -9,4 +9,4 @@ Simple Linear Algebra Package (SLAP)
 
 
 # ToDo
-- simple script that buld an ASCII file assessing the internal header-file structure (do inside the `header_merger`?)
+- simple script that buld an ASCII file assessing the internal header-files structure (do inside the `header_merger`?)
