@@ -34,12 +34,14 @@ typedef struct _matf{
 
 matd* new_matd(unsigned int num_rows, unsigned int num_cols)
 {
-	int i;
 	// create a new double matrix
+	matd * m; // return matrix
+	int i;
+	
 	if(num_rows == 0) { /*SLAP_ERROR(INVALID_ROWS);*/ return 0; } // dovrebbe ritornare NULL
 	if(num_cols == 0) { /*SLAP_ERROR(INVALID_COLS);*/ return 0; } // dovrebbe ritornare NULL
 	
-	matd *m = calloc(1, sizeof(*m)); // allocate space for the struct
+	m = calloc(1, sizeof(*m)); // allocate space for the struct
 	// CONTROLLARE LA MATRICE CREATA ( SLAP_CHECK(m) )
 	m->n_rows = num_rows;
 	m->n_cols = num_cols;
