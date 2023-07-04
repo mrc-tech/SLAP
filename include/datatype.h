@@ -9,7 +9,7 @@
 #ifndef SLAP_DATATYPE
 #define SLAP_DATATYPE
 
-#include <stdlib.h>
+#include <stdlib.h> // for "calloc"
 
 
 typedef struct _matd{
