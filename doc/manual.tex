@@ -1,0 +1,128 @@
+\documentclass[10pt]{article}
+
+\usepackage[a4paper,top=2.5cm,bottom=3.5cm,left=2.5cm,right=2.5cm]{geometry}
+%\usepackage[T1]{fontenc}		%implementa nei font gli accenti (crea un casino facendo tutto pixellato)
+\usepackage[utf8]{inputenc}		%importa i caratteri utf
+\usepackage{inputenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath,amssymb}	%per visualizzare la matematica (per text{})
+%\usepackage{graphicx}			%per le figure
+\usepackage{xcolor}				%per scrivere colorato XCOLOR per lstlisting colorato (se non c'è tikz)
+\usepackage[toc,page]{appendix}	%per l'implementazione delle appendici
+%\usepackage{subfig}				%per figure multiple in una stessa figure
+%\usepackage{pdfpages}			%per includere pezzi di pdf
+%\usepackage{float}				%per mettere le figure nel posto giusto
+\usepackage{tikz}				%per le immagini vettoriali da LateX
+\usepackage{listings} 			%Per inserire codice
+\usepackage{pxfonts}			%per il bold nei lstlisting
+%\usepackage{scrextend}			%per labeling
+\usepackage{enumitem}			% per [noitemsep]
+
+
+%\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset { %
+	language=C++,
+	backgroundcolor=\color{black!5}, % set backgroundcolor
+	basicstyle=\footnotesize\ttfamily, % basic font setting
+	frame=shadowbox,
+	breaklines= true, % va a capo automatico
+	numbers=left, % numera le righe
+	commentstyle=\color{gray}, % commenti grigi
+	stringstyle=\color{mymauve}, % string literal style
+	numberstyle=\footnotesize\ttfamily, %formato dei numeri a lato delle righe
+	keywordstyle=\color{black}\bfseries, % style for keywords
+}
+
+
+
+
+\begin{document}
+
+
+\title{\textbf{SLAP}\\ Simple Linear Algebra Package}
+\author{Andrea Marchi}
+
+\maketitle
+
+\tableofcontents
+
+
+
+\section{Data type}
+
+Le matrici sono salvate in array monodimensionali \textit{row-major}, ovvero che i dati sulle righe sono sequenziali. Quindi nella indicizzazione degli elementi della matrice con $n$ righe e $m$ colonne ($\mathbb{R}^{n\times m}$) si usa la formula:
+\begin{lstlisting}
+matrix[i][j] = array[i*m + j]
+\end{lstlisting}
+Le righe vanno da $0$ a $n-1$, mentre le colonne vanno da $0$ a $m-1$.
+
+Alcune librerie usano la notazione \textit{column-major}, ovvero con indicizzazione \verb|array[j*n+i]|. Avere una funzione che organizza i dati della matrice in colonne o in righe è comodo per quanto riguarda l'ottimizzazione della cache di lettura dei dati sequenziali dalla RAM alla CPU.
+
+Il tipo di dati (essendo in C) è una struttura (\verb|struct|) e la definizione cambia al variare del tipo di dati base (il C non permette l'uso di template).
+La struttura base è:
+\begin{lstlisting}
+typedef struct _matd{
+	unsigned int n_rows;
+	unsigned int n_cols;
+	double *data; // row-major matrix data array
+} matd;
+\end{lstlisting}
+dove la lettera finale indica il tipo di variabile usata, in questo caso \verb|double|. I tipi di dati che ha senso utilizzare nella libreria sono:
+\begin{description}[noitemsep]
+\item[\texttt{d}] virgola mobile a doppia precisione (\verb|double|)
+\item[\texttt{f}] virgola mobile (\verb|float|)
+\item[\texttt{i}] intero (\verb|int|)
+\item[\texttt{b}] byte (\verb|unsigned char|)
+\end{description}
+
+Per allocare la memoria e liberarla (sempre liberare la memoria dopo averla allocata):
+\begin{lstlisting}
+matd* new_matd(unsigned int num_rows, unsigned int num_cols)
+{
+	int i;
+	// create a new double matrix
+	if(num_rows == 0) { /*SLAP_ERROR(INVALID_ROWS);*/ return 0; } // dovrebbe ritornare NULL
+	if(num_cols == 0) { /*SLAP_ERROR(INVALID_COLS);*/ return 0; } // dovrebbe ritornare NULL
+	
+	matd *m = calloc(1, sizeof(*m)); // allocate space for the struct
+	// CONTROLLARE LA MATRICE CREATA ( SLAP_CHECK(m) )
+	m->n_rows = num_rows;
+	m->n_cols = num_cols;
+	m->data = calloc(m->n_rows*m->n_cols, sizeof(*m->data));
+	// CONTROLLARE I DATI CREATI ( SLAP_CHECK(m->data) )
+	for(i=0; i<num_rows*num_cols; i++) m->data[i] = 0; // set to zero
+	
+	return m;
+}
+
+void free_mat(matd *matrix)
+{
+	free(matrix->data); // delete the data
+	free(matrix); // delete the data structure
+}
+\end{lstlisting}
+
+Come setters e getters non potendo usare le operation del C++ e non riuscendo a fare qualcosa di funzionante e decente con le macro\footnote{Usare le macro mi permetterebbe di risparmiare tempo nella allocazione dei parametri delle funzioni. Negli algoritmi potrei usare l'accesso diretto all'array \texttt{data}.} uso le funzioni
+\begin{lstlisting}
+double matd_get(matd matrix, unsigned int row, unsigned int col) {
+	return matrix.data[row*matrix.n_cols + col]; // row-major
+}
+void matd_set(matd matrix, unsigned int row, unsigned int col, double val) {
+	matrix.data[row*matrix.n_cols + col] = val; // row-major
+}
+\end{lstlisting}
+\textcolor{red}{Dovrei controllare che l'accesso sia corretto (che non cerchi di scrivere/leggere dati non allocati).}
+
+
+
+
+\newpage
+
+\appendix
+
+
+
+
+
+\end{document}
