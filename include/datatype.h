@@ -11,6 +11,10 @@
 
 #include <stdlib.h> // for "calloc"
 
+// ####################################################################
+// ######################### MATD (DOUBLE)  ###########################
+// ####################################################################
+
 
 typedef struct _matd{
 	unsigned int n_rows;
@@ -18,12 +22,6 @@ typedef struct _matd{
 	double *data; // row-major matrix data array
 } matd;
 
-
-typedef struct _matf{
-	unsigned int n_rows;
-	unsigned int n_cols;
-	float *data;
-} matf;
 
 
 // --------------------------------------------------------------------
@@ -59,10 +57,24 @@ void free_mat(matd* matrix)
 }
 
 
-double matd_get(matd* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major
-void   matd_set(matd* M, unsigned int row, unsigned int col, double val) { M->data[row*M->n_cols + col] = val; } // row-major
+double matd_get(matd* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+void   matd_set(matd* M, unsigned int row, unsigned int col, double val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
 
-unsigned int size(matd M) { return M.n_rows * M.n_cols; }
+unsigned int size(matd* M) { return M->n_rows * M->n_cols; }
+
+
+// ####################################################################
+// ######################### MATF (float)  ############################
+// ####################################################################
+
+
+typedef struct _matf{
+	unsigned int n_rows;
+	unsigned int n_cols;
+	float *data;
+} matf;
+
+
 
 
 

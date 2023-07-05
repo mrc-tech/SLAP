@@ -23,8 +23,8 @@ int main()
 	
 	printf("is_equal: %d\n", is_equal(A,B, 0));
 	B = new_matd(3,3); matd_set(B,0,0,2); matd_set(B,1,1,4); matd_set(B,2,2,8);
-	printf("is_equal: %d\n", is_equal(A,B, 0)); // exactly equal?
-	printf("is_equal: %d\n", is_equal(A,B, 1e-20)); // almost equal?
+	printf("is_equal: %d\n", is_equal(A,B, 0)); // exactly equal
+	printf("is_equal: %d\n", is_equal(A,B, 1e-20)); // almost equal
 	
 	free_mat(A);
 	free_mat(B);

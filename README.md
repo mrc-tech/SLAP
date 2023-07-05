@@ -11,3 +11,4 @@ Simple Linear Algebra Package (SLAP)
 # ToDo
 - simple script that buld an ASCII file assessing the internal header-files structure (do inside the `header_merger`?)
 - rendere coerenti i nomi delle funzioni (ad esempio mettendo `matd_` prima di ogni operazione sulle matrici double e poi il nome della funzione. Come ad esempio `matd_new`, `matd_free`, `matd_equal`, etc.)
+- fare dei test di funzionamento della libreria controllando l'output mostrando se verifica o meno i test

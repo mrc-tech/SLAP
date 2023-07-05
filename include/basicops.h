@@ -1,6 +1,11 @@
 /*
 	Simple Linear Algebra Package (SLAP)
 	basic operations
+	
+	TODO:
+		- sum
+		- multiply
+		- extract row/column
 */
 #ifndef SLAP_BASICOPS
 #define SLAP_BASICOPS
@@ -47,13 +52,6 @@ matd* matd_transpose(matd* matrix)
 }
 
 
-/*
-	TODO:
-		- sum
-		- multiply
-		- extract row/column
-		
-*/
 
 
 #endif // SLAP_BASICOPS
