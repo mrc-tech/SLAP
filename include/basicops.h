@@ -29,11 +29,10 @@ void print_mat(matd* matrix)
 short is_equal(matd* m1, matd* m2, double tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
-	// QUALCOSA NON MI CONVINCE CON LA GESTIONE DELLA MEMORIA!!!!
 	int i;
 	if((m1->n_rows != m2->n_rows) || (m1->n_cols != m2->n_cols)) return 0; // check dimensions
 	for(i=0; i<m1->n_rows*m1->n_cols; i++){
-		if(fabs(m1->data[i] - m2->data[i] > tolerance)) return 0;
+		if(fabs(m1->data[i] - m2->data[i]) > tolerance) return 0;
 	}
 	return 1;
 }
@@ -41,6 +40,7 @@ short is_equal(matd* m1, matd* m2, double tolerance)
 
 matd* matd_transpose(matd* matrix)
 {
+	// QUALCOSA NON MI CONVINCE CON LA GESTIONE DELLA MEMORIA!!!!
 	matd * m = new_matd(matrix->n_cols, matrix->n_rows); // return matrix
 	int r,c;
 	for(r=0; r<m->n_rows; r++){
