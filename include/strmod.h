@@ -9,7 +9,7 @@ matd* matd_remcol(matd *m, unsigned int column)
 {
 	// remove the i-th column (start counting from zero)
 	if(column >= m->n_cols){
-//    	NML_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
+//    	SLAP_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
 		return 0; // return NULL
 	}
 	matd *ret = new_matd(m->n_rows, m->n_cols-1);
@@ -26,7 +26,7 @@ matd* matd_remrow(matd *m, unsigned int row)
 {
 	// remove the i-th row (start counting from zero)
 	if(row >= m->n_rows){
-//    	NML_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
+//    	SLAP_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
 		return 0; // return NULL
 	}
 	matd *ret = new_matd(m->n_rows-1, m->n_cols);
@@ -57,11 +57,11 @@ matd* matd_catver(int N, matd **marr) // NON VERIFICATO!!!!!!
 	ncols = marr[0]->n_cols;
 	for(k=1; k<N; k++){
 		if (NULL == marr[k]){
-//			NML_FERROR(INCONSITENT_ARRAY, k, mnum);
+//			SLAP_FERROR(INCONSITENT_ARRAY, k, mnum);
 			return 0;
 		}
 		if (lrow != marr[k]->n_rows){
-//			NML_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
+//			SLAP_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
 			return 0;
 		}
 		ncols += marr[k]->n_cols;
@@ -96,11 +96,11 @@ matd* matd_cathor(unsigned int N, matd **marr) // NON VERIFICATO!!!!!
 	lcol = marr[0]->n_cols;
 	for(i=0; i<N; i++){
 		if(marr[i] == 0){
-//			NML_FERROR(INCONSITENT_ARRAY, i, mnum);
+//			SLAP_FERROR(INCONSITENT_ARRAY, i, mnum);
 			return 0;
 		}
 		if(lcol != marr[i]->n_cols){
-//			NML_FERROR(CANNOT_CONCATENATE_V,lcol,marr[i]->num_cols);
+//			SLAP_FERROR(CANNOT_CONCATENATE_V,lcol,marr[i]->num_cols);
 			return 0;
 		}
 		numrows += marr[i]->n_rows;

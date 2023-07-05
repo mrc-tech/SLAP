@@ -72,7 +72,50 @@ int matd_smul(matd *m, double num)
 	for(i=0; i<m->n_rows*m->n_cols; i++) m->data[i] *= num;
 	// CONTROLLO DELLA MEMORIA E RITORNARE VALORI DI CONTROLLO
 	return 1;
-} 
+}
+
+
+matd* matd_add(matd *m1, matd *m2)
+{
+	matd *m = matd_copy(m1);
+	if(!matd_add_r(m, m2)) { free_mat(m); return 0; }
+	return m;
+}
+
+int matd_add_r(matd *m1, matd *m2)
+{
+	// reference version (return value in matrix m1)
+	int i;
+	if((m1->n_rows != m2->n_rows) && (m1->n_cols != m2->n_cols)){
+//		SLAP_ERROR(CANNOT_ADD);
+		return 0;
+	}
+	for(i=0; i<m1->n_rows*m1->n_cols; i++) m1->data[i] += m2->data[i];
+	
+	return 1;
+}
+
+matd* matd_sub(matd *m1, matd *m2)
+{
+	matd *m = matd_copy(m1);
+	if(!matd_sub_r(m, m2)) { free_mat(m); return 0; }
+	return m;
+}
+
+int matd_sub_r(matd *m1, matd *m2)
+{
+	// reference version (return value in matrix m1)
+	int i;
+	if((m1->n_rows != m2->n_rows) && (m1->n_cols != m2->n_cols)){
+//		SLAP_ERROR(CANNOT_SUBTRACT);
+		return 0;
+	}
+	for(i=0; i<m1->n_rows*m1->n_cols; i++) m1->data[i] -= m2->data[i];
+	
+	return 1;
+}
+
+
 
 
 
