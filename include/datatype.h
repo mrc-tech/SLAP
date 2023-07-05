@@ -52,15 +52,15 @@ matd* new_matd(unsigned int num_rows, unsigned int num_cols)
 	return m;
 }
 
-void free_mat(matd *matrix)
+void free_mat(matd* matrix)
 {
 	free(matrix->data); // delete the data
 	free(matrix); // delete the data structure
 }
 
 
-double matd_get(matd M, unsigned int row, unsigned int col) { return M.data[row*M.n_cols + col]; } // row-major
-void   matd_set(matd M, unsigned int row, unsigned int col, double val) { M.data[row*M.n_cols + col] = val; } // row-major
+double matd_get(matd* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major
+void   matd_set(matd* M, unsigned int row, unsigned int col, double val) { M->data[row*M->n_cols + col] = val; } // row-major
 
 unsigned int size(matd M) { return M.n_rows * M.n_cols; }
 
