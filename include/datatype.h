@@ -59,9 +59,10 @@ void free_mat(matd *matrix)
 }
 
 
-double matd_get(matd matrix, unsigned int row, unsigned int col) { return matrix.data[row*matrix.n_cols + col]; } // row-major
-void   matd_set(matd matrix, unsigned int row, unsigned int col, double val) { matrix.data[row*matrix.n_cols + col] = val; } // row-major
+double matd_get(matd M, unsigned int row, unsigned int col) { return M.data[row*M.n_cols + col]; } // row-major
+void   matd_set(matd M, unsigned int row, unsigned int col, double val) { M.data[row*M.n_cols + col] = val; } // row-major
 
+unsigned int size(matd M) { return M.n_rows * M.n_cols; }
 
 
 
