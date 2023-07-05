@@ -2,6 +2,9 @@
 	Simple Linear Algebra Package (SLAP)
 */
 
+// INITIAL DEFs:
+#include "defs.h"
+
 
 // CORE:
 #include "datatype.h" // matrix and other data type and menagement

@@ -10,6 +10,7 @@
 #define SLAP_DATATYPE
 
 #include <stdlib.h> // for "calloc"
+#include <stdarg.h> // for variable argument list ("va_list")
 
 // ####################################################################
 // ######################### MATD (DOUBLE)  ###########################
@@ -40,11 +41,11 @@ matd* new_matd(unsigned int num_rows, unsigned int num_cols)
 	if(num_cols == 0) { /*SLAP_ERROR(INVALID_COLS);*/ return 0; } // dovrebbe ritornare NULL
 	
 	m = calloc(1, sizeof(*m)); // allocate space for the struct
-	// CONTROLLARE LA MATRICE CREATA ( SLAP_CHECK(m) )
+	MEM_CHECK(m);
 	m->n_rows = num_rows;
 	m->n_cols = num_cols;
 	m->data = calloc(num_rows*num_cols, sizeof(*m->data));
-	// CONTROLLARE I DATI CREATI ( SLAP_CHECK(m->data) )
+	MEM_CHECK(m->data);
 	for(i=0; i<num_rows*num_cols; i++) m->data[i] = 0; // set to zero
 	
 	return m;
@@ -61,6 +62,32 @@ double matd_get(matd* M, unsigned int row, unsigned int col) { return M->data[ro
 void   matd_set(matd* M, unsigned int row, unsigned int col, double val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
 
 unsigned int size(matd* M) { return M->n_rows * M->n_cols; }
+
+
+matd* matd_init(unsigned int num_rows, unsigned int num_cols, ...)
+{
+	// non funziona con i vecchi compilatori perche` il secondo parametro di va_start(,) deve essere l'ultimo parametro passato alla funzione
+	va_list valist;
+	int i;
+	matd *m = new_matd(num_rows,num_cols);
+	va_start(valist, num_rows*num_cols); // initialize valist for num number of arguments
+	for (i=0; i<num_rows*num_cols; i++) m->data[i] = va_arg(valist, double);
+	va_end(valist); // clean memory reserved for valist
+	return m;
+}
+//void matd_init(matd *m, unsigned num, ...)
+//{
+//	va_list valist;
+//	int i;
+//	double tmp;
+//	va_start(valist, num); // initialize valist for num number of arguments
+//	for (i=0; i<m->n_rows*m->n_cols; i++){
+//		tmp = va_arg(valist, double);
+//		m->data[i] = tmp;
+//		printf("%lf\n", tmp);
+//	}
+//	va_end(valist); // clean memory reserved for valist
+//}
 
 
 // ####################################################################

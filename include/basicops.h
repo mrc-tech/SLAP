@@ -38,6 +38,9 @@ short is_equal(matd* m1, matd* m2, double tolerance)
 }
 
 
+
+
+
 matd* matd_transpose(matd* matrix)
 {
 	// QUALCOSA NON MI CONVINCE CON LA GESTIONE DELLA MEMORIA!!!!
@@ -52,6 +55,16 @@ matd* matd_transpose(matd* matrix)
 	return m;
 }
 
+
+
+int matd_smul(matd *m, double num)
+{
+	// nultiply matrix by a scalar
+	int i;
+	for(i=0; i<m->n_rows*m->n_cols; i++) m->data[i] *= num;
+	// CONTROLLO DELLA MEMORIA E RITORNARE VALORI DI CONTROLLO
+	return 1;
+} 
 
 
 

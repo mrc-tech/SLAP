@@ -1,6 +1,9 @@
 #ifndef SLAP_UTILS
 #define SLAP_UTILS
 
+#include <stdio.h> // per "FILE"
+
+
 matd* matd_fromfile(FILE *f)
 {
 	int r,c;
@@ -14,6 +17,18 @@ matd* matd_fromfile(FILE *f)
 		}
 	}
 	return m;
+}
+
+matd* matd_fromfilename(const char *file)
+{
+	FILE *m_file = fopen(file, "r");
+	if (!m_file) {
+//		NML_FERROR(CANNOT_OPEN_FILE, file);
+		return 0;
+	}
+	matd *r = matd_fromfile(m_file);
+	fclose(m_file);
+	return r;
 }
 
 #endif // SLAP_UTILS
