@@ -43,7 +43,7 @@ matd* new_matd(unsigned int num_rows, unsigned int num_cols)
 	// CONTROLLARE LA MATRICE CREATA ( SLAP_CHECK(m) )
 	m->n_rows = num_rows;
 	m->n_cols = num_cols;
-	m->data = calloc(m->n_rows*m->n_cols, sizeof(*m->data));
+	m->data = calloc(num_rows*num_cols, sizeof(*m->data));
 	// CONTROLLARE I DATI CREATI ( SLAP_CHECK(m->data) )
 	for(i=0; i<num_rows*num_cols; i++) m->data[i] = 0; // set to zero
 	
