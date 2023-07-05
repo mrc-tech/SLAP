@@ -59,7 +59,21 @@ matd* matd_transpose(matd* matrix)
 			m->data[c * m->n_cols + r] = matrix->data[r * matrix->n_cols + c];
 		}
 	}
-	
+	return m;
+}
+
+int matd_transpose_r(matd* m)
+{
+	// change the matrix by reference ("_r")
+	// FUNZIONA SOLO SULLE MATRICI QUADRATE!!!!!!!
+	int r,c;
+	for(r=0; r<m->n_rows; r++){
+		for(c=r; c<m->n_cols; c++){ // only the upper triangular part
+			SWAP(m->data[r * m->n_cols + c], m->data[c * m->n_cols + r])
+		}
+	}
+	// change rows and cols (data size is the same = rows*cols)
+	SWAP(m->n_rows, m->n_cols)
 	return m;
 }
 

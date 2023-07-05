@@ -9,4 +9,10 @@
 	}
 
 
+#define SWAP(a,b) \
+	double _temp = a; \
+	a = b; \
+	b = _temp;
+
+
 #endif // SLAP_DEFS
