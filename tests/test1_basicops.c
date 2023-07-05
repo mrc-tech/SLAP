@@ -31,7 +31,7 @@ int main()
 	if(matd_equal(matd_add(A,A),tmp,0))					printf("passed\n"); else printf("NOT PASSED!!!\n");
 	
 	printf("matd_sub       : ");
-	if(matd_equal(matd_sub(tmp,tmp),new_matd(3,3),0))		printf("passed\n"); else printf("NOT PASSED!!!\n");
+	if(matd_equal(matd_sub(tmp,tmp),new_matd(3,3),0))	printf("passed\n"); else printf("NOT PASSED!!!\n");
 	
 	
 	

@@ -8,12 +8,13 @@
 matd* matd_remcol(matd *m, unsigned int column)
 {
 	// remove the i-th column (start counting from zero)
+	matd *ret;
+	int i, j, k;
 	if(column >= m->n_cols){
 //    	SLAP_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
 		return 0; // return NULL
 	}
-	matd *ret = new_matd(m->n_rows, m->n_cols-1);
-	int i, j, k;
+	ret = new_matd(m->n_rows, m->n_cols-1);
 	for(i=0; i<m->n_rows; i++){
 		for(j=0,k=0; j<m->n_cols; j++){
 			if(column != j) ret->data[i*ret->n_cols + k++] = m->data[i*m->n_cols + j];
@@ -25,12 +26,13 @@ matd* matd_remcol(matd *m, unsigned int column)
 matd* matd_remrow(matd *m, unsigned int row)
 {
 	// remove the i-th row (start counting from zero)
+	matd *ret;
+	int i, j, k;
 	if(row >= m->n_rows){
 //    	SLAP_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
 		return 0; // return NULL
 	}
-	matd *ret = new_matd(m->n_rows-1, m->n_cols);
-	int i, j, k;
+	ret = new_matd(m->n_rows-1, m->n_cols);
 	for(i=0,k=0; i<m->n_rows; i++){
 		if(row != i){
 			for(j=0; j<m->n_cols; j++){
@@ -47,12 +49,13 @@ matd* matd_remrow(matd *m, unsigned int row)
 matd* matd_catver(int N, matd **marr) // NON VERIFICATO!!!!!!
 {
 	// concatenate vertically N matrices
+	matd *m;
+	int i, j, k, offset;
+	unsigned int lrow, ncols;
 	if (N == 0) return 0; // No matrices, nothing to return
 	if (N == 1) return matd_copy(marr[0]); // no need for additional computations
     
 	// We calculate the total number of columns to know how to allocate memory for the resulting matrix:
-	int i,j,k,offset;
-	unsigned int lrow, ncols;
 	lrow  = marr[0]->n_rows;
 	ncols = marr[0]->n_cols;
 	for(k=1; k<N; k++){
@@ -67,32 +70,32 @@ matd* matd_catver(int N, matd **marr) // NON VERIFICATO!!!!!!
 		ncols += marr[k]->n_cols;
 	}
 	// allocate memory for the resulting matrix
-	matd *r = new_matd(lrow, ncols);
-	for(i = 0; i<r->n_rows; i++){
+	m = new_matd(lrow, ncols);
+	for(i = 0; i<m->n_rows; i++){
 		k = 0;
 		offset = 0;
-		for(j = 0; j<r->n_cols; j++){
+		for(j = 0; j<m->n_cols; j++){
 			// If the column index of marr[k] overflows
 			if(j-offset == marr[k]->n_cols){
 				offset += marr[k]->n_cols;
 				k++; // jump to the next matrix in the array
 			}
-		r->data[i*r->n_cols+j] = marr[k]->data[i*r->n_cols + j - offset];
+		m->data[i*m->n_cols+j] = marr[k]->data[i*m->n_cols + j - offset];
 		}
 	}
-	return r;
+	return m;
 }
 
 
 matd* matd_cathor(unsigned int N, matd **marr) // NON VERIFICATO!!!!!
 {
 	// concatenate matrices horizontally (same number of rows, aumented number of columns)
+	matd *res;
+	unsigned int numrows = 0;
+	int lcol, i, j, k, offset;
 	if(N == 0) return 0;
 	if(N == 1) return matd_copy(marr[0]);
 	
-	int lcol, i, j, k, offset;
-	unsigned int numrows = 0;
-	matd *res;
 	lcol = marr[0]->n_cols;
 	for(i=0; i<N; i++){
 		if(marr[i] == 0){

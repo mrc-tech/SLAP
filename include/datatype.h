@@ -69,9 +69,9 @@ matd* matd_init(unsigned int num_rows, unsigned int num_cols, ...)
 {
 	// non funziona con i vecchi compilatori perche` il secondo parametro di va_start(,) deve essere l'ultimo parametro passato alla funzione
 	va_list valist;
-	int i;
+	int i = num_rows*num_cols;
 	matd *m = new_matd(num_rows,num_cols);
-	va_start(valist, num_rows*num_cols); // initialize valist for num number of arguments
+	va_start(valist, i); // initialize valist for num number of arguments
 	for (i=0; i<num_rows*num_cols; i++) m->data[i] = va_arg(valist, double);
 	va_end(valist); // clean memory reserved for valist
 	return m;
