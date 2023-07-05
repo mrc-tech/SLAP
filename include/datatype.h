@@ -12,6 +12,7 @@
 #include <stdlib.h> // for "calloc"
 #include <stdarg.h> // for variable argument list ("va_list")
 
+
 // ####################################################################
 // ######################### MATD (DOUBLE)  ###########################
 // ####################################################################
@@ -61,7 +62,7 @@ void free_mat(matd* matrix)
 double matd_get(matd* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
 void   matd_set(matd* M, unsigned int row, unsigned int col, double val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
 
-unsigned int size(matd* M) { return M->n_rows * M->n_cols; }
+unsigned int matd_size(matd* M) { return M->n_rows * M->n_cols; }
 
 
 matd* matd_init(unsigned int num_rows, unsigned int num_cols, ...)

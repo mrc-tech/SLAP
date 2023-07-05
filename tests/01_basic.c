@@ -20,10 +20,10 @@ int main()
 	printf("\n");
 //	matd *test = matd_transpose(B); // QUESTO COMANDO DA PROBLEMI ALLA RIGA 24 !!!!!
 	
-	printf("is_equal: %d\n", is_equal(A,B, 0));
+	printf("matd_equal: %d\n", matd_equal(A,B, 0));
 	B = new_matd(3,3); matd_set(B,0,0,2); matd_set(B,1,1,4); matd_set(B,2,2,8); // DA PROBLEMI SE SI FA LA TRASPOSTA DI B !!!!!!
-	printf("is_equal: %d\n", is_equal(A,B, 0)); // exactly equal
-	printf("is_equal: %d\n", is_equal(A,B, 1e-20)); // almost equal
+	printf("matd_equal: %d\n", matd_equal(A,B, 0)); // exactly equal
+	printf("matd_equal: %d\n", matd_equal(A,B, 1e-20)); // almost equal
 	
 	free_mat(A);
 	free_mat(B);
@@ -37,7 +37,7 @@ int main()
 	matd *C = matd_transpose(A);
 	printf("A^(T) = \n");
 	print_mat(C);
-	printf("is_equal: %d\n", is_equal(A,matd_transpose(C), 0));
+	printf("matd_equal: %d\n", matd_equal(A,matd_transpose(C), 0));
 	A = matd_remcol(A, 1);
 	print_mat(A);
 	A = matd_remrow(A, 1);

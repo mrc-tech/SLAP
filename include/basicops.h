@@ -26,7 +26,7 @@ void print_mat(matd* matrix)
 }
 
 
-short is_equal(matd* m1, matd* m2, double tolerance)
+short matd_equal(matd* m1, matd* m2, double tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
 	int i;

@@ -23,7 +23,7 @@ matd* matd_fromfilename(const char *file)
 {
 	FILE *m_file = fopen(file, "r");
 	if (!m_file) {
-//		NML_FERROR(CANNOT_OPEN_FILE, file);
+//		SLAP_FERROR(CANNOT_OPEN_FILE, file);
 		return 0;
 	}
 	matd *r = matd_fromfile(m_file);
