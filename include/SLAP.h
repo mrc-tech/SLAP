@@ -10,14 +10,14 @@
 #include "datatype.h" // matrix and other data type and menagement
 #include "basicops.h" // basic operations
 
-#include "constant.h" // scientific constants
 
 
 // OPERATIONS:
-
+#include "strmod.h" // matrix structure modification
 
 
 // UTILITIES:
 #include "utils.h"
 #include "random.h"
+#include "constant.h" // scientific constants
 

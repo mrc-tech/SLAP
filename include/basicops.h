@@ -38,7 +38,15 @@ short is_equal(matd* m1, matd* m2, double tolerance)
 }
 
 
-
+matd* matd_copy(matd *m)
+{
+	// Dynamically allocates a new Matrix
+	// Initialise the matrix by copying another one
+	matd *res  = new_matd(m->n_rows, m->n_cols);
+	int i;
+	for(i=0; i<res->n_rows*res->n_cols; i++) res->data[i] = m->data[i];
+	return res;
+}
 
 
 matd* matd_transpose(matd* matrix)

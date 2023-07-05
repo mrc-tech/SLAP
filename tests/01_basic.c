@@ -38,9 +38,13 @@ int main()
 	printf("A^(T) = \n");
 	print_mat(C);
 	printf("is_equal: %d\n", is_equal(A,matd_transpose(C), 0));
+	A = matd_remcol(A, 1);
+	print_mat(A);
+	A = matd_remrow(A, 1);
+	print_mat(A);
 	
 	
 	
-	
+	printf("end program.\n");
 	return 0;
 }
