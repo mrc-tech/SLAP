@@ -9,7 +9,6 @@
 #ifndef SLAP_DATATYPE
 #define SLAP_DATATYPE
 
-#include <stdlib.h> // for "calloc"
 #include <stdarg.h> // for variable argument list ("va_list")
 
 
@@ -54,8 +53,10 @@ matd* new_matd(unsigned int num_rows, unsigned int num_cols)
 
 void free_mat(matd* matrix)
 {
-	free(matrix->data); // delete the data
-	free(matrix); // delete the data structure
+	if(matrix){
+		free(matrix->data); // delete the data
+		free(matrix); // delete the data structure
+	}
 }
 
 
@@ -91,6 +92,8 @@ matd* matd_init(unsigned int num_rows, unsigned int num_cols, ...)
 //}
 
 
+/*
+
 // ####################################################################
 // ######################### MATF (float)  ############################
 // ####################################################################
@@ -102,7 +105,7 @@ typedef struct _matf{
 	float *data;
 } matf;
 
-
+*/
 
 
 

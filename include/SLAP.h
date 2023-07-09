@@ -1,6 +1,9 @@
 /*
 	Simple Linear Algebra Package (SLAP)
 */
+#include <stdlib.h>
+#include <string.h> // for memory menagement functions
+#include <math.h>
 
 // INITIAL DEFs:
 #include "defs.h"

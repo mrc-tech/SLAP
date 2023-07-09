@@ -10,7 +10,7 @@
 #ifndef SLAP_BASICOPS
 #define SLAP_BASICOPS
 
-#include <math.h>
+
 
 
 void print_mat(matd* matrix)
@@ -52,11 +52,11 @@ matd* matd_copy(matd *m)
 matd* matd_transpose(matd* matrix)
 {
 	// QUALCOSA NON MI CONVINCE CON LA GESTIONE DELLA MEMORIA!!!!
-	matd * m = new_matd(matrix->n_cols, matrix->n_rows); // return matrix
+	matd *m = new_matd(matrix->n_cols, matrix->n_rows); // return matrix
 	int r,c;
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
-			m->data[c * m->n_cols + r] = matrix->data[r * matrix->n_cols + c];
+			m->data[c * m->n_cols + r] = matrix->data[r * m->n_cols + c];
 		}
 	}
 	return m;
@@ -74,27 +74,28 @@ int matd_transpose_r(matd* m)
 	}
 	// change rows and cols (data size is the same = rows*cols)
 	SWAP(m->n_rows, m->n_cols)
-	return m;
+	return 1;
 }
 
 
 
-int matd_smul(matd *m, double num)
+int matd_smul_r(matd *m, double num)
 {
-	// nultiply matrix by a scalar
+	// multiply matrix by a scalar (by reference)
 	int i;
 	for(i=0; i<m->n_rows*m->n_cols; i++) m->data[i] *= num;
 	// CONTROLLO DELLA MEMORIA E RITORNARE VALORI DI CONTROLLO
 	return 1;
 }
 
-
-matd* matd_add(matd *m1, matd *m2)
+matd* matd_smul(matd *m, double num)
 {
-	matd *m = matd_copy(m1);
-	if(!matd_add_r(m, m2)) { free_mat(m); return 0; }
-	return m;
+	// multiply matrix by a scalar
+	matd* res = matd_copy(m);
+	matd_smul_r(res,num);
+	return res;
 }
+
 
 int matd_add_r(matd *m1, matd *m2)
 {
@@ -109,10 +110,10 @@ int matd_add_r(matd *m1, matd *m2)
 	return 1;
 }
 
-matd* matd_sub(matd *m1, matd *m2)
+matd* matd_add(matd *m1, matd *m2)
 {
 	matd *m = matd_copy(m1);
-	if(!matd_sub_r(m, m2)) { free_mat(m); return 0; }
+	if(!matd_add_r(m, m2)) { free_mat(m); return 0; }
 	return m;
 }
 
@@ -127,6 +128,36 @@ int matd_sub_r(matd *m1, matd *m2)
 	for(i=0; i<m1->n_rows*m1->n_cols; i++) m1->data[i] -= m2->data[i];
 	
 	return 1;
+}
+
+matd* matd_sub(matd *m1, matd *m2)
+{
+	matd *m = matd_copy(m1);
+	if(!matd_sub_r(m, m2)) { free_mat(m); return 0; }
+	return m;
+}
+
+
+
+matd* matd_mul(matd* m1, matd* m2)
+{
+	// multiply two matrices
+	matd *m;
+	int r, c, i;
+	if(!(m1->n_cols == m2->n_rows)){
+//		SLAP_ERROR(CANNOT_MULTIPLY);
+		return NULL;
+	}
+	m = new_matd(m1->n_rows, m2->n_cols);
+	for(r=0; r<m->n_rows; r++){
+		for(c=0; c<m->n_cols; c++){
+			for(i=0; i<m1->n_cols; i++){
+				m->data[r*m->n_cols+c] += m1->data[r*m1->n_cols+i] * m2->data[i*m2->n_cols+c];
+			}
+		}
+	}
+	
+	return m;
 }
 
 

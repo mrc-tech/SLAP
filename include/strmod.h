@@ -46,9 +46,59 @@ matd* matd_remrow(matd *m, unsigned int row)
 
 
 
-matd* matd_catver(int N, matd **marr) // NON VERIFICATO!!!!!!
+matd *matd_getcol(matd *m, unsigned int col)
 {
-	// concatenate vertically N matrices
+	// return matrix column
+	int j;
+	matd *res;
+	if(col >= m->n_cols){
+//		SLAP_FERROR(CANNOT_GET_COLUMN, col, m->num_cols);
+		return NULL;
+	}
+	res = new_matd(m->n_rows, 1);
+	for(j=0; j<res->n_rows; j++) res->data[j*res->n_cols] = m->data[j*m->n_cols+col];
+	return res;
+}
+
+double *matd_getcol_array(matd *m, unsigned int col)
+{
+	// return column via array
+	int i;
+	double *res;
+	if(col >= m->n_cols) return NULL;
+	res = (double*)malloc(m->n_rows * sizeof(double));
+	for(i=0; i<m->n_rows; i++) res[i] = m->data[i*m->n_cols+col];
+	return res;
+}
+
+matd *matd_getrow(matd *m, unsigned int row)
+{
+	// return matrix row
+	matd *res;
+	if(row >= m->n_rows){
+//		SLAP_FERROR(CANNOT_GET_ROW, row, m->num_rows);
+		return NULL;
+	}
+	res = new_matd(1, m->n_cols);
+	memcpy(&res->data[0], &m->data[row*m->n_cols], m->n_cols * sizeof(res->data[0]));
+	return res;
+}
+
+double *matd_getrow_array(matd *m, unsigned int row)
+{
+	// return a row via array
+	double *res;
+	if(row >= m->n_rows) return NULL;
+	res = (double*)malloc(m->n_cols * sizeof(double));
+	memcpy(&res, &m->data[row*m->n_cols], m->n_cols * sizeof(double));
+	return res;
+} 
+
+
+
+matd* matd_cathor(int N, matd **marr) // NON VERIFICATO!!!!!!
+{
+	// concatenate matrices horizontally (same number of rows, aumented number of columns)
 	matd *m;
 	int i, j, k, offset;
 	unsigned int lrow, ncols;
@@ -87,9 +137,9 @@ matd* matd_catver(int N, matd **marr) // NON VERIFICATO!!!!!!
 }
 
 
-matd* matd_cathor(unsigned int N, matd **marr) // NON VERIFICATO!!!!!
+matd* matd_catver(unsigned int N, matd **marr)
 {
-	// concatenate matrices horizontally (same number of rows, aumented number of columns)
+	// concatenate vertically N matrices
 	matd *res;
 	unsigned int numrows = 0;
 	int lcol, i, j, k, offset;
