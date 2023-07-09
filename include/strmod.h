@@ -12,7 +12,7 @@ matd* matd_remcol(matd *m, unsigned int column)
 	int i, j, k;
 	if(column >= m->n_cols){
 //    	SLAP_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
-		return 0; // return NULL
+		return NULL;
 	}
 	ret = new_matd(m->n_rows, m->n_cols-1);
 	for(i=0; i<m->n_rows; i++){
@@ -30,7 +30,7 @@ matd* matd_remrow(matd *m, unsigned int row)
 	int i, j, k;
 	if(row >= m->n_rows){
 //    	SLAP_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
-		return 0; // return NULL
+		return NULL;
 	}
 	ret = new_matd(m->n_rows-1, m->n_cols);
 	for(i=0,k=0; i<m->n_rows; i++){
@@ -92,7 +92,12 @@ double *matd_getrow_array(matd *m, unsigned int row)
 	res = (double*)malloc(m->n_cols * sizeof(double));
 	memcpy(&res, &m->data[row*m->n_cols], m->n_cols * sizeof(double));
 	return res;
-} 
+}
+
+
+
+
+
 
 
 
@@ -102,7 +107,7 @@ matd* matd_cathor(int N, matd **marr) // NON VERIFICATO!!!!!!
 	matd *m;
 	int i, j, k, offset;
 	unsigned int lrow, ncols;
-	if (N == 0) return 0; // No matrices, nothing to return
+	if (N == 0) return NULL; // No matrices, nothing to return
 	if (N == 1) return matd_copy(marr[0]); // no need for additional computations
     
 	// We calculate the total number of columns to know how to allocate memory for the resulting matrix:
@@ -143,18 +148,18 @@ matd* matd_catver(unsigned int N, matd **marr)
 	matd *res;
 	unsigned int numrows = 0;
 	int lcol, i, j, k, offset;
-	if(N == 0) return 0;
+	if(N == 0) return NULL;
 	if(N == 1) return matd_copy(marr[0]);
 	
 	lcol = marr[0]->n_cols;
 	for(i=0; i<N; i++){
 		if(marr[i] == 0){
 //			SLAP_FERROR(INCONSITENT_ARRAY, i, mnum);
-			return 0;
+			return NULL;
 		}
 		if(lcol != marr[i]->n_cols){
 //			SLAP_FERROR(CANNOT_CONCATENATE_V,lcol,marr[i]->num_cols);
-			return 0;
+			return NULL;
 		}
 		numrows += marr[i]->n_rows;
 	}

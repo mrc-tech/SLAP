@@ -37,8 +37,8 @@ matd* new_matd(unsigned int num_rows, unsigned int num_cols)
 	matd * m; // return matrix
 	int i;
 	
-	if(num_rows == 0) { /*SLAP_ERROR(INVALID_ROWS);*/ return 0; } // dovrebbe ritornare NULL
-	if(num_cols == 0) { /*SLAP_ERROR(INVALID_COLS);*/ return 0; } // dovrebbe ritornare NULL
+	if(num_rows == 0) { /*SLAP_ERROR(INVALID_ROWS);*/ return NULL; }
+	if(num_cols == 0) { /*SLAP_ERROR(INVALID_COLS);*/ return NULL; }
 	
 	m = calloc(1, sizeof(*m)); // allocate space for the struct
 	MEM_CHECK(m);

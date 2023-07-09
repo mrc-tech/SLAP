@@ -26,7 +26,7 @@ matd* matd_fromfilename(const char *file)
 	FILE *m_file = fopen(file, "r");
 	if (!m_file) {
 //		SLAP_FERROR(CANNOT_OPEN_FILE, file);
-		return 0;
+		return NULL;
 	}
 	m = matd_fromfile(m_file);
 	fclose(m_file);

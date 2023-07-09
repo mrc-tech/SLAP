@@ -65,7 +65,7 @@ matd* matd_transpose(matd* matrix)
 int matd_transpose_r(matd* m)
 {
 	// change the matrix by reference ("_r")
-	// FUNZIONA SOLO SULLE MATRICI QUADRATE!!!!!!!
+	// FUNZIONA SOLO SULLE MATRICI QUADRATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	int r,c;
 	for(r=0; r<m->n_rows; r++){
 		for(c=r; c<m->n_cols; c++){ // only the upper triangular part
@@ -113,7 +113,7 @@ int matd_add_r(matd *m1, matd *m2)
 matd* matd_add(matd *m1, matd *m2)
 {
 	matd *m = matd_copy(m1);
-	if(!matd_add_r(m, m2)) { free_mat(m); return 0; }
+	if(!matd_add_r(m, m2)) { free_mat(m); return NULL; }
 	return m;
 }
 
@@ -133,7 +133,7 @@ int matd_sub_r(matd *m1, matd *m2)
 matd* matd_sub(matd *m1, matd *m2)
 {
 	matd *m = matd_copy(m1);
-	if(!matd_sub_r(m, m2)) { free_mat(m); return 0; }
+	if(!matd_sub_r(m, m2)) { free_mat(m); return NULL; }
 	return m;
 }
 
@@ -160,6 +160,17 @@ matd* matd_mul(matd* m1, matd* m2)
 	return m;
 }
 
+
+
+
+matd* matd_eye(unsigned int size)
+{
+	// identity square matrix
+	int i;
+	matd *m = new_matd(size, size);
+	for(i=0; i<m->n_rows; i++) m->data[i*m->n_cols+i] = 1.0;
+	return m;
+}
 
 
 
