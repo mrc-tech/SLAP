@@ -40,7 +40,9 @@ int main()
 	u = new_matd(1,3); u = matd_init(1,3, 1.,2.,3.);
 	v = new_matd(1,3); v = matd_init(1,3, 2.,2.,2.);
 	tmp = new_matd(1,1); tmp = matd_init(1,1, 12.);
-	if(matd_equal(matd_mul(u, matd_transpose(v)),tmp,0))printf("               : passed\n"); else printf("NOT PASSED!!!\n");
+	if(matd_equal(matd_mul(u,matd_transpose(v)),tmp,0)) printf("               : passed\n"); else printf("                 NOT PASSED!!!\n");
+	tmp = new_matd(3,3); tmp = matd_init(3,3, 2.,2.,2.,4.,4.,4.,6.,6.,6.);
+	if(matd_equal(matd_mul(matd_transpose(u),v),tmp,0)) printf("               : passed\n"); else printf("                 NOT PASSED!!!\n");
 	
 	
 	
