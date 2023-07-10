@@ -356,27 +356,24 @@ Esempio:
 
 
 
-\section{Solve linear systems}
+\section{Matrix factorizations}
 
-Risolvere il sistema di equazioni lineari:
-\begin{equation}
-\mathbf{A} \; \mathbf{x} = \mathbf{b}
-\label{eq:lin_sys}
-\end{equation}
-vuol dire trovare il vettore colonna incognito $\mathbf{x}$ sapendo la matrice $\mathbf{A}$ e il vettore dei termini noti $\mathbf{b}$. La soluzione è trovata in maniera esatta tramite la matrice inversa di $\mathbf{A}$:
-\begin{equation}
-\mathbf{x} = \mathbf{A}^{-1} \; \mathbf{b}
-\end{equation}
-Dal punto di vista dell'implementazione il principale problema risiede nel fatto che calcolare la matrice inversa$\mathbf{A}^{-1}$ attraverso il metodo di \textcolor{red}{Come si chiamava? (quello lentissimo esatto)} è un'operazione molto dispendiosa.
-Per questo esistono molti metodi per calcolare velocemente il vettore ignoto $\mathbf{x}$ in maniera computazionalmente efficiente.
-
-
-\subsection{Gauss-Jordan elimination}
-
+La fattorizzazione, o la decomposizione, di una matrice consiste nel \emph{dividere la matrice nel prodotto di matrici più semplici}.
+In letteratura sono presenti varie decomposizioni applicabili a diverse classi di problemi:
+\begin{description}
+\item[Decomposizione LU:] La matrice $\mathbf{A}=\mathbf{L}\mathbf{U}$ è decomposta in una matrice triangolare inferiore $\mathbf{L}$ e una triangolare superiore $\mathbf{U}$. Applicabile a matrici quadrate.
+\item[Decomposizione QR:] La matrice $\mathbf{A}=\mathbf{Q}\mathbf{R}$ é divisa in una matrice $\mathbf{Q}$ ortogonale e una $\mathbf{R}$ triangolare superiore di dimensione $n\times m$. Applicabile a matrici di dimensione qualsiasi $n\times m$.
+\item[Decomposizione di Cholesky:] La matrice $\mathbf{A}=\mathbf{U}^T\mathbf{U}$ é scomposta tramite una matrice $\mathbf{U}$ triangolare superiore con elementi sulla diagonale positivi. Si applica a matrici quadrate, simmetriche, definite positive.
+\item[Decomposizione a valori singolari:] La matrice $\mathbf{A}=\mathbf{U}\mathbf{D}\mathbf{V}^H$ é scomposta in una matrice $\mathbf{D}$ diagonale non-negativa e due matrici unitarie $\mathbf{U}$ e $\mathbf{V}$ ($\mathbf{V}^H$ denota la trasposta coniugata di $\mathbf{V}$). Applicabile a matrici di dimensione $n\times m$.
+\item[Decomposizione spettrale:] La matrice $\mathbf{A}=\mathbf{V}\mathbf{D}\mathbf{V}^{-1}$ viene decomposta tramite la matrice $\mathbf{V}$ le cui colonne sono gli autovettori di $\mathbf{A}$ e la matrice $\mathbf{D}$ é diagonale con i corrispondenti autovalori come diagonale. Applicabile a matrici quadrate con autovettori distinti\footnote{non necessariamente anche distinti autovalori.}.
+\item[Decomposizione in componenti principali:]
+\item[Decomposizione non-negativa:] La matrice $\mathbf{A}=\mathbf{W}\mathbf{H}$ è decomposta in due matrici che possiedono elementi positivi. É una soluzione, in genere di minimo locale, della funzione obiettivo $f(\mathbf{W},\mathbf{H})=\frac{1}{2}||\mathbf{A}-\mathbf{W}\mathbf{H}||^2_F$ con i vincoli $W_{ij} \geq 0$ e $H_{hk}\geq 0$. Applicabile a matrici $n\times m$ non-negative.
+\end{description}
 
 \subsection{LU(P) decomposition}
 
-La decomposizione LU, chiamata anche la fattorializzazione LU, si riferisce alla scomposizione di una matrice $\mathbf{A}$ in due matrici $\mathbf{L}$ e $\mathbf{U}$:
+
+La decomposizione LU, chiamata anche la fattorizzazione LU, si riferisce alla scomposizione di una matrice $\mathbf{A}$ in due matrici $\mathbf{L}$ e $\mathbf{U}$:
 \begin{equation}
 \mathbf{A} = \mathbf{L} \; \mathbf{U}
 \qquad \rightarrow \qquad
@@ -397,7 +394,7 @@ U_{11} & U_{12} & U_{13} \\
 \end{bmatrix}
 \end{equation}
 
-In pratica questa fattorializzazione viene ricavata da operazioni elementari sulle righe (come lo scambio delle righe). In tal caso bisogna introdurre nell'equazione una matrice di permutazione $\mathbf{P}$ che tiene conto del cambio delle righe:
+In pratica questa fattorizzazione viene ricavata da operazioni elementari sulle righe (come lo scambio delle righe). In tal caso bisogna introdurre nell'equazione una matrice di permutazione $\mathbf{P}$ che tiene conto del cambio delle righe:
 \begin{equation}
 \mathbf{P} \; \mathbf{A} = \mathbf{L} \; \mathbf{U}
 \label{eq:LUp}
@@ -408,43 +405,11 @@ Per trovare la decomposizione LU si usa versione modificata dell'algoritmo per l
 
 Trovare la decomposizione \eqref{eq:LUp} permette di calcolare il determinante della matrice $\mathbf{A}$, la sua inversa e, quindi, anche risolvere i sistemi di equazioni lineari.
 
-Esiste anche un'altra fattorializzazione dove non solo le righe, ma anche le colonne vengono considerate e si chiama \emph{LU Factorialization with full pivoting}.
+Esiste anche un'altra fattorizzazione dove non solo le righe, ma anche le colonne vengono considerate e si chiama \emph{LU Factorization with full pivoting}.
 
 \textcolor{red}{Descrizione dell'algoritmo e codice per la soluzione tramite decomposizione LU}
 
-Usando la decomposizione \eqref{eq:LUp} il sistema di equazioni \eqref{eq:lin_sys} diventa:
-\begin{equation}
-\mathbf{A} \; \mathbf{x} = \mathbf{b}
-\qquad \rightarrow \qquad
-\mathbf{P} \; \mathbf{A} \; \mathbf{x} = \mathbf{P} \; \mathbf{b}
-\qquad \rightarrow \qquad
-\mathbf{L}\ \; \mathbf{U} \; \mathbf{x} = \mathbf{P} \; \mathbf{b}
-\end{equation}
-Introducendo il sistema di equazioni ausiliario $\mathbf{y} = \mathbf{U} \; \mathbf{x}$ troviamo la soluzione $\mathbf{x}$ del sistema lineare \eqref{eq:lin_sys} risolvendo i due sistemi:
-\begin{align}
-\mathbf{y} & = \mathbf{U} \; \mathbf{x} \\
-\mathbf{L} \; \mathbf{y} & = \mathbf{P} \; \mathbf{b}
-\end{align}
-Per risolvere questi due sistemi di equazioni lineari si procede a trovare il vettore temporaneo $\mathbf{y}$ tramite sostituzione in avanti (\textit{forward substitution}) del sistema $\mathbf{L} \; \mathbf{y} = \mathbf{P} \; \mathbf{b}$, dato che $\mathbf{L}$ è una matrice triangolare inferiore. Successivamente si trova la soluzione $\mathbf{x}$ tramite il sistema $\mathbf{U} \; \mathbf{x} = \mathbf{y}$ tramite sostituzione all'indietro\footnote{All'indietro, nel senso che parte trovando l'ultimo termine di $\mathbf{x}$ e va all'indietro fino al primo $x_1$. Il contrario rispetto alla \textit{forward substitution}.} (\textit{backward substitution}), dato che la matrice $\mathbf{U}$ è triangolare superiore.
-
-\begin{lstlisting}
-matd *lu_solve(matd_lup *lu, matd* b)
-{
-	matd *Pb, *x, *y;
-	if(lu->U->n_rows != b->n_rows || b->n_cols != 1) return NULL;
-	Pb = matd_mul(lu->P, b);
-	
-	y = lu_solvefwd(lu->L, Pb); // Solve L*y = P*b using forward substition
-	x = lu_solvebck(lu->U, y); // Solve U*x=y using backward substitution
-	
-	free_mat(y); // free memory space of the temporary matrices	
-	free_mat(Pb);
-	return x;
-}
-\end{lstlisting}
-
-
-
+\textcolor{red}{Aggiungere quello che dicono su Wikipedia}
 
 \subsection{QR decomposition}
 
@@ -458,9 +423,14 @@ dove $\mathbf{Q}$ è una matrice ortogonale\footnote{Una matrice si dice \emph{o
 \mathbf{Q}\;\mathbf{Q}^T = \mathbf{Q}^T\mathbf{Q} = \mathbf{I}
 \end{equation}
 Questo equivale a dire che la trasposta della matrice è uguale all'inversa ($\mathbf{Q}^T=\mathbf{Q}^{-1}$).} e $\mathbf{R}$ una matrice triangolare superiore.
-Per trovare la decomposizione \eqref{eq:QR} si usa l'algoritmo di Gram-Schmidt.
+Per trovare la decomposizione \eqref{eq:QR} si usa l'algoritmo di Gram-Schmidt \textcolor{red}{sicuro?}.
 
-Al contrario della fattorializzaizone LU(P) che si concentra sulle operazioni sulle righe, la decomposizione QR utilizza operazioni sulle colonne.
+Si può dimostrare che tutte le matrici quadrate ammettono una decomposizione QR, anche se essa non è unica. Nel caso in cui la matrice $\mathbf{A}$ sia a coefficienti complessi, allora $\mathbf{Q}$ è una matrice unitaria.
+
+La fattorizzazione QR di una matrice richiede un tempo proporzionale a $O(n^3)$ (tramite trasformazioni di Householder o quelle di Givens). Nonostante la complessità computazionale è simile a quella della decomposizione LU (o algoritmo di Gauss) questo risulta avere una migliore stabilità numerica.
+Inoltre la fattorizzazione QR può essere utilizzata per il calcolo di basi ortonormali e per la risoluzione di un sistema ai minimi quadrati. La decomposizione QR viene usata anche nel \textit{metodo QR} utilizzato per calcolare gli autovalori e autovettori di una matrice.
+
+Al contrario della fattorizzazione LU(P) che si concentra sulle operazioni sulle righe, la decomposizione QR utilizza operazioni sulle colonne.
 Considerando le matrici (in questo caso di dimensione $3\times 3$):
 \begin{equation}
 \mathbf{A} = 
@@ -514,6 +484,88 @@ Quindi la decomposizione QR di questo esempio per matrici $3\times 3$ è pari a:
 \end{equation}
 Questa formula può essere generalizzata al caso $n\times n$.
 
+
+\subsection{Cholesky decomposition}
+
+\subsection{Singular value decomposition (SVD)}
+
+\subsection{Spectral decomposition}
+
+\subsection{Principal component analysis (PCA)}
+
+\subsection{Non-negative factorization}
+
+
+
+\section{Solve linear systems}
+
+Risolvere il sistema di equazioni lineari:
+\begin{equation}
+\mathbf{A} \; \mathbf{x} = \mathbf{b}
+\label{eq:lin_sys}
+\end{equation}
+vuol dire trovare il vettore colonna incognito $\mathbf{x}$ sapendo la matrice $\mathbf{A}$ e il vettore dei termini noti $\mathbf{b}$. La soluzione è trovata in maniera esatta tramite la matrice inversa di $\mathbf{A}$:
+\begin{equation}
+\mathbf{x} = \mathbf{A}^{-1} \; \mathbf{b}
+\end{equation}
+Dal punto di vista dell'implementazione il principale problema risiede nel fatto che calcolare la matrice inversa$\mathbf{A}^{-1}$ attraverso il metodo di \textcolor{red}{Come si chiamava? (quello lentissimo esatto)} è un'operazione molto dispendiosa.
+Per questo esistono molti metodi per calcolare velocemente il vettore ignoto $\mathbf{x}$ in maniera computazionalmente efficiente.
+
+
+\subsection{Gauss-Jordan elimination}
+
+
+\subsubsection{Backward substitution}
+
+\textcolor{red}{Da scrivere da nml}
+
+\subsubsection{Forward substitution}
+
+\textcolor{red}{Da scrivere da nml}
+
+\subsection{LU(P) decomposition}
+
+Usando la decomposizione \eqref{eq:LUp} il sistema di equazioni \eqref{eq:lin_sys} diventa:
+\begin{equation}
+\mathbf{A} \; \mathbf{x} = \mathbf{b}
+\qquad \rightarrow \qquad
+\mathbf{P} \; \mathbf{A} \; \mathbf{x} = \mathbf{P} \; \mathbf{b}
+\qquad \rightarrow \qquad
+\mathbf{L}\ \; \mathbf{U} \; \mathbf{x} = \mathbf{P} \; \mathbf{b}
+\end{equation}
+Introducendo il sistema di equazioni ausiliario $\mathbf{y} = \mathbf{U} \; \mathbf{x}$ troviamo la soluzione $\mathbf{x}$ del sistema lineare \eqref{eq:lin_sys} risolvendo i due sistemi:
+\begin{align}
+\mathbf{y} & = \mathbf{U} \; \mathbf{x} \\
+\mathbf{L} \; \mathbf{y} & = \mathbf{P} \; \mathbf{b}
+\end{align}
+Per risolvere questi due sistemi di equazioni lineari si procede a trovare il vettore temporaneo $\mathbf{y}$ tramite sostituzione in avanti (\textit{forward substitution}) del sistema $\mathbf{L} \; \mathbf{y} = \mathbf{P} \; \mathbf{b}$, dato che $\mathbf{L}$ è una matrice triangolare inferiore. Successivamente si trova la soluzione $\mathbf{x}$ tramite il sistema $\mathbf{U} \; \mathbf{x} = \mathbf{y}$ tramite sostituzione all'indietro\footnote{All'indietro, nel senso che parte trovando l'ultimo termine di $\mathbf{x}$ e va all'indietro fino al primo $x_1$. Il contrario rispetto alla \textit{forward substitution}.} (\textit{backward substitution}), dato che la matrice $\mathbf{U}$ è triangolare superiore.
+
+\begin{lstlisting}
+matd *lu_solve(matd_lup *lu, matd* b)
+{
+	matd *Pb, *x, *y;
+	if(lu->U->n_rows != b->n_rows || b->n_cols != 1) return NULL;
+	Pb = matd_mul(lu->P, b);
+	
+	y = lu_solvefwd(lu->L, Pb); // Solve L*y = P*b using forward substition
+	x = lu_solvebck(lu->U, y); // Solve U*x=y using backward substitution
+	
+	free_mat(y); // free memory space of the temporary matrices	
+	free_mat(Pb);
+	return x;
+}
+\end{lstlisting}
+
+
+
+
+\subsection{QR decomposition}
+
+Fattorizzata la matrice $\mathbf{A}=\mathbf{Q}\mathbf{R}$ di un sistema lineare $\mathbf{A}\mathbf{x}=\mathbf{b}$ la soluzione di tale sistema è data da:
+\begin{equation}
+\mathbf{x} = \mathbf{R}^{-1} (\mathbf{Q}^T \mathbf{b})
+\end{equation}
+Il calcolo del vettore temporaneo $\mathbf{y} = \mathbf{Q}^T \mathbf{b}$ richiede $O(n^2)$ operazioni per la moltiplicazione matrice-vettore, mentre il calcolo di $\mathbf{x}=\mathbf{R}^{-1}\mathbf{y}$ si può eseguire attraverso un algoritmo di sostituzione all'indietro con un tempo computazionale sempre di $O(n^2)$ operazioni. Il costo computazionale maggiore, dunque, è quello della fattorizzazione (pari a $O(n^3)$ operazioni).
 
 
 
