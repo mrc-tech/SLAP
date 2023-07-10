@@ -17,6 +17,8 @@
 \usepackage{pxfonts}			%per il bold nei lstlisting
 %\usepackage{scrextend}			%per labeling
 \usepackage{enumitem}			% per [noitemsep]
+\usepackage{algorithm}			% per la descrizione degli algoritmi
+\usepackage{algpseudocode}		% per lo pseudocodice
 
 
 %\definecolor{mymauve}{rgb}{0.58,0,0.82}
@@ -128,7 +130,293 @@ void matd_set(matd matrix, unsigned int row, unsigned int col, double val) {
 
 \subsubsection{Scalar-matrix multiplication}
 \subsubsection{Vector-matrix multiplication}
+
+La moltiplicazione matrice-vettore può essere vista come la moltiplicazione tra una matrice e un'altra nella forma di un vettore colonna.
+\textcolor{red}{Fare un controllo numerico su questa affermazione}
+
 \subsubsection{Matrix-matrix multiplication}
+
+Il prodotto tra due matrici $\mathbf{A} \in \mathbb{R}^{n\times m}$ (matrice con $n$ righe e $m$ colonne) $\mathbf{B} \in \mathbb{R}^{m\times p}$ ($m$ righe, $p$ colonne) è una matrice $\mathbf{C} \in \mathbb{R}^{n\times p}$ le cui componenti sono definite come:
+\begin{equation}
+C_{ij} = \sum_{k=1}^m A_{ik} \; B_{kj}
+\end{equation}
+
+Applicando direttamente la definizione della moltiplicazione tra matrici si ottiene un algoritmo che ha un'efficienza computazionale di $O(n^3)$ (dove $n$ è la dimensione di una matrice quadrata $n\times n$). Migliori limiti asintotici sono stati scoperti dopo l'algoritmo di Strassen negli anni '60 (il limite teorico rimane ancora ignoto). Recentemente è stato annunciato un algoritmo con l'efficienza teorica di $O(n^{2.37188})$, ma si tratta di un \emph{algoritmo galattico}, ovvero che richiede una dimensione talmente grande delle matrici per funzionare con tale efficienza da non essere praticamente realizzabile (in questo caso a causa di una grossa costante).
+
+\paragraph{Simple algorithm:} Dalla definizione della moltiplicazione tra matrici si ricava direttamente l'algoritmo~\ref{alg:mul_simple}.
+
+\begin{algorithm}
+\caption{Semplice algoritmo per la moltiplicazione tra matrici}\label{alg:mul_simple}
+\begin{algorithmic}[1]
+\Require matrix $\mathbf{A}$, matrix $\mathbf{B}$
+\State $\mathbf{C} \gets $ matrix of the appripriate size
+\For{$i \gets 1$ to $n$} \Comment{nell'implementazione parte da $0$ e arriva a $n-1$}
+	\For{$j \gets 1$ to $p$} \Comment{stessa considerazione dell'indice $i$}
+		\State $sum \gets 0$
+		\For{$k \gets 1$ to $m$}
+			\State $sum \gets sum + A_{ik} \; B_{kj}$
+		\EndFor
+		\State $C_{ij} \gets sum$
+	\EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+Questo algoritmo richiede un tempo pari a $O(nmp)$ (se le matrici sono quadrate $n\times n$ il tempo diventa $O(n^3)$).
+
+\paragraph{Cache optimization:} I tre cicli all'interno della moltiplicazione possono essere scambiati senza modificare il risultato in termini matematici, tuttavia questo può avere un considerevole impatto in termini di implementazione ed in particolare in termini di tempo di esecuzione su elaboratori elettronici. Infatti i computer hanno degli algoritmi ottimizzati per l'accesso dei dati dalla RAM alla CPU quando questi sono sequenziali (uno di fila all'altro in RAM). Quando il dato successivo necessario all'algoritmo non è quello immediatamente successivo in RAM si parla di \textit{cache miss}.
+La versione ottimale dell'algoritmo semplice per due matrici $\mathbf{A}$ e $\mathbf{B}$ in row-major è la versione tiled, dove le matrici sono implicitamente divise in \textit{tiles} di dimensione $\sqrt{N} \times \sqrt{N}$, è descritta nell'algoritmo~\ref{alg:mul_simple_cache}.
+
+\begin{algorithm}
+\caption{Semplice algoritmo per la moltiplicazione tra matrici con gestione migliorata della cache \textcolor{red}{non mi torna un granche`}}\label{alg:mul_simple_cache}
+\begin{algorithmic}[1]
+\Require matrix $\mathbf{A}$, matrix $\mathbf{B}$
+\State $\mathbf{C} \gets $ matrix of the appripriate size
+\State tile size $T \gets \sqrt{N}$
+\For{$I \gets 1$ to $n$ in steps of $T$}
+	\For{$J \gets 1$ to $p$ in steps of $T$}
+		\For{$K \gets 1$ to $m$ in steps of $T$}
+			\For{$i \gets I$ to $\min(I+T,n)$} \Comment{Multiply $\mathbf{A}_{I:I+T, K:K+T}$ and $\mathbf{B}_{K:K+T, J:J+T}$ into $\mathbf{C}_{I:I+T, J:J+T}$}
+				\For{$j \gets J$ to $\min(J+T,p)$}
+					\State $sum \gets 0$
+					\For{$k \gets K$ to $\min(K+T,m)$}
+						\State $sum \gets sum + A_{ik} \; B_{kj}$
+					\EndFor
+					\State $C_{ij} \gets C_{ij} + sum$
+				\EndFor
+			\EndFor
+		\EndFor
+	\EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+Nel modello di cache ideale l'algoritmo incorre in solamente $O(\frac{n^3}{b\sqrt{N}}$. Per le macchine moderne il denominatore $m\sqrt{N}$ ammonta a diversi ordini di grandezza, dunque il tempo necessario è quello effettivo del calcolo, invece di perdere tempo in \textit{cache misses}.
+
+
+\paragraph{Divide-and-conquer algorithm:} Una alternativa è l'algoritmo \textit{dividi e conquista} per la moltiplicazione delle matrici che fa affidamento nella partizione delle matrici in blocchi
+\begin{equation}
+\begin{bmatrix}
+\mathbf{C}_{11} & \mathbf{C}_{12} \\
+\mathbf{C}_{12} & \mathbf{C}_{22}
+\end{bmatrix} = 
+\begin{bmatrix}
+\mathbf{A}_{11} & \mathbf{A}_{12} \\
+\mathbf{A}_{12} & \mathbf{A}_{22}
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{B}_{11} & \mathbf{B}_{12} \\
+\mathbf{B}_{12} & \mathbf{B}_{22}
+\end{bmatrix} = 
+\begin{bmatrix}
+\mathbf{A}_{11}\;\mathbf{B}_{11}+\mathbf{A}_{12}\;\mathbf{B}_{21} & \mathbf{A}_{11}\;\mathbf{B}_{12}+\mathbf{A}_{12}\;\mathbf{B}_{22} \\
+\mathbf{A}_{21}\;\mathbf{B}_{11}+\mathbf{A}_{22}\;\mathbf{B}_{21} & \mathbf{A}_{21}\;\mathbf{B}_{12}+\mathbf{A}_{22}\;\mathbf{B}_{22}
+\end{bmatrix}
+\end{equation}
+che si applica a tutte le matrici quadrate che hanno dimensione pari a una potenza di due (${2^n \times 2^n}$).
+L'algoritmo dividi e conquista calcola le moltiplicazioni più piccole ricorsivamente come un prodotto scalare $C_{11} = A_{11}B_{11}$ come caso base.
+
+Una variante che funziona per matrici non-quadrate si basa sul dividere le matrici in due invece che in quattro. In questo caso si tratta di dividere le matrici in due parti uguali, o comunque il più vicino possibile a due parti uguali nel caso di dimensioni dispari.
+
+\begin{algorithm}
+\caption{Moltiplicazione tra metrici tramite \textit{divide-and-conquer}}\label{alg:mul_div_conq}
+\begin{algorithmic}[1]
+\Require matrix $\mathbf{A} \in \mathbb{R}^{n\times m}$, matrix $\mathbf{B} \in \mathbb{R}^{m\times p}$
+\State if $\max(n,m,p)$ is below some threshold, use an unrolled version of the simple algorithm
+\If{$\max(n,m,p) = n$}
+	\State $\mathbf{C} = \begin{bmatrix} \mathbf{A}_1 \\ \mathbf{A}_2 \end{bmatrix}\mathbf{B} = \begin{bmatrix} \mathbf{A}_1 \mathbf{B} \\ \mathbf{A}_2 \mathbf{B} \end{bmatrix}$ \Comment{split $\mathbf{A}$ horizontally}
+\\\textbf{else if} $\max(n,m,p) = p$
+	\State $\mathbf{C} = \mathbf{A}\begin{bmatrix} \mathbf{B}_1 & \mathbf{B}_2 \end{bmatrix} = \begin{bmatrix} \mathbf{A} \mathbf{B}_1 \\ \mathbf{A} \mathbf{B}_2 \end{bmatrix}$ \Comment{split $\mathbf{B}$ vertically}
+\Else \Comment($\max(n,m,p) = m$)
+	\State $\mathbf{C} = \begin{bmatrix} \mathbf{A}_1 & \mathbf{A}_2 \end{bmatrix}\begin{bmatrix} \mathbf{B}_1 \\ \mathbf{B}_2 \end{bmatrix} = \mathbf{A}_1 \mathbf{B}_1 + \mathbf{A}_2 \mathbf{B}_2$ \Comment{split $\mathbf{A}$ vertically and $\mathbf{B}$ horizontally}
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
+
+
+
+
+
+\section{Gaussian elimination}
+
+L'eliminazione di Gauss consiste nell'eseguire operazioni sulla matrice che non cambiano il risultato del sistema di equazioni associato, come ad esempio \textit{scambiare delle righe, moltiplicare righe per scalari e sommare una riga all'altra}. Queste operazioni sono eseguite per semplificare il problema.
+
+L'eliminazione di Gauss viene usata per portare la matrice ad una forma più facile da gestire, chiamata \textit{Row Echelon Form} (REF). In questa forma la matrice ha le seguenti proprietà:
+\begin{itemize}[noitemsep]
+\item il primo\footnote{Primo elemento non nullo della riga partendo da sinistra verso destra.} elemento non nullo di una riga (\emph{pivot}) è esattamente 1.0
+\item righe che hanno tutti elementi nulli sono sotto le righe che hanno almeno un elemento non nullo
+\item ogni pivot di una riga si trova ad una colonna alla destra dei pivot delle righe superiori
+\end{itemize}
+L'algoritmo che trasforma la matrice nella \textit{Row Echelon Form} è il seguente:
+\begin{enumerate}[noitemsep]
+\item Trova il pivot (primo elemento non nullo della riga). Se la colonna ha elementi tutti nulli passa alla colonna successiva.
+\item Scambia le righe posizionando la riga del pivot come prima.
+\item Moltiplica ogni elemento sulla riga per $\frac{1}{\text{pivot}}$ in maniera tale che il pivot è pari a 1.0.
+\item Tramite la somma tra righe (premoltiplicando per il pivot dell'altra riga), fa in maniera tale che tutti gli elementi sulla colonna del pivot (elementi che non sono il pivot) sono pari a zero.
+\item Continua il processo finché non si è giunti alla \textit{Row Echelon Form}.
+\end{enumerate}
+
+La forma \textit{Reduced Row Echelon Form} (RREF) consiste nell'avere solamente un valore diverso da zero per ogni colonna.
+Si nota che una matrice può avere molte REF, ma solamente una RREF.
+
+
+\subsection{Basic operations}
+
+Le operazioni base dell'eliminazione di Gauss sono:
+\begin{itemize}[noitemsep]
+\item Scambio di due righe (row swapping: \verb|matd_row_swap_r|).
+\item Moltiplica ogni elemento della riga per uno scalare diverso da zero (scalar multiplication of rows: \verb|matd_row_smul_r|).
+\item Moltiplica una riga per in termine diverso da zero e aggiunge il risultato a un'altra riga (row addition: \verb|matd_row_addrow_r|).
+\end{itemize}
+
+\subsubsection{Row swapping}
+
+\begin{lstlisting}
+int matd_row_swap_r(matd *m, unsigned int row1, unsigned int row2)
+{
+	// swap two rows of matrix m
+	int i;
+	double tmp;
+	if(row1 >= m->n_rows || row2 >= m->n_rows) return 0; // cannot swap rows
+	for(i=0; i<m->n_cols; i++){
+		tmp = m->data[row2*m->n_cols+i];
+		m->data[row2*m->n_cols+i] = m->data[row1*m->n_cols+i];
+		m->data[row1*m->n_cols+i] = tmp;
+	}
+	return 1;
+}
+\end{lstlisting}
+
+Esempio:
+\begin{equation*}
+\mathtt{matd\_row\_swap\_r} = \left( 
+\begin{bmatrix}
+1 & 2 & 3 \\ 0 & 2 & 4 \\ 2 & 1 & 9
+\end{bmatrix}, \; 0, \; 1
+\right) = 
+\begin{bmatrix}
+0 & 2 & 4 \\ 1 & 2 & 3 \\ 2 & 1 & 9
+\end{bmatrix}
+\end{equation*}
+
+\subsubsection{Scalar multiplication of rows}
+
+\begin{lstlisting}
+int matd_row_smul_r(matd *m, unsigned int row, double num)
+{
+	int i;
+	if(row >= m->n_rows) return 0; // cannot row multiply
+	for(i=0; i<m->n_cols; i++) m->data[row*m->n_cols+i] *= num;
+	return 1;
+}
+\end{lstlisting}
+
+Esempio:
+\begin{equation*}
+\mathtt{matd\_row\_swap\_r} = \left( 
+\begin{bmatrix}
+1 & 2 & 3 \\ 0 & 2 & 4 \\ 2 & 1 & 9
+\end{bmatrix}, \; 1, \; 2.0
+\right) = 
+\begin{bmatrix}
+1 & 2 & 3 \\ 0.0 & 4.0 & 6.0 \\ 2 & 1 & 9
+\end{bmatrix}
+\end{equation*}
+
+\subsubsection{Row addition}
+
+\begin{lstlisting}
+int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, double multiplier)
+{
+	int i = 0;
+	if(where >= m->n_rows || row >= m->n_rows) return 0; // cannot add rows
+	for(i=0; i<m->n_cols; i++) m->data[where*m->n_cols+i] += multiplier * m->data[row*m->n_cols+i];
+	return 1;
+}
+\end{lstlisting}
+
+Esempio:
+\begin{equation*}
+\mathtt{matd\_row\_addrow\_r} = \left( 
+\begin{bmatrix}
+1 & 2 & 3 \\ 0 & 2 & 4 \\ 2 & 1 & 9
+\end{bmatrix}, \; 0, \; 1, \; 0.5
+\right) = 
+\begin{bmatrix}
+1+0\cdot 0.5 & 2+2\cdot 0.5 & 3+4\cdot 0.5 \\
+0 & 2 & 4 \\
+4 & 1 & 9
+\end{bmatrix} = 
+\begin{bmatrix}
+1 & 3 & 5 \\ 0 & 2 & 4 \\ 2 & 1 & 9
+\end{bmatrix}
+\end{equation*}
+
+
+
+\section{Solve linear systems}
+
+Risolvere il sistema di equazioni lineari:
+\begin{equation}
+\mathbf{A} \; \mathbf{x} = \mathbf{b}
+\end{equation}
+vuol dire trovare il vettore colonna incognito $\mathbf{x}$ sapendo la matrice $\mathbf{A}$ e il vettore dei termini noti $\mathbf{b}$. La soluzione è trovata in maniera esatta tramite la matrice inversa di $\mathbf{A}$:
+\begin{equation}
+\mathbf{x} = \mathbf{A}^{-1} \; \mathbf{b}
+\end{equation}
+Dal punto di vista dell'implementazione il principale problema risiede nel fatto che calcolare la matrice inversa$\mathbf{A}^{-1}$ attraverso il metodo di \textcolor{red}{Come si chiamava? (quello lentissimo esatto)} è un'operazione molto dispendiosa.
+Per questo esistono molti metodi per calcolare velocemente il vettore ignoto $\mathbf{x}$ in maniera computazionalmente efficiente.
+
+
+\subsection{Gauss-Jordan elimination}
+
+
+\subsection{LU(P) decomposition}
+
+La decomposizione LU, chiamata anche la fattorializzazione LU, si riferisce alla scomposizione di una matrice $\mathbf{A}$ in due matrici $\mathbf{L}$ e $\mathbf{U}$:
+\begin{equation}
+\mathbf{A} = \mathbf{L} \; \mathbf{U}
+\qquad \rightarrow \qquad
+\begin{bmatrix}
+A_{11} & A_{12} & A_{13} \\
+A_{21} & A_{22} & A_{23} \\
+A_{31} & A_{32} & A_{33}
+\end{bmatrix} = 
+\begin{bmatrix}
+1 & 0 & 0 \\
+L_{21} & 1 & 0 \\
+L_{31} & L_{32} & 1
+\end{bmatrix}
+\begin{bmatrix}
+U_{11} & U_{12} & U_{13} \\
+0      & U_{22} & U_{23} \\
+0      & 0      & U_{33}
+\end{bmatrix}
+\end{equation}
+
+In pratica questa fattorializzazione viene ricavata da operazioni elementari sulle righe (come lo scambio delle righe). In tal caso bisogna introdurre nell'equazione una matrice di permutazione $\mathbf{P}$ che tiene conto del cambio delle righe:
+\begin{equation}
+\mathbf{P} \; \mathbf{A} = \mathbf{L} \; \mathbf{U}
+\label{eq:LUp}
+\end{equation}
+dove $\mathbf{P}$ è una matrice ricavata dalla permutazione delle righe di una matrice identità $\mathbf{I}$, ed è calcolata dalla procedura che trova $\mathbf{L}$ e $\mathbf{U}$.
+Se una matrice $\mathbf{A}$ é quadrata (di dimensione $n\times n$) può sempre essere scomposta come $\mathbf{P} \; \mathbf{A} = \mathbf{L} \; \mathbf{U}$.
+Per trovare la decomposizione LU si usa versione modificata dell'algoritmo per l'eliminazione di Gauss. Questa implementazione richiede circa $\frac{2}{3}n^3$ operazioni a virgola mobile. Altri algoritmi richiedono funzioni ricorsive o randomizzazione.
+
+Trovare la decomposizione \eqref{eq:LUp} permette di calcolare il determinante della matrice $\mathbf{A}$, la sua inversa e, quindi, anche risolvere i sistemi di equazioni lineari.
+
+Esiste anche un'altra fattorializzazione dove non solo le righe, ma anche le colonne vengono considerate e si chiama \emph{LU Factorialization with full pivoting}.
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -10,6 +10,8 @@
 #ifndef SLAP_LUP
 #define SLAP_LUP
 
+#include "Gauss.h" // for the Gaussian elimination routines
+
 
 typedef struct _matd_lup {
 	matd *L;
@@ -50,34 +52,6 @@ int matd_setdiag(matd *m, double value)
 	return 1;
 }
 
-int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, double multiplier)
-{
-	int i = 0;
-	if(where >= m->n_rows || row >= m->n_rows){
-//		SLAP_ERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
-		return 0;
-	}
-	for(i=0; i<m->n_cols; i++) m->data[where*m->n_cols+i] += multiplier * m->data[row*m->n_cols+i];
-	return 1;
-}
-
-int matd_row_swap_r(matd *m, unsigned int row1, unsigned int row2)
-{
-	// swap two rows of matrix m
-	int i;
-	double tmp;
-	if(row1 >= m->n_rows || row2 >= m->n_rows){
-//		SLAP_ERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
-		return 0;
-	}
-	for(i=0; i<m->n_cols; i++){
-		tmp = m->data[row2*m->n_cols+i];
-		m->data[row2*m->n_cols+i] = m->data[row1*m->n_cols+i];
-		m->data[row1*m->n_cols+i] = tmp;
-	}
-	return 1;
-}
-
 
 int matd_absmaxr(matd *m, unsigned int k)
 {
@@ -98,22 +72,22 @@ int matd_absmaxr(matd *m, unsigned int k)
 matd_lup* matd_lup_solve(matd *m)
 {
 	// perform the LU(P) factorization
+	matd *L, *U, *P;
+	int j,i, pivot;
+	unsigned int num_permutations = 0;
+	double mul;
 	if(m->n_rows != m->n_cols){
 //		SLAP_ERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
 		return NULL;
 	}
-	matd *L = new_matd(m->n_rows, m->n_rows);
-	matd *U = matd_copy(m);
-	matd *P = matd_eye(m->n_rows);
-	
-	int j,i, pivot;
-	unsigned int num_permutations = 0;
-	double mul;
+	L = new_matd(m->n_rows, m->n_rows);
+	U = matd_copy(m);
+	P = matd_eye(m->n_rows);
 	
 	for(j=0; j<U->n_cols; j++){
 		// Retrieves the row with the biggest element for column (j)
 		pivot = matd_absmaxr(U, j);
-//		if(fabs(U->data[pivot][j]) < SLAP_MIN_COEF){
+//		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_MIN_COEF){ // DA PROBLEMI DI MEMORIA RUNTIME!!!!!!!
 ////			SLAP_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
 //			return NULL;
 //		}
@@ -197,14 +171,15 @@ matd *lu_solvebck(matd *U, matd *b)
 
 matd *lu_solve(matd_lup *lu, matd* b)
 {
+	matd *Pb, *x, *y;
 	if(lu->U->n_rows != b->n_rows || b->n_cols != 1){
 //		SLAP_ERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,b->n_rows,b->n_cols,lu->U->n_rows,1);
 		return NULL;
 	}
-	matd *Pb = matd_mul(lu->P, b);
+	Pb = matd_mul(lu->P, b);
 	
-	matd *y = lu_solvefwd(lu->L, Pb); // We solve L*y = P*b using forward substition
-	matd *x = lu_solvebck(lu->U, y); // We solve U*x=y
+	y = lu_solvefwd(lu->L, Pb); // We solve L*y = P*b using forward substition
+	x = lu_solvebck(lu->U, y); // We solve U*x=y
 	
 	free_mat(y);
 	free_mat(Pb);
