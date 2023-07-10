@@ -20,6 +20,10 @@ int main()
 	matd* x = lu_solve(lu, b);
 	printf("x =\n"); print_mat(x);
 	
+	printf("\nQR decomposition:\nA=Q*R\n");
+	matd_qr *qr = matd_qr_solve(A); // QUALCHE VOLTA DA ERRORE DI MEMORIA!!!!! inoltre il risultato va controllato bene!@!!!!!
+	print_mat(qr->Q);
+	print_mat(qr->R);
 	
 	printf("\n\n\nGauss elimination of A:\n");
 	print_mat(matd_GaussJordan(A));

@@ -17,6 +17,17 @@ int matd_row_smul_r(matd *m, unsigned int row, double num)
 	return 1;
 }
 
+int matd_col_smul_r(matd *m, unsigned int col, double num)
+{
+	int i;
+	if(col >= m->n_cols){
+//		SLAP_FERROR(CANNOT_COL_MULTIPLY, row, m->num_rows);
+		return 0;
+	}
+	for(i=0; i<m->n_rows; i++) m->data[i*m->n_cols+col] *= num;
+	return 1;
+}
+
 
 int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, double multiplier)
 {

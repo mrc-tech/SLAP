@@ -17,6 +17,7 @@
 #include "core/strmod.h" // matrix structure modification
 #include "solvers/Gauss.h"
 #include "solvers/LUp.h" // LU(P) factorialization with partial pivoting
+#include "solvers/QR.h" // QR decomposition
 
 
 
