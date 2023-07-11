@@ -90,6 +90,13 @@ matd* matd_init(unsigned int num_rows, unsigned int num_cols, ...)
 //	}
 //	va_end(valist); // clean memory reserved for valist
 //}
+matd* matd_init2(unsigned int num_rows, unsigned int num_cols, double data[])
+{
+	int i;
+	matd *m = new_matd(num_rows,num_cols);
+	for (i=0; i<num_rows*num_cols; i++) m->data[i] = data[i];
+	return m;
+}
 
 
 /*

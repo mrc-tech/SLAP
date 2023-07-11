@@ -19,7 +19,8 @@ int main()
 	
 	printf("matd_transpose : ");
 	A = matd_init(3,3, 1.,2.,3.,4.,5.,6.,7.,8.,9.);
-	tmp = matd_init(3,3, 1.,4.,7.,2.,5.,8.,3.,6.,9.);
+//	tmp = matd_init(3,3, 1.,4.,7.,2.,5.,8.,3.,6.,9.);
+	tmp = matd_init2(3,3, (double[]){1,4,7,2,5,8,3,6,9});
 	if(matd_equal(matd_transpose(A),tmp,0))				printf("passed\n"); else printf("NOT PASSED!!!\n");
 	
 	printf("matd_smul      : ");
