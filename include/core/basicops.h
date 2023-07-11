@@ -56,7 +56,7 @@ matd* matd_transpose(matd* matrix)
 	int r,c;
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
-			m->data[c * m->n_cols + r] = matrix->data[r * m->n_cols + c];
+			m->data[r * m->n_cols + c] = matrix->data[c * m->n_rows + r];
 		}
 	}
 	return m;
@@ -65,15 +65,17 @@ matd* matd_transpose(matd* matrix)
 int matd_transpose_r(matd* m)
 {
 	// change the matrix by reference ("_r")
-	// FUNZIONA SOLO SULLE MATRICI QUADRATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	int r,c;
-	for(r=0; r<m->n_rows; r++){
-		for(c=r; c<m->n_cols; c++){ // only the upper triangular part
-			SWAP(m->data[r * m->n_cols + c], m->data[c * m->n_cols + r])
-		}
+	// without swap dimensions this is a conversion between row-major and column-major
+	int i, j;
+	double temp;
+	double *tmp = (double*) malloc(m->n_rows*m->n_cols * sizeof(double)); // allocate temporary array
+	for(i=0; i<m->n_rows*m->n_cols; i++){
+		j = m->n_cols * (i % m->n_rows) + (i / m->n_rows);
+		tmp[i] = m->data[j];
 	}
-	// change rows and cols (data size is the same = rows*cols)
-	SWAP(m->n_rows, m->n_cols)
+	free(m->data); // free the previous matrix
+	m->data = tmp; // set the new matrix data
+	temp = m->n_cols; m->n_cols = m->n_rows; m->n_rows = temp; // swap dimensions
 	return 1;
 }
 

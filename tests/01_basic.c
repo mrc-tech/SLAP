@@ -18,7 +18,7 @@ int main()
 	printf("B = \n");
 	print_mat(B);
 	printf("\n");
-//	matd *test = matd_transpose(B); // QUESTO COMANDO DA PROBLEMI ALLA RIGA 24 !!!!!
+	matd *test = matd_transpose(B); // QUESTO COMANDO DA PROBLEMI ALLA RIGA 24 !!!!!
 	matd_transpose_r(B); print_mat(B); // questo funziona
 	
 	printf("matd_equal: %d\n", matd_equal(A,B, 0));
