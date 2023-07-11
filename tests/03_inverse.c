@@ -8,8 +8,10 @@
 
 int main()
 {
-	matd *A = matd_init(3,3, 1.,3.,3.,4.,5.,6.,7.,8.,9.);
-	matd *b = matd_init(3,1, 1.,1.,1.);
+//	matd *A = matd_init(3,3, 1.,3.,3.,4.,5.,6.,7.,8.,9.);
+//	matd *b = matd_init(3,1, 1.,1.,1.);
+	matd *A = matd_init2(3,3, (double[]){1,3,3,4,5,6,7,8,9});
+	matd *b = matd_init2(3,1, (double[]){1,1,1});
 	
 	printf("A =\n"); print_mat(A);
 	printf("b =\n"); print_mat(b);
