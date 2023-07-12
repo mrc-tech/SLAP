@@ -75,8 +75,8 @@ void main()
 	printf("Solve  A * x = b  for x\n\n");
 	
 	printf("LU(P) decomposition:\n");
-	matd_lup *lu = matd_lup_solve(A);
-	matd* x = lu_solve(lu, b);
+	matd_lup *lu = matd_lup_solve(A); // LU(P) decomposition of matrix A
+	matd* x = lu_solve(lu, b); // solve linear system using LU decomposition
 	printf("x =\n"); print_mat(x);
 	
 	printf("\n\n\nGauss elimination of A:\n");
