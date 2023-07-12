@@ -32,9 +32,9 @@ void matd_qr_free(matd_qr *qr)
 
 double matd_l2norm(matd* m)
 {
-	if(m->n_cols != 1 || m->n_rows != 1) return -1; // only vectors
-	double doublesum = 0.0;
 	int i;
+	double doublesum = 0.0;
+	if(m->n_cols != 1 || m->n_rows != 1) return -1; // only vectors
 	for(i=0; i<MAX(m->n_rows,m->n_cols); i++){
 		doublesum += (m->data[i]*m->data[i]);
 	}

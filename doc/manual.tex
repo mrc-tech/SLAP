@@ -517,11 +517,89 @@ Per questo esistono molti metodi per calcolare velocemente il vettore ignoto $\m
 
 \subsubsection{Backward substitution}
 
-\textcolor{red}{Da scrivere da nml}
+La sostituzione all'indietro è la tecnica per la quale si calcola la soluzione del sistema lineare $\mathbf{U}\mathbf{x}=\mathbf{b}$ dove $\mathbf{U}$ è una matrice triangolare superiore:
+\begin{equation}
+\mathbf{U} \; \mathbf{x} = \mathbf{b}
+\qquad \rightarrow \qquad
+\begin{bmatrix}
+U_{11} & U_{12} & \cdots & U_{1n} \\
+0      & U_{22} & \cdots & U_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+0      & 0      & \cdots & U_{nn}
+\end{bmatrix}
+\begin{bmatrix}
+x_1 \\ x_2 \\ \vdots \\ x_n
+\end{bmatrix} = 
+\begin{bmatrix}
+b_1 \\ b_2 \\ \vdots \\ b_n
+\end{bmatrix}
+\end{equation}
+Si noti che l'ultimo termine del vettore $\mathbf{x}$ è facilmente calcolabile dall'ultima equazione (quella corrispondente alla $n$-esima riga). Questa equazione permette di trovare $x_n$ e poi si procede \emph{all'indietro} per trovare le altre componenti del vettore delle incognite $\mathbf{x}$. Per questo motivo è chiamato \emph{metodo della sostituzione all'indietro}.
+\begin{equation}
+x_n = \frac{b_n}{U_{nn}} \qquad
+x_{n-1} = \frac{b_{n-1} - U_{(n-1)n} x_n}{U_{(n-1)(n-1)}} \qquad
+x_i = \frac{b_i - \sum_{k=i}^{n-1} U_{ik} x_k}{U_{ii}}
+\end{equation}
+
+\begin{lstlisting}
+matd *lu_solvebck(matd *U, matd *b)
+{
+	matd *x = new_matd(U->n_cols, 1);
+	int i = U->n_cols, j;
+	double tmp;
+	while(i-- > 0){
+		tmp = b->data[i*b->n_cols];
+		for(j=i; j<U->n_cols; j++) tmp -= U->data[i*U->n_cols+j] * x->data[j*x->n_cols];
+		x->data[i*x->n_cols] = tmp / U->data[i*U->n_cols+i];
+	}
+	return x;
+}
+\end{lstlisting}
+
 
 \subsubsection{Forward substitution}
 
-\textcolor{red}{Da scrivere da nml}
+Questo è il caso opposto alla sostituzione all'indietro, ovvero un metodo per trovare la soluzione del sistema lineare $\mathbf{L}\mathbf{x}=\mathbf{b}$ dove $\mathbf{L}$ è, al contrario del caso precedente, una matrice triangolare inferiore.
+\begin{equation}
+\mathbf{L} \; \mathbf{x} = \mathbf{b}
+\qquad \rightarrow \qquad
+\begin{bmatrix}
+L_{11} & 0      & \cdots & 0      \\
+L_{21} & L_{22} & \cdots & 0      \\
+\vdots & \vdots & \ddots & \vdots \\
+L_{n1} & L_{n2} & \cdots & L_{nn}
+\end{bmatrix}
+\begin{bmatrix}
+x_1 \\ x_2 \\ \vdots \\ x_n
+\end{bmatrix} = 
+\begin{bmatrix}
+b_1 \\ b_2 \\ \vdots \\ b_n
+\end{bmatrix}
+\end{equation}
+La sostituzione in avanti risulta essere, quindi, pari a:
+\begin{equation}
+x_1 = \frac{b_1}{L_{11}} \qquad
+x_2 = \frac{b_2 - L_{21} x_1}{L_{22}} \qquad
+x_i = \frac{b_i - \sum_{k=1}^{i-1} L_{ik} x_k}{L_{ii}}
+\end{equation}
+
+\begin{lstlisting}
+matd *lu_solvefwd(matd *L, matd *b)
+{
+	matd *x = new_matd(L->n_cols, 1);
+	int i,j;
+	double tmp;
+	for(i=0; i<L->n_cols; i++){
+		tmp = b->data[i*b->n_cols];
+		for(j=0; j<i; j++){
+			tmp -= L->data[i*L->n_cols+j] * x->data[j*x->n_cols];
+		}
+		x->data[i*x->n_cols] = tmp / L->data[i*L->n_cols+i];
+	}
+	return x;
+}
+\end{lstlisting}
+
 
 \subsection{LU(P) decomposition}
 
