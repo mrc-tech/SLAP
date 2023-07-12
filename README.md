@@ -65,7 +65,6 @@ void main()
 #include <stdio.h>
 #include "SLAP.h"
 
-
 void main()
 {
 	matd *A = matd_init2(3,3, (double[]){1,3,3,4,5,6,7,8,9});
