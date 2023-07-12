@@ -77,7 +77,7 @@ void main()
 	
 	printf("\n\n\nGauss elimination of A:\n");
 	print_mat(matd_GaussJordan(A));
-  
+	
 	free_mat(A); free_mat(b);
 }
 ```
