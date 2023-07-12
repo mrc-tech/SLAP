@@ -52,10 +52,7 @@ void main()
 	print_mat(matd_mul(A,I)); // A * I
 	print_mat(matd_mul(A,A)); // A * A
 	
-	free_mat(A);
-	free_mat(I);
-	free_mat(u);
-	free_mat(v);
+	free_mat(A); free_mat(I); free_mat(u); free_mat(v);
 }
 ```
 
