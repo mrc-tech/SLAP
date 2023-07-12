@@ -16,7 +16,8 @@ Simple Linear Algebra Package (SLAP)
 
 void main()
 {
-	matd *A = matd_init2(3,3, (double[]){1,2,3,4,5,6,7,8,9}); // allocate the matrix structure and set the values
+	// allocate the matrix structure and set the values:
+	matd *A = matd_init2(3,3, (double[]){1,2,3,4,5,6,7,8,9});
   
 	printf("A = \n"); print_mat(A); // print the matrix
 	
