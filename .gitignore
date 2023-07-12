@@ -58,3 +58,6 @@ dkms.conf
 *.synctex.gz
 *.blg
 *.bbl
+
+# local folders
+/_LOCAL
