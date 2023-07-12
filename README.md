@@ -41,8 +41,8 @@ void main()
 	print_mat(matd_smul(A, 2.5)); // print 2.5 * A
 	
 	// vector-vector multiplication:
-	u = new_matd(1,3); u = matd_init2(1,3, (double[]){1,2,3}); // row vector
-	v = new_matd(1,3); v = matd_init2(1,3, (double[]){2,2,2}); // row vector
+	u = matd_init2(1,3, (double[]){1,2,3}); // row vector
+	v = matd_init2(1,3, (double[]){2,2,2}); // row vector
 	printf("u * v^T = ");  print_mat(matd_mul(u, matd_transpose(v))); // scalar product
 	printf("u^T * v =\n"); print_mat(matd_mul(matd_transpose(u), v)); // tensor product
 	
