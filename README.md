@@ -1,6 +1,6 @@
 <!--# SLAP
 Simple Linear Algebra Package (SLAP) -->
-![cover](img/cover/cover.png)
+![cover](doc/cover.png)
 
 ## Features
 - Written in `C` for maximum compatibility among various systems
