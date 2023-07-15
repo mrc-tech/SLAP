@@ -6,7 +6,7 @@
 
 
 
-int matd_row_smul_r(matd *m, unsigned int row, double num)
+int matd_row_smul_r(matd *m, unsigned int row, TYPE num)
 {
 	int i;
 	if(row >= m->n_rows){
@@ -17,7 +17,7 @@ int matd_row_smul_r(matd *m, unsigned int row, double num)
 	return 1;
 }
 
-int matd_col_smul_r(matd *m, unsigned int col, double num)
+int matd_col_smul_r(matd *m, unsigned int col, TYPE num)
 {
 	int i;
 	if(col >= m->n_cols){
@@ -29,7 +29,7 @@ int matd_col_smul_r(matd *m, unsigned int col, double num)
 }
 
 
-int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, double multiplier)
+int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, TYPE multiplier)
 {
 	int i = 0;
 	if(where >= m->n_rows || row >= m->n_rows){
@@ -45,7 +45,7 @@ int matd_row_swap_r(matd *m, unsigned int row1, unsigned int row2)
 {
 	// swap two rows of matrix m
 	int i;
-	double tmp;
+	TYPE tmp;
 	if(row1 >= m->n_rows || row2 >= m->n_rows){
 //		SLAP_ERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
 		return 0;
@@ -75,8 +75,8 @@ int matd_pivot_id(matd *m, unsigned int col, unsigned int row)
 int matd_pivot_maxid(matd *m, unsigned int col, unsigned int row)
 {
 	int i, maxi;
-	double micol;
-	double max = fabs(m->data[row*m->n_cols+col]);
+	TYPE micol;
+	TYPE max = fabs(m->data[row*m->n_cols+col]);
 	maxi = row;
 	for(i=row; i<m->n_rows; i++){
 		micol = fabs(m->data[i*m->n_cols+col]);

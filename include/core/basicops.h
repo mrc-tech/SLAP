@@ -26,7 +26,7 @@ void print_mat(matd* matrix)
 }
 
 
-short matd_equal(matd* m1, matd* m2, double tolerance)
+short matd_equal(matd* m1, matd* m2, TYPE tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
 	int i;
@@ -67,8 +67,8 @@ int matd_transpose_r(matd* m)
 	// change the matrix by reference ("_r")
 	// without swap dimensions this is a conversion between row-major and column-major
 	int i, j;
-	double temp;
-	double *tmp = (double*) malloc(m->n_rows*m->n_cols * sizeof(double)); // allocate temporary array
+	TYPE temp;
+	TYPE *tmp = (TYPE*) malloc(m->n_rows*m->n_cols * sizeof(TYPE)); // allocate temporary array
 	for(i=0; i<m->n_rows*m->n_cols; i++){
 		j = m->n_cols * (i % m->n_rows) + (i / m->n_rows);
 		tmp[i] = m->data[j];
@@ -81,7 +81,7 @@ int matd_transpose_r(matd* m)
 
 
 
-int matd_smul_r(matd *m, double num)
+int matd_smul_r(matd *m, TYPE num)
 {
 	// multiply matrix by a scalar (by reference)
 	int i;
@@ -90,7 +90,7 @@ int matd_smul_r(matd *m, double num)
 	return 1;
 }
 
-matd* matd_smul(matd *m, double num)
+matd* matd_smul(matd *m, TYPE num)
 {
 	// multiply matrix by a scalar
 	matd* res = matd_copy(m);

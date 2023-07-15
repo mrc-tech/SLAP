@@ -66,7 +66,7 @@ double *matd_getcol_array(matd *m, unsigned int col)
 	int i;
 	double *res;
 	if(col >= m->n_cols) return NULL;
-	res = (double*)malloc(m->n_rows * sizeof(double));
+	res = (TYPE*)malloc(m->n_rows * sizeof(TYPE));
 	for(i=0; i<m->n_rows; i++) res[i] = m->data[i*m->n_cols+col];
 	return res;
 }
@@ -87,10 +87,10 @@ matd *matd_getrow(matd *m, unsigned int row)
 double *matd_getrow_array(matd *m, unsigned int row)
 {
 	// return a row via array
-	double *res;
+	TYPE *res;
 	if(row >= m->n_rows) return NULL;
-	res = (double*)malloc(m->n_cols * sizeof(double));
-	memcpy(&res, &m->data[row*m->n_cols], m->n_cols * sizeof(double));
+	res = (TYPE*)malloc(m->n_cols * sizeof(TYPE));
+	memcpy(&res, &m->data[row*m->n_cols], m->n_cols * sizeof(TYPE));
 	return res;
 }
 

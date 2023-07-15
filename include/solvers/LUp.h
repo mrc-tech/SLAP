@@ -43,7 +43,7 @@ void matd_lup_free(matd_lup* lu)
 }
 
 
-int matd_setdiag(matd *m, double value)
+int matd_setdiag(matd *m, TYPE value)
 {
 	// Sets all elements of the matrix to given value
 	int i;
@@ -57,7 +57,7 @@ int matd_absmaxr(matd *m, unsigned int k)
 {
 	// Finds the id of the max on the column (starting from k -> num_rows)
 	int i;
-	double max = m->data[k*m->n_cols+k];
+	TYPE max = m->data[k*m->n_cols+k];
 	int maxIdx = k;
 	for(i=k+1; i<m->n_rows; i++){
 		if(fabs(m->data[i*m->n_cols+k]) > max){
@@ -75,7 +75,7 @@ matd_lup* matd_lup_solve(matd *m)
 	matd *L, *U, *P;
 	int j,i, pivot;
 	unsigned int num_permutations = 0;
-	double mul;
+	TYPE mul;
 	if(m->n_rows != m->n_cols){
 //		SLAP_ERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
 		return NULL;
@@ -130,7 +130,7 @@ matd *lu_solvefwd(matd *L, matd *b)
 {
 	matd *x = new_matd(L->n_cols, 1);
 	int i,j;
-	double tmp;
+	TYPE tmp;
 	for(i=0; i<L->n_cols; i++){
 		tmp = b->data[i*b->n_cols];
 		for(j=0; j<i; j++){
@@ -158,7 +158,7 @@ matd *lu_solvebck(matd *U, matd *b)
 {
 	matd *x = new_matd(U->n_cols, 1);
 	int i = U->n_cols, j;
-	double tmp;
+	TYPE tmp;
 	while(i-- > 0){
 		tmp = b->data[i*b->n_cols];
 		for(j=i; j<U->n_cols; j++) tmp -= U->data[i*U->n_cols+j] * x->data[j*x->n_cols];

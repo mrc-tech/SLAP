@@ -20,7 +20,7 @@
 typedef struct _matd{
 	unsigned int n_rows;
 	unsigned int n_cols;
-	double *data; // row-major matrix data array
+	TYPE *data; // row-major matrix data array
 } matd;
 
 
@@ -60,8 +60,8 @@ void free_mat(matd* matrix)
 }
 
 
-double matd_get(matd* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
-void   matd_set(matd* M, unsigned int row, unsigned int col, double val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+TYPE matd_get(matd* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+void matd_set(matd* M, unsigned int row, unsigned int col, TYPE val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
 
 unsigned int matd_size(matd* M) { return M->n_rows * M->n_cols; }
 
@@ -90,7 +90,7 @@ unsigned int matd_size(matd* M) { return M->n_rows * M->n_cols; }
 ////	}
 ////	va_end(valist); // clean memory reserved for valist
 ////}
-matd* matd_init2(unsigned int num_rows, unsigned int num_cols, double data[])
+matd* matd_init2(unsigned int num_rows, unsigned int num_cols, TYPE data[])
 {
 	int i;
 	matd *m = new_matd(num_rows,num_cols);

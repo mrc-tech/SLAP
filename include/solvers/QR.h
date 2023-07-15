@@ -33,7 +33,7 @@ void matd_qr_free(matd_qr *qr)
 double matd_l2norm(matd* m)
 {
 	int i;
-	double doublesum = 0.0;
+	TYPE doublesum = 0.0;
 	if(m->n_cols != 1 || m->n_rows != 1) return -1; // only vectors
 	for(i=0; i<MAX(m->n_rows,m->n_cols); i++){
 		doublesum += (m->data[i]*m->data[i]);
@@ -50,7 +50,7 @@ matd_qr* matd_qr_solve(matd *m)
 	matd *R = new_matd(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
 	
 	int j, k;
-	double l2norm;
+	TYPE l2norm;
 	matd *rkj = new_matd(1,1); // scalar
 	matd *aj, *qk;
 	for(j=0; j<m->n_cols; j++){
