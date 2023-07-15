@@ -59,5 +59,9 @@ dkms.conf
 *.blg
 *.bbl
 
+# cover files
+img/cover/Image.h
+img/cover/cover.cpp
+
 # local folders
 /_LOCAL
