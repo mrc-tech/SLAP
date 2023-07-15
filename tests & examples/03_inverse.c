@@ -8,27 +8,27 @@
 
 int main()
 {
-//	matd *A = matd_init(3,3, 1.,3.,3.,4.,5.,6.,7.,8.,9.);
-//	matd *b = matd_init(3,1, 1.,1.,1.);
-	matd *A = matd_init2(3,3, (double[]){1,3,3,4,5,6,7,8,9});
-	matd *b = matd_init2(3,1, (double[]){1,1,1});
+//	mat *A = mat_init(3,3, 1.,3.,3.,4.,5.,6.,7.,8.,9.);
+//	mat *b = mat_init(3,1, 1.,1.,1.);
+	mat *A = mat_init2(3,3, (double[]){1,3,3,4,5,6,7,8,9});
+	mat *b = mat_init2(3,1, (double[]){1,1,1});
 	
-	printf("A =\n"); print_mat(A);
-	printf("b =\n"); print_mat(b);
+	printf("A =\n"); mat_print(A);
+	printf("b =\n"); mat_print(b);
 	printf("Solve  A * x = b  for x\n\n");
 	
 	printf("LU(P) decomposition:\n");
-	matd_lup *lu = matd_lup_solve(A);
-	matd* x = lu_solve(lu, b);
-	printf("x =\n"); print_mat(x);
+	mat_lup *lu = mat_lup_solve(A);
+	mat* x = solve_lu(lu, b);
+	printf("x =\n"); mat_print(x);
 	
 	printf("\nQR decomposition:\nA=Q*R\n");
-	matd_qr *qr = matd_qr_solve(A); // QUALCHE VOLTA DA ERRORE DI MEMORIA!!!!! inoltre il risultato va controllato bene!@!!!!!
-	print_mat(qr->Q);
-	print_mat(qr->R);
+	mat_qr *qr = mat_qr_solve(A); // QUALCHE VOLTA DA ERRORE DI MEMORIA!!!!! inoltre il risultato va controllato bene!@!!!!!
+	mat_print(qr->Q);
+	mat_print(qr->R);
 	
 	printf("\n\n\nGauss elimination of A:\n");
-	print_mat(matd_GaussJordan(A));
+	mat_print(mat_GaussJordan(A));
 	
 	
 	return 0;

@@ -7,30 +7,30 @@
 #include "Gauss.h"
 
 
-typedef struct _matd_qr {
-	matd *Q;
-	matd *R;
-} matd_qr;
+typedef struct _mat_qr {
+	mat *Q;
+	mat *R;
+} mat_qr;
 
 
-matd_qr* matd_qr_new()
+mat_qr* mat_qr_new()
 {
-	matd_qr *qr = malloc(sizeof(*qr));
+	mat_qr *qr = malloc(sizeof(*qr));
 	MEM_CHECK(qr);
 	return qr;
 }
 
-void matd_qr_free(matd_qr *qr)
+void mat_qr_free(mat_qr *qr)
 {
 	if(qr){
-		if(qr->Q) free_mat(qr->Q);
-		if(qr->R) free_mat(qr->R);
+		if(qr->Q) mat_free(qr->Q);
+		if(qr->R) mat_free(qr->R);
 		free(qr);
 	}
 }
 
 
-double matd_l2norm(matd* m)
+double mat_l2norm(mat* m)
 {
 	int i;
 	TYPE doublesum = 0.0;
@@ -43,37 +43,37 @@ double matd_l2norm(matd* m)
 
 
 
-matd_qr* matd_qr_solve(matd *m)
+mat_qr* mat_qr_solve(mat *m)
 {
-	matd_qr *qr = matd_qr_new();
-	matd *Q = matd_copy(m);
-	matd *R = new_matd(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
+	mat_qr *qr = mat_qr_new();
+	mat *Q = mat_copy(m);
+	mat *R = mat_new(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
 	
 	int j, k;
 	TYPE l2norm;
-	matd *rkj = new_matd(1,1); // scalar
-	matd *aj, *qk;
+	mat *rkj = mat_new(1,1); // scalar
+	mat *aj, *qk;
 	for(j=0; j<m->n_cols; j++){
 		rkj->data[0] = 0.0;
-		aj = matd_getcol(m, j);
+		aj = mat_getcol(m, j);
 		for(k=0; k<j; k++){
 //			rkj = nml_vect_dot(m, j, Q, k);
-			rkj = matd_mul(matd_transpose(matd_getcol(m,j)), matd_getcol(Q,k)); // scalar product
+			rkj = mat_mul(mat_transpose(mat_getcol(m,j)), mat_getcol(Q,k)); // scalar product
 			R->data[k*R->n_cols+j] = rkj->data[0];
-			qk = matd_getcol(Q, k);
-			matd_col_smul_r(qk, 0, rkj->data[0]);
-			matd_sub_r(aj, qk);
-			free_mat(qk);
+			qk = mat_getcol(Q, k);
+			mat_col_smul_r(qk, 0, rkj->data[0]);
+			mat_sub_r(aj, qk);
+			mat_free(qk);
 		}
 		for(k=0; k<Q->n_rows; k++) Q->data[k*Q->n_cols+j] = aj->data[k*aj->n_cols];
-		l2norm = matd_l2norm(matd_getcol(Q, j));
-		matd_col_smul_r(Q, j, 1/l2norm);
+		l2norm = mat_l2norm(mat_getcol(Q, j));
+		mat_col_smul_r(Q, j, 1/l2norm);
 		R->data[j*R->n_cols+j] = l2norm;
-		free_mat(aj);
+		mat_free(aj);
 	}
 	qr->Q = Q;
 	qr->R = R;
-	free_mat(rkj);
+	mat_free(rkj);
 	return qr;
 }
 

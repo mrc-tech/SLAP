@@ -13,20 +13,20 @@
 
 
 
-void print_mat(matd* matrix)
+void mat_print(mat* matrix)
 {
 	// FARE IN MODO CHE STAMPA COME UNA TABELLA PREORDINATA DAL NUMERO DELLE CIFRE (tutto compatto)
 	int r,c;
 	for(r=0; r<matrix->n_rows; r++){
 		for(c=0; c<matrix->n_cols; c++){
-			printf("%lf\t", matd_get(matrix, r,c));
+			printf("%lf\t", mat_get(matrix, r,c));
 		}
 		printf("\n");
 	}
 }
 
 
-short matd_equal(matd* m1, matd* m2, TYPE tolerance)
+short mat_equal(mat* m1, mat* m2, TYPE tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
 	int i;
@@ -38,21 +38,21 @@ short matd_equal(matd* m1, matd* m2, TYPE tolerance)
 }
 
 
-matd* matd_copy(matd *m)
+mat* mat_copy(mat *m)
 {
 	// Dynamically allocates a new Matrix
 	// Initialise the matrix by copying another one
-	matd *res  = new_matd(m->n_rows, m->n_cols);
+	mat *res  = mat_new(m->n_rows, m->n_cols);
 	int i;
 	for(i=0; i<res->n_rows*res->n_cols; i++) res->data[i] = m->data[i];
 	return res;
 }
 
 
-matd* matd_transpose(matd* matrix)
+mat* mat_transpose(mat* matrix)
 {
 	// QUALCOSA NON MI CONVINCE CON LA GESTIONE DELLA MEMORIA!!!!
-	matd *m = new_matd(matrix->n_cols, matrix->n_rows); // return matrix
+	mat *m = mat_new(matrix->n_cols, matrix->n_rows); // return matrix
 	int r,c;
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
@@ -62,7 +62,7 @@ matd* matd_transpose(matd* matrix)
 	return m;
 }
 
-int matd_transpose_r(matd* m)
+int mat_transpose_r(mat* m)
 {
 	// change the matrix by reference ("_r")
 	// without swap dimensions this is a conversion between row-major and column-major
@@ -81,7 +81,7 @@ int matd_transpose_r(matd* m)
 
 
 
-int matd_smul_r(matd *m, TYPE num)
+int mat_smul_r(mat *m, TYPE num)
 {
 	// multiply matrix by a scalar (by reference)
 	int i;
@@ -90,16 +90,16 @@ int matd_smul_r(matd *m, TYPE num)
 	return 1;
 }
 
-matd* matd_smul(matd *m, TYPE num)
+mat* mat_smul(mat *m, TYPE num)
 {
 	// multiply matrix by a scalar
-	matd* res = matd_copy(m);
-	matd_smul_r(res,num);
+	mat* res = mat_copy(m);
+	mat_smul_r(res,num);
 	return res;
 }
 
 
-int matd_add_r(matd *m1, matd *m2)
+int mat_add_r(mat *m1, mat *m2)
 {
 	// reference version (return value in matrix m1)
 	int i;
@@ -112,14 +112,14 @@ int matd_add_r(matd *m1, matd *m2)
 	return 1;
 }
 
-matd* matd_add(matd *m1, matd *m2)
+mat* mat_add(mat *m1, mat *m2)
 {
-	matd *m = matd_copy(m1);
-	if(!matd_add_r(m, m2)) { free_mat(m); return NULL; }
+	mat *m = mat_copy(m1);
+	if(!mat_add_r(m, m2)) { mat_free(m); return NULL; }
 	return m;
 }
 
-int matd_sub_r(matd *m1, matd *m2)
+int mat_sub_r(mat *m1, mat *m2)
 {
 	// reference version (return value in matrix m1)
 	int i;
@@ -132,25 +132,25 @@ int matd_sub_r(matd *m1, matd *m2)
 	return 1;
 }
 
-matd* matd_sub(matd *m1, matd *m2)
+mat* mat_sub(mat *m1, mat *m2)
 {
-	matd *m = matd_copy(m1);
-	if(!matd_sub_r(m, m2)) { free_mat(m); return NULL; }
+	mat *m = mat_copy(m1);
+	if(!mat_sub_r(m, m2)) { mat_free(m); return NULL; }
 	return m;
 }
 
 
 
-matd* matd_mul(matd* m1, matd* m2)
+mat* mat_mul(mat* m1, mat* m2)
 {
 	// multiply two matrices
-	matd *m;
+	mat *m;
 	int r, c, i;
 	if(!(m1->n_cols == m2->n_rows)){
 //		SLAP_ERROR(CANNOT_MULTIPLY);
 		return NULL;
 	}
-	m = new_matd(m1->n_rows, m2->n_cols);
+	m = mat_new(m1->n_rows, m2->n_cols);
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
 			for(i=0; i<m1->n_cols; i++){
@@ -165,11 +165,11 @@ matd* matd_mul(matd* m1, matd* m2)
 
 
 
-matd* matd_eye(unsigned int size)
+mat* mat_eye(unsigned int size)
 {
 	// identity square matrix
 	int i;
-	matd *m = new_matd(size, size);
+	mat *m = mat_new(size, size);
 	for(i=0; i<m->n_rows; i++) m->data[i*m->n_cols+i] = 1.0;
 	return m;
 }

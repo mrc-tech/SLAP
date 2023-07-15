@@ -6,43 +6,43 @@
 int main()
 {
 	FILE *f;
-	matd *A = new_matd(3,3); // double matrix (3x3)
-	matd *B = new_matd(4,3); // 4 rows, 3 cols
+	mat *A = mat_new(3,3); // double matrix (3x3)
+	mat *B = mat_new(4,3); // 4 rows, 3 cols
 	
-	matd_set(A, 0,0, 2); // assign values on the main diagonal
-	matd_set(A, 1,1, 4);
-	matd_set(A, 2,2, 8);
+	mat_set(A, 0,0, 2); // assign values on the main diagonal
+	mat_set(A, 1,1, 4);
+	mat_set(A, 2,2, 8);
 	printf("A = \n");
-	print_mat(A); // print the matrix
-	matd_set(B, 0,0, 1); matd_set(B, 0,1, 2); matd_set(B, 0,2, 3); matd_set(B, 1,0, 4); matd_set(B, 1,1, 5); matd_set(B, 1,2, 6); matd_set(B, 2,0, 7); 
+	mat_print(A); // print the matrix
+	mat_set(B, 0,0, 1); mat_set(B, 0,1, 2); mat_set(B, 0,2, 3); mat_set(B, 1,0, 4); mat_set(B, 1,1, 5); mat_set(B, 1,2, 6); mat_set(B, 2,0, 7); 
 	printf("B = \n");
-	print_mat(B);
+	mat_print(B);
 	printf("\n");
-	matd *test = matd_transpose(B); // QUESTO COMANDO DA PROBLEMI ALLA RIGA 24 !!!!!
-	matd_transpose_r(B); print_mat(B); // questo funziona
+	mat *test = mat_transpose(B); // QUESTO COMANDO DA PROBLEMI ALLA RIGA 24 !!!!!
+	mat_transpose_r(B); mat_print(B); // questo funziona
 	
-	printf("matd_equal: %d\n", matd_equal(A,B, 0));
-	B = new_matd(3,3); matd_set(B,0,0,2); matd_set(B,1,1,4); matd_set(B,2,2,8); // DA PROBLEMI SE SI FA LA TRASPOSTA DI B !!!!!!
-	printf("matd_equal: %d\n", matd_equal(A,B, 0)); // exactly equal
-	printf("matd_equal: %d\n", matd_equal(A,B, 1e-20)); // almost equal
+	printf("matd_equal: %d\n", mat_equal(A,B, 0));
+	B = mat_new(3,3); mat_set(B,0,0,2); mat_set(B,1,1,4); mat_set(B,2,2,8); // DA PROBLEMI SE SI FA LA TRASPOSTA DI B !!!!!!
+	printf("matd_equal: %d\n", mat_equal(A,B, 0)); // exactly equal
+	printf("matd_equal: %d\n", mat_equal(A,B, 1e-20)); // almost equal
 	
-	free_mat(A);
-	free_mat(B);
+	mat_free(A);
+	mat_free(B);
 	
 	f = fopen("matrix.txt","r");
-	A = matd_fromfile(f);
+	A = mat_fromfile(f);
 	fclose(f);
 	
 	printf("A(from file) = \n");
-	print_mat(A);
-	matd *C = matd_transpose(A);
+	mat_print(A);
+	mat *C = mat_transpose(A);
 	printf("A^(T) = \n");
-	print_mat(C);
-	printf("matd_equal: %d\n", matd_equal(A,matd_transpose(C), 0));
-	A = matd_remcol(A, 1);
-	print_mat(A);
-	A = matd_remrow(A, 1);
-	print_mat(A);
+	mat_print(C);
+	printf("matd_equal: %d\n", mat_equal(A,mat_transpose(C), 0));
+	A = mat_remcol(A, 1);
+	mat_print(A);
+	A = mat_remrow(A, 1);
+	mat_print(A);
 	
 	
 	

@@ -13,17 +13,17 @@
 #include "Gauss.h" // for the Gaussian elimination routines
 
 
-typedef struct _matd_lup {
-	matd *L;
-	matd *U;
-	matd *P;
+typedef struct _mat_lup {
+	mat *L;
+	mat *U;
+	mat *P;
 	unsigned int num_permutations; // useful when computing the determinant
-} matd_lup;
+} mat_lup;
 
 
-matd_lup* matd_lup_new(matd *L, matd *U, matd *P, unsigned int num_permutations)
+mat_lup* mat_lup_new(mat *L, mat *U, mat *P, unsigned int num_permutations)
 {
-	matd_lup *m = malloc(sizeof(*m));
+	mat_lup *m = malloc(sizeof(*m));
 	MEM_CHECK(m);
 	m->L = L;
 	m->U = U;
@@ -32,18 +32,18 @@ matd_lup* matd_lup_new(matd *L, matd *U, matd *P, unsigned int num_permutations)
 	return m;
 }
 
-void matd_lup_free(matd_lup* lu)
+void mat_lup_free(mat_lup* lu)
 {
 	if(lu){
-		free_mat(lu->L);
-		free_mat(lu->U);
-		free_mat(lu->P);
+		mat_free(lu->L);
+		mat_free(lu->U);
+		mat_free(lu->P);
 		free(lu);
 	}
 }
 
 
-int matd_setdiag(matd *m, TYPE value)
+int mat_setdiag(mat *m, TYPE value)
 {
 	// Sets all elements of the matrix to given value
 	int i;
@@ -53,7 +53,7 @@ int matd_setdiag(matd *m, TYPE value)
 }
 
 
-int matd_absmaxr(matd *m, unsigned int k)
+int mat_absmaxr(mat *m, unsigned int k)
 {
 	// Finds the id of the max on the column (starting from k -> num_rows)
 	int i;
@@ -69,10 +69,10 @@ int matd_absmaxr(matd *m, unsigned int k)
 }
 
 
-matd_lup* matd_lup_solve(matd *m)
+mat_lup* mat_lup_solve(mat *m)
 {
 	// perform the LU(P) factorization
-	matd *L, *U, *P;
+	mat *L, *U, *P;
 	int j,i, pivot;
 	unsigned int num_permutations = 0;
 	TYPE mul;
@@ -80,33 +80,33 @@ matd_lup* matd_lup_solve(matd *m)
 //		SLAP_ERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
 		return NULL;
 	}
-	L = new_matd(m->n_rows, m->n_rows);
-	U = matd_copy(m);
-	P = matd_eye(m->n_rows);
+	L = mat_new(m->n_rows, m->n_rows);
+	U = mat_copy(m);
+	P = mat_eye(m->n_rows);
 	
 	for(j=0; j<U->n_cols; j++){
 		// Retrieves the row with the biggest element for column (j)
-		pivot = matd_absmaxr(U, j);
+		pivot = mat_absmaxr(U, j);
 //		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_MIN_COEF){ // DA PROBLEMI DI MEMORIA RUNTIME!!!!!!!
 ////			SLAP_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
 //			return NULL;
 //		}
 		if(pivot!=j){
 			// Pivots LU and P accordingly to the rule
-			matd_row_swap_r(U, j, pivot);
-			matd_row_swap_r(L, j, pivot);
-			matd_row_swap_r(P, j, pivot);
+			mat_row_swap_r(U, j, pivot);
+			mat_row_swap_r(L, j, pivot);
+			mat_row_swap_r(P, j, pivot);
 			num_permutations++; // Keep the number of permutations to easily calculate the determinant sign afterwards
 		}
 		for(i=j+1; i<U->n_rows; i++){
 			mul = U->data[i*U->n_cols+j] / U->data[j*U->n_cols+j];
-			matd_row_addrow_r(U, i, j, -mul); // Building the U upper rows
+			mat_row_addrow_r(U, i, j, -mul); // Building the U upper rows
 			L->data[i*L->n_cols+j] = mul; // Store the multiplier in L
 		}
 	}
-	matd_setdiag(L, 1.0); // set the diagonal to 1.0
+	mat_setdiag(L, 1.0); // set the diagonal to 1.0
 	
-	return matd_lup_new(L, U, P, num_permutations);
+	return mat_lup_new(L, U, P, num_permutations);
 }
 
 
@@ -126,9 +126,9 @@ matd_lup* matd_lup_solve(matd *m)
 // be solved
 //
 // Note: This function is usually used with an L matrix from a LU decomposition
-matd *lu_solvefwd(matd *L, matd *b)
+mat *solvefwd_lu(mat *L, mat *b)
 {
-	matd *x = new_matd(L->n_cols, 1);
+	mat *x = mat_new(L->n_cols, 1);
 	int i,j;
 	TYPE tmp;
 	for(i=0; i<L->n_cols; i++){
@@ -154,9 +154,9 @@ matd *lu_solvefwd(matd *L, matd *b)
 //
 // Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
 // be solved
-matd *lu_solvebck(matd *U, matd *b)
+mat *solvebck_lu(mat *U, mat *b)
 {
-	matd *x = new_matd(U->n_cols, 1);
+	mat *x = mat_new(U->n_cols, 1);
 	int i = U->n_cols, j;
 	TYPE tmp;
 	while(i-- > 0){
@@ -165,24 +165,24 @@ matd *lu_solvebck(matd *U, matd *b)
 		x->data[i*x->n_cols] = tmp / U->data[i*U->n_cols+i];
 	}
 	return x;
-} 
+}
 
 
 
-matd *lu_solve(matd_lup *lu, matd* b)
+mat *solve_lu(mat_lup *lu, mat* b)
 {
-	matd *Pb, *x, *y;
+	mat *Pb, *x, *y;
 	if(lu->U->n_rows != b->n_rows || b->n_cols != 1){
 //		SLAP_ERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,b->n_rows,b->n_cols,lu->U->n_rows,1);
 		return NULL;
 	}
-	Pb = matd_mul(lu->P, b);
+	Pb = mat_mul(lu->P, b);
 	
-	y = lu_solvefwd(lu->L, Pb); // We solve L*y = P*b using forward substition
-	x = lu_solvebck(lu->U, y); // We solve U*x=y
+	y = solvefwd_lu(lu->L, Pb); // We solve L*y = P*b using forward substition
+	x = solvebck_lu(lu->U, y); // We solve U*x=y
 	
-	free_mat(y);
-	free_mat(Pb);
+	mat_free(y);
+	mat_free(Pb);
 	return x;
 }
 

@@ -6,7 +6,7 @@
 
 
 
-int matd_row_smul_r(matd *m, unsigned int row, TYPE num)
+int mat_row_smul_r(mat *m, unsigned int row, TYPE num)
 {
 	int i;
 	if(row >= m->n_rows){
@@ -17,7 +17,7 @@ int matd_row_smul_r(matd *m, unsigned int row, TYPE num)
 	return 1;
 }
 
-int matd_col_smul_r(matd *m, unsigned int col, TYPE num)
+int mat_col_smul_r(mat *m, unsigned int col, TYPE num)
 {
 	int i;
 	if(col >= m->n_cols){
@@ -29,7 +29,7 @@ int matd_col_smul_r(matd *m, unsigned int col, TYPE num)
 }
 
 
-int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, TYPE multiplier)
+int mat_row_addrow_r(mat *m, unsigned int where, unsigned int row, TYPE multiplier)
 {
 	int i = 0;
 	if(where >= m->n_rows || row >= m->n_rows){
@@ -41,7 +41,7 @@ int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, TYPE multip
 }
 
 
-int matd_row_swap_r(matd *m, unsigned int row1, unsigned int row2)
+int mat_row_swap_r(mat *m, unsigned int row1, unsigned int row2)
 {
 	// swap two rows of matrix m
 	int i;
@@ -62,7 +62,7 @@ int matd_row_swap_r(matd *m, unsigned int row1, unsigned int row2)
 // Finds the first non-zero element on the col column, under the row row.
 // Used to determine the pivot
 // If not pivot is found, returns -1
-int matd_pivot_id(matd *m, unsigned int col, unsigned int row)
+int mat_pivot_id(mat *m, unsigned int col, unsigned int row)
 {
 	int i;
 	for(i=row; i<m->n_rows; i++) if(fabs(m->data[i*m->n_cols+col]) > SLAP_MIN_COEF) return i;
@@ -72,7 +72,7 @@ int matd_pivot_id(matd *m, unsigned int col, unsigned int row)
 // Find the max element from the column "col" under the row "row"
 // This is needed to pivot in Gauss-Jordan elimination
 // Return the maximum pivot for numerical stability. If pivot is not found, return -1
-int matd_pivot_maxid(matd *m, unsigned int col, unsigned int row)
+int mat_pivot_maxid(mat *m, unsigned int col, unsigned int row)
 {
 	int i, maxi;
 	TYPE micol;
@@ -90,22 +90,22 @@ int matd_pivot_maxid(matd *m, unsigned int col, unsigned int row)
 
 
 // Retrieves the matrix in Row Echelon form using Gauss Elimination
-matd *matd_GaussJordan(matd *m)
+mat *mat_GaussJordan(mat *m)
 {
-	matd *r = matd_copy(m);
+	mat *r = mat_copy(m);
 	int i=0, j=0, k, pivot;
 	while(j < r->n_cols && i < r->n_cols){
 		// Find the pivot - the first non-zero entry in the first column of the matrix
-		pivot = matd_pivot_maxid(r, j, i);
+		pivot = mat_pivot_maxid(r, j, i);
 		if(pivot<0){ // All elements on the column are zeros
 			j++; // Move to the next column without doing anything
 			continue;
 		}
-		if(pivot != i) matd_row_swap_r(r, i, pivot); // We interchange rows moving the pivot to the first row that doesn't have already a pivot in place
-		matd_row_smul_r(r, i, 1/r->data[i*r->n_cols+j]); // Multiply each element in the pivot row by the inverse of the pivot
+		if(pivot != i) mat_row_swap_r(r, i, pivot); // We interchange rows moving the pivot to the first row that doesn't have already a pivot in place
+		mat_row_smul_r(r, i, 1/r->data[i*r->n_cols+j]); // Multiply each element in the pivot row by the inverse of the pivot
 		for(k=i+1; k<r->n_rows; k++){
 			if(fabs(r->data[k*r->n_cols+j]) > SLAP_MIN_COEF){
-				matd_row_addrow_r(r, k, i, -(r->data[k*r->n_cols+j])); // We add multiplies of the pivot so every element on the column equals 0
+				mat_row_addrow_r(r, k, i, -(r->data[k*r->n_cols+j])); // We add multiplies of the pivot so every element on the column equals 0
 			}
 		}
 		i++; j++;

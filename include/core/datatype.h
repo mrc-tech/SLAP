@@ -1,10 +1,7 @@
 /*
 	Simple Linear Algebra Package (SLAP)
 	data type definition
-		d: double
-		f: float
-		i: int
-		b: unsigned char
+	basic type is defined through TYPE preprocessor definition
 */
 #ifndef SLAP_DATATYPE
 #define SLAP_DATATYPE
@@ -12,16 +9,13 @@
 #include <stdarg.h> // for variable argument list ("va_list")
 
 
-// ####################################################################
-// ######################### MATD (DOUBLE)  ###########################
-// ####################################################################
 
 
-typedef struct _matd{
+typedef struct _mat{
 	unsigned int n_rows;
 	unsigned int n_cols;
 	TYPE *data; // row-major matrix data array
-} matd;
+} mat;
 
 
 
@@ -31,10 +25,10 @@ typedef struct _matd{
 //#define MAT(m, row,col) ( &m + row*m.n_cols + col ) // row-major accessing member NOT WORKING!!
 
 
-matd* new_matd(unsigned int num_rows, unsigned int num_cols)
+mat* mat_new(unsigned int num_rows, unsigned int num_cols)
 {
 	// create a new double matrix
-	matd * m; // return matrix
+	mat * m; // return matrix
 	int i;
 	
 	if(num_rows == 0) { /*SLAP_ERROR(INVALID_ROWS);*/ return NULL; }
@@ -51,19 +45,19 @@ matd* new_matd(unsigned int num_rows, unsigned int num_cols)
 	return m;
 }
 
-void free_mat(matd* matrix)
+void mat_free(mat* matrix)
 {
 	if(matrix){
-		free(matrix->data); // delete the data
+		if(matrix->data) free(matrix->data); // delete the data
 		free(matrix); // delete the data structure
 	}
 }
 
 
-TYPE matd_get(matd* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
-void matd_set(matd* M, unsigned int row, unsigned int col, TYPE val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+TYPE mat_get(mat* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+void mat_set(mat* M, unsigned int row, unsigned int col, TYPE val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
 
-unsigned int matd_size(matd* M) { return M->n_rows * M->n_cols; }
+unsigned int mat_size(mat* M) { return M->n_rows * M->n_cols; }
 
 
 //matd* matd_init(unsigned int num_rows, unsigned int num_cols, ...)
@@ -90,29 +84,15 @@ unsigned int matd_size(matd* M) { return M->n_rows * M->n_cols; }
 ////	}
 ////	va_end(valist); // clean memory reserved for valist
 ////}
-matd* matd_init2(unsigned int num_rows, unsigned int num_cols, TYPE data[])
+mat* mat_init2(unsigned int num_rows, unsigned int num_cols, TYPE data[])
 {
 	int i;
-	matd *m = new_matd(num_rows,num_cols);
+	mat *m = mat_new(num_rows,num_cols);
 	for (i=0; i<num_rows*num_cols; i++) m->data[i] = data[i];
 	return m;
 }
 
 
-/*
-
-// ####################################################################
-// ######################### MATF (float)  ############################
-// ####################################################################
-
-
-typedef struct _matf{
-	unsigned int n_rows;
-	unsigned int n_cols;
-	float *data;
-} matf;
-
-*/
 
 
 
