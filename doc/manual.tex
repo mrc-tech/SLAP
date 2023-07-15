@@ -512,6 +512,7 @@ Dal punto di vista dell'implementazione il principale problema risiede nel fatto
 Per questo esistono molti metodi per calcolare velocemente il vettore ignoto $\mathbf{x}$ in maniera computazionalmente efficiente.
 
 
+
 \subsection{Gauss-Jordan elimination}
 
 
@@ -653,6 +654,69 @@ Il calcolo del vettore temporaneo $\mathbf{y} = \mathbf{Q}^T \mathbf{b}$ richied
 
 
 
+\section{Determinante}
+
+\subsection{Formula di Leibniz}
+
+il determinante di una matrice $\mathbf{A}$ di dimensione $n\times n$ è trovato tramite la seguente formula:
+\begin{equation}
+\det(\mathbf{A}) = \sum_{\sigma\in S_n} \text{sgn}(\sigma) \prod_{i=1}^n A_{i\;\sigma(i)}
+\end{equation}
+dove $S_n$ è l'insieme di tutte le permutazioni $\sigma$ dell'insieme ${1,2,3,\ldots,n}$, mentre $\text{sgn}(\sigma)$ denota il segno della permutazione (+1 se è una permutazione pari, -1 se è dispari).
+Questo metodo ha un elevato costo computazionale, pari a $O(N\cdot N!)$.
+
+\subsection{Sviluppo di Laplace}
+
+Questo metodo risulta efficace solamente se la matrice contiene un gran numero di zeri. Scegliendo una riga $i$ si calcola il determinante come:
+\begin{equation}
+\det(\mathbf{A}) = \sum_{j=1}^n A_{ij} \; C_{ij}
+\end{equation}
+dove $C_{ij}$ è il complemento algebrico, ovvero è pari a $(-1)^{i+j}$ per il determinante del minore di ordine $n-1$ ottenuto dalla matrice $\mathbf{A}$ eliminando la riga $i$-esima e la colonna $j$-esima.
+Il metodo risulta efficiente in caso si scelga una riga $i$ che contiene il maggior numero di zeri possibile.
+
+Lo stesso sviluppo può essere eseguito su una determinata colonna.
+
+\subsection{Algoritmo di Gauss}
+
+Nel caso di matrici triangolari (siano esse triangolari superiori o inferiori) il determinante è pari al prodotto degli elementi sulla diagonale principale. Questo deriva anche dallo sviluppo di Laplace.
+
+
+
+
+\section{Inverse matrix}
+
+L'algoritmo peggiore in termini computazionali per trovare la matrice inversa fa uso della matrice aggiunta
+\begin{equation}
+\mathbf{A}^{-1} = \frac{\text{adj}(\mathbf{A})}{\det(\mathbf{A})}
+\end{equation}
+La matrice $\text{adj}(\mathbf{A})$ è calcolata tramite la trasposta della matrice dei cofattori $\text{adj}(\mathbf{A}) = \text{cof}(\mathbf{A})^T$. La matrice dei cofattori $\text{cof}(\mathbf{A})$ ha elementi:
+\begin{equation}
+\text{cof}_{ij}(\mathbf{A}) = (-1)^{i+j} \det\left(\mathbf{M}_{ij}\right)
+\end{equation}
+dove $\mathbf{M}_{ij}$ è la matrice minore di $\mathbf{A}$, ottenuta eliminando la $i$-esima riga e la $j$-esima colonna della matrice $\mathbf{A}$.
+
+
+
+
+\section{Eigen}
+
+\begin{tabular}{lllcll}
+\textbf{metodo} & \textbf{si applica a} & \textbf{produce} & \textbf{costo} & \textbf{conv.} & \textbf{descrizione} \\
+\hline
+Lanczos algorithm & Hermitian & $m$ largest/smallest eigenpair & & & \\
+Power iteration & general & eigenpair with largest value & $O(n^2)$ & linear & applica la matrice ripetutamente ad un vettore iniziale e rinormalizza \\
+Inverse iteration & general & eigenpair with value closest to $\mu$ &  & linear & power iteration applicata a $(\mathbf{A} - \mu \mathbf{I})^{-1}$ \\
+Rayleigh quotient iteration & hermitian & any eigenpair & & cubica & power iteration applicata a $(\mathbf{A} - \mu \mathbf{I})^{-1}$, dove $\mu$ ad ogni iterazione è il quoziente di Rayleigh della precedente \\
+Preconditioned inverse iteration & Hermitiana & any eigenpair & & cubic & inverse iteration usando un precondizionatore (una specie di inversa di $\mathbf{A}$). Chiamato anche LOBPCG algorithm \\
+Bisection method & real symmetric tridiagonal & any eigenvalue & & lineare & usa il metodo della bisezione per trovare le soluzioni del polinomio caratteristico, supportato dalla sequenza di Sturm \\
+Laguerre iteration & real symmetric tridiagonal & any eigenvalue & & cubic & metodo di Laguerre per trovare le soluzioni del polinomio caratteristico fornito dalla sequenza di Sturm \\
+QR algorithm & Hassenberg & all eigenvalues and all eigenpairs & $O(n^2)$ e $6n^3+O(n^2)$ & cubic & applica l'iterazione successiva a $\mathbf{R}\mathbf{Q}$ \\
+
+\end{tabular}
+
+\subsection{QR algorithm}
+
+L'algoritmo più affidabile e maggiormente utilizzato è quello inventato da John G.F. Francis che sfrutta la decomposizione QR.
 
 
 
