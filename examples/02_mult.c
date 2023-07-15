@@ -11,10 +11,8 @@ int main()
 	mat *A, *B, *u, *v, *tmp;
 	
 	A = mat_new(3,3);
-//	A = matd_init(3,3, 1.,2.,3.,4.,5.,6.,7.,8.,9.);
 	A = mat_init2(3,3, (double[]){1,2,3,4,5,6,7,8,9});
 	B = mat_new(3,3);
-//	B = matd_init(3,3, 1.,0.,0.,0.,1.,0.,0.,0.,1.); // identity matrix
 	B = mat_init2(3,3, (double[]){1,0,0,0,1,0,0,0,1}); // identity matrix
 	
 	printf("A = \n");

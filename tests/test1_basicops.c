@@ -18,14 +18,11 @@ int main()
 	mat *u, *v;
 	
 	printf("mat_transpose : ");
-//	A = matd_init(3,3, 1.,2.,3.,4.,5.,6.,7.,8.,9.);
 	A = mat_init2(3,3, (double[]){1,2,3,4,5,6,7,8,9});
-//	tmp = matd_init(3,3, 1.,4.,7.,2.,5.,8.,3.,6.,9.);
 	tmp = mat_init2(3,3, (double[]){1,4,7,2,5,8,3,6,9});
 	if(mat_equal(mat_transpose(A),tmp,0))				printf("passed\n"); else printf("NOT PASSED!!!\n");
 	
 	printf("mat_smul      : ");
-//	tmp = matd_init(3,3, 2.,4.,6.,8.,10.,12.,14.,16.,18.);
 	tmp = mat_init2(3,3, (double[]){2,4,6,8,10,12,14,16,18});
 	mat_smul_r(tmp,0.5); // divide by two
 	if(mat_equal(A,tmp,0))								printf("passed\n"); else printf("NOT PASSED!!!\n");
@@ -40,14 +37,10 @@ int main()
 	printf("mat_mul       : ");
 	tmp = mat_init2(3,3, (double[]){30,36,42,66,81,96,102,126,150});
 	if(mat_equal(mat_mul(A,A),tmp,0))					printf("passed\n"); else printf("NOT PASSED!!!\n");
-//	u = new_matd(1,3); u = matd_init(1,3, 1.,2.,3.);
-//	v = new_matd(1,3); v = matd_init(1,3, 2.,2.,2.);
 	u = mat_new(1,3); u = mat_init2(1,3, (double[]){1,2,3});
 	v = mat_new(1,3); v = mat_init2(1,3, (double[]){2,2,2});
-//	tmp = new_matd(1,1); tmp = matd_init(1,1, 12.); // scalar product (vectors)
 	tmp = mat_new(1,1); tmp = mat_init2(1,1, (double[]){12}); // scalar product (vectors)
 	if(mat_equal(mat_mul(u,mat_transpose(v)),tmp,0)) printf("              : passed\n"); else printf("                 NOT PASSED!!!\n");
-//	tmp = new_matd(3,3); tmp = matd_init(3,3, 2.,2.,2.,4.,4.,4.,6.,6.,6.); // tensor product (vectors)
 	tmp = mat_new(3,3); tmp = mat_init2(3,3, (double[]){2,2,2,4,4,4,6,6,6}); // tensor product (vectors)
 	if(mat_equal(mat_mul(mat_transpose(u),v),tmp,0)) printf("              : passed\n"); else printf("                 NOT PASSED!!!\n");
 	

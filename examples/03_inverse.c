@@ -8,8 +8,6 @@
 
 int main()
 {
-//	mat *A = mat_init(3,3, 1.,3.,3.,4.,5.,6.,7.,8.,9.);
-//	mat *b = mat_init(3,1, 1.,1.,1.);
 	mat *A = mat_init2(3,3, (double[]){1,3,3,4,5,6,7,8,9});
 	mat *b = mat_init2(3,1, (double[]){1,1,1});
 	
