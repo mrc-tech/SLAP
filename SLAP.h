@@ -11,6 +11,20 @@
 #define SLAP_DEFS
 
 
+#ifdef __MSDOS__
+#pragma message MS-DOS system?
+#endif
+
+#ifndef TYPE // data type of the matrix
+#ifdef __BORLANDC__
+#pragma message You are compiling using Borland C++ version __BORLANDC__.
+#define TYPE long double // DOS systems
+#else
+#define TYPE double // other non-DOS systems
+#endif
+#endif // TYPE
+
+
 //#define NULL 0
 #define SLAP_MIN_COEF 0.000000000000001 // DIPENDE DAL SISTEMA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -23,7 +37,7 @@
 
 
 #define SWAP(a,b) \
-	double _temp = a; \
+	TYPE _temp = a; \
 	a = b; \
 	b = _temp;
 
@@ -40,10 +54,7 @@
 /*
 	Simple Linear Algebra Package (SLAP)
 	data type definition
-		d: double
-		f: float
-		i: int
-		b: unsigned char
+	basic type is defined through TYPE preprocessor definition
 */
 #ifndef SLAP_DATATYPE
 #define SLAP_DATATYPE
@@ -51,16 +62,13 @@
 #include <stdarg.h> // for variable argument list ("va_list")
 
 
-// ####################################################################
-// ######################### MATD (DOUBLE)  ###########################
-// ####################################################################
 
 
-typedef struct _matd{
+typedef struct _mat{
 	unsigned int n_rows;
 	unsigned int n_cols;
-	double *data; // row-major matrix data array
-} matd;
+	TYPE *data; // row-major matrix data array
+} mat;
 
 
 
@@ -70,10 +78,10 @@ typedef struct _matd{
 //#define MAT(m, row,col) ( &m + row*m.n_cols + col ) // row-major accessing member NOT WORKING!!
 
 
-matd* new_matd(unsigned int num_rows, unsigned int num_cols)
+mat* mat_new(unsigned int num_rows, unsigned int num_cols)
 {
 	// create a new double matrix
-	matd * m; // return matrix
+	mat * m; // return matrix
 	int i;
 	
 	if(num_rows == 0) { /*SLAP_ERROR(INVALID_ROWS);*/ return NULL; }
@@ -90,19 +98,19 @@ matd* new_matd(unsigned int num_rows, unsigned int num_cols)
 	return m;
 }
 
-void free_mat(matd* matrix)
+void mat_free(mat* matrix)
 {
 	if(matrix){
-		free(matrix->data); // delete the data
+		if(matrix->data) free(matrix->data); // delete the data
 		free(matrix); // delete the data structure
 	}
 }
 
 
-double matd_get(matd* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
-void   matd_set(matd* M, unsigned int row, unsigned int col, double val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+TYPE mat_get(mat* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+void mat_set(mat* M, unsigned int row, unsigned int col, TYPE val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
 
-unsigned int matd_size(matd* M) { return M->n_rows * M->n_cols; }
+unsigned int mat_size(mat* M) { return M->n_rows * M->n_cols; }
 
 
 //matd* matd_init(unsigned int num_rows, unsigned int num_cols, ...)
@@ -129,29 +137,15 @@ unsigned int matd_size(matd* M) { return M->n_rows * M->n_cols; }
 ////	}
 ////	va_end(valist); // clean memory reserved for valist
 ////}
-matd* matd_init2(unsigned int num_rows, unsigned int num_cols, double data[])
+mat* mat_init2(unsigned int num_rows, unsigned int num_cols, TYPE data[])
 {
 	int i;
-	matd *m = new_matd(num_rows,num_cols);
+	mat *m = mat_new(num_rows,num_cols);
 	for (i=0; i<num_rows*num_cols; i++) m->data[i] = data[i];
 	return m;
 }
 
 
-/*
-
-// ####################################################################
-// ######################### MATF (float)  ############################
-// ####################################################################
-
-
-typedef struct _matf{
-	unsigned int n_rows;
-	unsigned int n_cols;
-	float *data;
-} matf;
-
-*/
 
 
 
@@ -171,20 +165,20 @@ typedef struct _matf{
 
 
 
-void print_mat(matd* matrix)
+void mat_print(mat* matrix)
 {
 	// FARE IN MODO CHE STAMPA COME UNA TABELLA PREORDINATA DAL NUMERO DELLE CIFRE (tutto compatto)
 	int r,c;
 	for(r=0; r<matrix->n_rows; r++){
 		for(c=0; c<matrix->n_cols; c++){
-			printf("%lf\t", matd_get(matrix, r,c));
+			printf("%lf\t", mat_get(matrix, r,c));
 		}
 		printf("\n");
 	}
 }
 
 
-short matd_equal(matd* m1, matd* m2, double tolerance)
+short mat_equal(mat* m1, mat* m2, TYPE tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
 	int i;
@@ -196,21 +190,21 @@ short matd_equal(matd* m1, matd* m2, double tolerance)
 }
 
 
-matd* matd_copy(matd *m)
+mat* mat_copy(mat *m)
 {
 	// Dynamically allocates a new Matrix
 	// Initialise the matrix by copying another one
-	matd *res  = new_matd(m->n_rows, m->n_cols);
+	mat *res  = mat_new(m->n_rows, m->n_cols);
 	int i;
 	for(i=0; i<res->n_rows*res->n_cols; i++) res->data[i] = m->data[i];
 	return res;
 }
 
 
-matd* matd_transpose(matd* matrix)
+mat* mat_transpose(mat* matrix)
 {
 	// QUALCOSA NON MI CONVINCE CON LA GESTIONE DELLA MEMORIA!!!!
-	matd *m = new_matd(matrix->n_cols, matrix->n_rows); // return matrix
+	mat *m = mat_new(matrix->n_cols, matrix->n_rows); // return matrix
 	int r,c;
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
@@ -220,13 +214,13 @@ matd* matd_transpose(matd* matrix)
 	return m;
 }
 
-int matd_transpose_r(matd* m)
+int mat_transpose_r(mat* m)
 {
 	// change the matrix by reference ("_r")
 	// without swap dimensions this is a conversion between row-major and column-major
 	int i, j;
-	double temp;
-	double *tmp = (double*) malloc(m->n_rows*m->n_cols * sizeof(double)); // allocate temporary array
+	TYPE temp;
+	TYPE *tmp = (TYPE*) malloc(m->n_rows*m->n_cols * sizeof(TYPE)); // allocate temporary array
 	for(i=0; i<m->n_rows*m->n_cols; i++){
 		j = m->n_cols * (i % m->n_rows) + (i / m->n_rows);
 		tmp[i] = m->data[j];
@@ -239,7 +233,7 @@ int matd_transpose_r(matd* m)
 
 
 
-int matd_smul_r(matd *m, double num)
+int mat_smul_r(mat *m, TYPE num)
 {
 	// multiply matrix by a scalar (by reference)
 	int i;
@@ -248,16 +242,16 @@ int matd_smul_r(matd *m, double num)
 	return 1;
 }
 
-matd* matd_smul(matd *m, double num)
+mat* mat_smul(mat *m, TYPE num)
 {
 	// multiply matrix by a scalar
-	matd* res = matd_copy(m);
-	matd_smul_r(res,num);
+	mat* res = mat_copy(m);
+	mat_smul_r(res,num);
 	return res;
 }
 
 
-int matd_add_r(matd *m1, matd *m2)
+int mat_add_r(mat *m1, mat *m2)
 {
 	// reference version (return value in matrix m1)
 	int i;
@@ -270,14 +264,14 @@ int matd_add_r(matd *m1, matd *m2)
 	return 1;
 }
 
-matd* matd_add(matd *m1, matd *m2)
+mat* mat_add(mat *m1, mat *m2)
 {
-	matd *m = matd_copy(m1);
-	if(!matd_add_r(m, m2)) { free_mat(m); return NULL; }
+	mat *m = mat_copy(m1);
+	if(!mat_add_r(m, m2)) { mat_free(m); return NULL; }
 	return m;
 }
 
-int matd_sub_r(matd *m1, matd *m2)
+int mat_sub_r(mat *m1, mat *m2)
 {
 	// reference version (return value in matrix m1)
 	int i;
@@ -290,25 +284,25 @@ int matd_sub_r(matd *m1, matd *m2)
 	return 1;
 }
 
-matd* matd_sub(matd *m1, matd *m2)
+mat* mat_sub(mat *m1, mat *m2)
 {
-	matd *m = matd_copy(m1);
-	if(!matd_sub_r(m, m2)) { free_mat(m); return NULL; }
+	mat *m = mat_copy(m1);
+	if(!mat_sub_r(m, m2)) { mat_free(m); return NULL; }
 	return m;
 }
 
 
 
-matd* matd_mul(matd* m1, matd* m2)
+mat* mat_mul(mat* m1, mat* m2)
 {
 	// multiply two matrices
-	matd *m;
+	mat *m;
 	int r, c, i;
 	if(!(m1->n_cols == m2->n_rows)){
 //		SLAP_ERROR(CANNOT_MULTIPLY);
 		return NULL;
 	}
-	m = new_matd(m1->n_rows, m2->n_cols);
+	m = mat_new(m1->n_rows, m2->n_cols);
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
 			for(i=0; i<m1->n_cols; i++){
@@ -323,11 +317,11 @@ matd* matd_mul(matd* m1, matd* m2)
 
 
 
-matd* matd_eye(unsigned int size)
+mat* mat_eye(unsigned int size)
 {
 	// identity square matrix
 	int i;
-	matd *m = new_matd(size, size);
+	mat *m = mat_new(size, size);
 	for(i=0; i<m->n_rows; i++) m->data[i*m->n_cols+i] = 1.0;
 	return m;
 }
@@ -345,16 +339,16 @@ matd* matd_eye(unsigned int size)
 #define SLAP_STRMOD
 
 
-matd* matd_remcol(matd *m, unsigned int column)
+mat* mat_remcol(mat *m, unsigned int column)
 {
 	// remove the i-th column (start counting from zero)
-	matd *ret;
+	mat *ret;
 	int i, j, k;
 	if(column >= m->n_cols){
 //    	SLAP_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
 		return NULL;
 	}
-	ret = new_matd(m->n_rows, m->n_cols-1);
+	ret = mat_new(m->n_rows, m->n_cols-1);
 	for(i=0; i<m->n_rows; i++){
 		for(j=0,k=0; j<m->n_cols; j++){
 			if(column != j) ret->data[i*ret->n_cols + k++] = m->data[i*m->n_cols + j];
@@ -363,16 +357,16 @@ matd* matd_remcol(matd *m, unsigned int column)
 	return ret;
 }
 
-matd* matd_remrow(matd *m, unsigned int row)
+mat* mat_remrow(mat *m, unsigned int row)
 {
 	// remove the i-th row (start counting from zero)
-	matd *ret;
+	mat *ret;
 	int i, j, k;
 	if(row >= m->n_rows){
 //    	SLAP_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
 		return NULL;
 	}
-	ret = new_matd(m->n_rows-1, m->n_cols);
+	ret = mat_new(m->n_rows-1, m->n_cols);
 	for(i=0,k=0; i<m->n_rows; i++){
 		if(row != i){
 			for(j=0; j<m->n_cols; j++){
@@ -386,51 +380,51 @@ matd* matd_remrow(matd *m, unsigned int row)
 
 
 
-matd *matd_getcol(matd *m, unsigned int col)
+mat *mat_getcol(mat *m, unsigned int col)
 {
 	// return matrix column
 	int j;
-	matd *res;
+	mat *res;
 	if(col >= m->n_cols){
 //		SLAP_FERROR(CANNOT_GET_COLUMN, col, m->num_cols);
 		return NULL;
 	}
-	res = new_matd(m->n_rows, 1);
+	res = mat_new(m->n_rows, 1);
 	for(j=0; j<res->n_rows; j++) res->data[j*res->n_cols] = m->data[j*m->n_cols+col];
 	return res;
 }
 
-double *matd_getcol_array(matd *m, unsigned int col)
+double *mat_getcol_array(mat *m, unsigned int col)
 {
 	// return column via array
 	int i;
-	double *res;
+	TYPE *res;
 	if(col >= m->n_cols) return NULL;
-	res = (double*)malloc(m->n_rows * sizeof(double));
+	res = (TYPE*)malloc(m->n_rows * sizeof(TYPE));
 	for(i=0; i<m->n_rows; i++) res[i] = m->data[i*m->n_cols+col];
 	return res;
 }
 
-matd *matd_getrow(matd *m, unsigned int row)
+mat *mat_getrow(mat *m, unsigned int row)
 {
 	// return matrix row
-	matd *res;
+	mat *res;
 	if(row >= m->n_rows){
 //		SLAP_FERROR(CANNOT_GET_ROW, row, m->num_rows);
 		return NULL;
 	}
-	res = new_matd(1, m->n_cols);
+	res = mat_new(1, m->n_cols);
 	memcpy(&res->data[0], &m->data[row*m->n_cols], m->n_cols * sizeof(res->data[0]));
 	return res;
 }
 
-double *matd_getrow_array(matd *m, unsigned int row)
+double *mat_getrow_array(mat *m, unsigned int row)
 {
 	// return a row via array
-	double *res;
+	TYPE *res;
 	if(row >= m->n_rows) return NULL;
-	res = (double*)malloc(m->n_cols * sizeof(double));
-	memcpy(&res, &m->data[row*m->n_cols], m->n_cols * sizeof(double));
+	res = (TYPE*)malloc(m->n_cols * sizeof(TYPE));
+	memcpy(&res, &m->data[row*m->n_cols], m->n_cols * sizeof(TYPE));
 	return res;
 }
 
@@ -441,14 +435,14 @@ double *matd_getrow_array(matd *m, unsigned int row)
 
 
 
-matd* matd_cathor(int N, matd **marr) // NON VERIFICATO!!!!!!
+mat* mat_cathor(int N, mat **marr) // NON VERIFICATO!!!!!!
 {
 	// concatenate matrices horizontally (same number of rows, aumented number of columns)
-	matd *m;
+	mat *m;
 	int i, j, k, offset;
 	unsigned int lrow, ncols;
 	if (N == 0) return NULL; // No matrices, nothing to return
-	if (N == 1) return matd_copy(marr[0]); // no need for additional computations
+	if (N == 1) return mat_copy(marr[0]); // no need for additional computations
     
 	// We calculate the total number of columns to know how to allocate memory for the resulting matrix:
 	lrow  = marr[0]->n_rows;
@@ -465,7 +459,7 @@ matd* matd_cathor(int N, matd **marr) // NON VERIFICATO!!!!!!
 		ncols += marr[k]->n_cols;
 	}
 	// allocate memory for the resulting matrix
-	m = new_matd(lrow, ncols);
+	m = mat_new(lrow, ncols);
 	for(i = 0; i<m->n_rows; i++){
 		k = 0;
 		offset = 0;
@@ -482,14 +476,14 @@ matd* matd_cathor(int N, matd **marr) // NON VERIFICATO!!!!!!
 }
 
 
-matd* matd_catver(unsigned int N, matd **marr)
+mat* mat_catver(unsigned int N, mat **marr)
 {
 	// concatenate vertically N matrices
-	matd *res;
+	mat *res;
 	unsigned int numrows = 0;
 	int lcol, i, j, k, offset;
 	if(N == 0) return NULL;
-	if(N == 1) return matd_copy(marr[0]);
+	if(N == 1) return mat_copy(marr[0]);
 	
 	lcol = marr[0]->n_cols;
 	for(i=0; i<N; i++){
@@ -503,7 +497,7 @@ matd* matd_catver(unsigned int N, matd **marr)
 		}
 		numrows += marr[i]->n_rows;
 	}
-	res = new_matd(numrows, lcol);
+	res = mat_new(numrows, lcol);
 	for(j=0; j<res->n_cols; j++){
 		offset = 0;
 		k = 0;
@@ -529,7 +523,7 @@ matd* matd_catver(unsigned int N, matd **marr)
 
 
 
-int matd_row_smul_r(matd *m, unsigned int row, double num)
+int mat_row_smul_r(mat *m, unsigned int row, TYPE num)
 {
 	int i;
 	if(row >= m->n_rows){
@@ -540,7 +534,7 @@ int matd_row_smul_r(matd *m, unsigned int row, double num)
 	return 1;
 }
 
-int matd_col_smul_r(matd *m, unsigned int col, double num)
+int mat_col_smul_r(mat *m, unsigned int col, TYPE num)
 {
 	int i;
 	if(col >= m->n_cols){
@@ -552,7 +546,7 @@ int matd_col_smul_r(matd *m, unsigned int col, double num)
 }
 
 
-int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, double multiplier)
+int mat_row_addrow_r(mat *m, unsigned int where, unsigned int row, TYPE multiplier)
 {
 	int i = 0;
 	if(where >= m->n_rows || row >= m->n_rows){
@@ -564,11 +558,11 @@ int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, double mult
 }
 
 
-int matd_row_swap_r(matd *m, unsigned int row1, unsigned int row2)
+int mat_row_swap_r(mat *m, unsigned int row1, unsigned int row2)
 {
 	// swap two rows of matrix m
 	int i;
-	double tmp;
+	TYPE tmp;
 	if(row1 >= m->n_rows || row2 >= m->n_rows){
 //		SLAP_ERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
 		return 0;
@@ -585,7 +579,7 @@ int matd_row_swap_r(matd *m, unsigned int row1, unsigned int row2)
 // Finds the first non-zero element on the col column, under the row row.
 // Used to determine the pivot
 // If not pivot is found, returns -1
-int matd_pivot_id(matd *m, unsigned int col, unsigned int row)
+int mat_pivot_id(mat *m, unsigned int col, unsigned int row)
 {
 	int i;
 	for(i=row; i<m->n_rows; i++) if(fabs(m->data[i*m->n_cols+col]) > SLAP_MIN_COEF) return i;
@@ -595,11 +589,11 @@ int matd_pivot_id(matd *m, unsigned int col, unsigned int row)
 // Find the max element from the column "col" under the row "row"
 // This is needed to pivot in Gauss-Jordan elimination
 // Return the maximum pivot for numerical stability. If pivot is not found, return -1
-int matd_pivot_maxid(matd *m, unsigned int col, unsigned int row)
+int mat_pivot_maxid(mat *m, unsigned int col, unsigned int row)
 {
 	int i, maxi;
-	double micol;
-	double max = fabs(m->data[row*m->n_cols+col]);
+	TYPE micol;
+	TYPE max = fabs(m->data[row*m->n_cols+col]);
 	maxi = row;
 	for(i=row; i<m->n_rows; i++){
 		micol = fabs(m->data[i*m->n_cols+col]);
@@ -613,22 +607,22 @@ int matd_pivot_maxid(matd *m, unsigned int col, unsigned int row)
 
 
 // Retrieves the matrix in Row Echelon form using Gauss Elimination
-matd *matd_GaussJordan(matd *m)
+mat *mat_GaussJordan(mat *m)
 {
-	matd *r = matd_copy(m);
+	mat *r = mat_copy(m);
 	int i=0, j=0, k, pivot;
 	while(j < r->n_cols && i < r->n_cols){
 		// Find the pivot - the first non-zero entry in the first column of the matrix
-		pivot = matd_pivot_maxid(r, j, i);
+		pivot = mat_pivot_maxid(r, j, i);
 		if(pivot<0){ // All elements on the column are zeros
 			j++; // Move to the next column without doing anything
 			continue;
 		}
-		if(pivot != i) matd_row_swap_r(r, i, pivot); // We interchange rows moving the pivot to the first row that doesn't have already a pivot in place
-		matd_row_smul_r(r, i, 1/r->data[i*r->n_cols+j]); // Multiply each element in the pivot row by the inverse of the pivot
+		if(pivot != i) mat_row_swap_r(r, i, pivot); // We interchange rows moving the pivot to the first row that doesn't have already a pivot in place
+		mat_row_smul_r(r, i, 1/r->data[i*r->n_cols+j]); // Multiply each element in the pivot row by the inverse of the pivot
 		for(k=i+1; k<r->n_rows; k++){
 			if(fabs(r->data[k*r->n_cols+j]) > SLAP_MIN_COEF){
-				matd_row_addrow_r(r, k, i, -(r->data[k*r->n_cols+j])); // We add multiplies of the pivot so every element on the column equals 0
+				mat_row_addrow_r(r, k, i, -(r->data[k*r->n_cols+j])); // We add multiplies of the pivot so every element on the column equals 0
 			}
 		}
 		i++; j++;
@@ -657,17 +651,17 @@ matd *matd_GaussJordan(matd *m)
 
 
 
-typedef struct _matd_lup {
-	matd *L;
-	matd *U;
-	matd *P;
+typedef struct _mat_lup {
+	mat *L;
+	mat *U;
+	mat *P;
 	unsigned int num_permutations; // useful when computing the determinant
-} matd_lup;
+} mat_lup;
 
 
-matd_lup* matd_lup_new(matd *L, matd *U, matd *P, unsigned int num_permutations)
+mat_lup* mat_lup_new(mat *L, mat *U, mat *P, unsigned int num_permutations)
 {
-	matd_lup *m = malloc(sizeof(*m));
+	mat_lup *m = malloc(sizeof(*m));
 	MEM_CHECK(m);
 	m->L = L;
 	m->U = U;
@@ -676,18 +670,18 @@ matd_lup* matd_lup_new(matd *L, matd *U, matd *P, unsigned int num_permutations)
 	return m;
 }
 
-void matd_lup_free(matd_lup* lu)
+void mat_lup_free(mat_lup* lu)
 {
 	if(lu){
-		free_mat(lu->L);
-		free_mat(lu->U);
-		free_mat(lu->P);
+		mat_free(lu->L);
+		mat_free(lu->U);
+		mat_free(lu->P);
 		free(lu);
 	}
 }
 
 
-int matd_setdiag(matd *m, double value)
+int mat_setdiag(mat *m, TYPE value)
 {
 	// Sets all elements of the matrix to given value
 	int i;
@@ -697,11 +691,11 @@ int matd_setdiag(matd *m, double value)
 }
 
 
-int matd_absmaxr(matd *m, unsigned int k)
+int mat_absmaxr(mat *m, unsigned int k)
 {
 	// Finds the id of the max on the column (starting from k -> num_rows)
 	int i;
-	double max = m->data[k*m->n_cols+k];
+	TYPE max = m->data[k*m->n_cols+k];
 	int maxIdx = k;
 	for(i=k+1; i<m->n_rows; i++){
 		if(fabs(m->data[i*m->n_cols+k]) > max){
@@ -713,44 +707,44 @@ int matd_absmaxr(matd *m, unsigned int k)
 }
 
 
-matd_lup* matd_lup_solve(matd *m)
+mat_lup* mat_lup_solve(mat *m)
 {
 	// perform the LU(P) factorization
-	matd *L, *U, *P;
+	mat *L, *U, *P;
 	int j,i, pivot;
 	unsigned int num_permutations = 0;
-	double mul;
+	TYPE mul;
 	if(m->n_rows != m->n_cols){
 //		SLAP_ERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
 		return NULL;
 	}
-	L = new_matd(m->n_rows, m->n_rows);
-	U = matd_copy(m);
-	P = matd_eye(m->n_rows);
+	L = mat_new(m->n_rows, m->n_rows);
+	U = mat_copy(m);
+	P = mat_eye(m->n_rows);
 	
 	for(j=0; j<U->n_cols; j++){
 		// Retrieves the row with the biggest element for column (j)
-		pivot = matd_absmaxr(U, j);
+		pivot = mat_absmaxr(U, j);
 //		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_MIN_COEF){ // DA PROBLEMI DI MEMORIA RUNTIME!!!!!!!
 ////			SLAP_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
 //			return NULL;
 //		}
 		if(pivot!=j){
 			// Pivots LU and P accordingly to the rule
-			matd_row_swap_r(U, j, pivot);
-			matd_row_swap_r(L, j, pivot);
-			matd_row_swap_r(P, j, pivot);
+			mat_row_swap_r(U, j, pivot);
+			mat_row_swap_r(L, j, pivot);
+			mat_row_swap_r(P, j, pivot);
 			num_permutations++; // Keep the number of permutations to easily calculate the determinant sign afterwards
 		}
 		for(i=j+1; i<U->n_rows; i++){
 			mul = U->data[i*U->n_cols+j] / U->data[j*U->n_cols+j];
-			matd_row_addrow_r(U, i, j, -mul); // Building the U upper rows
+			mat_row_addrow_r(U, i, j, -mul); // Building the U upper rows
 			L->data[i*L->n_cols+j] = mul; // Store the multiplier in L
 		}
 	}
-	matd_setdiag(L, 1.0); // set the diagonal to 1.0
+	mat_setdiag(L, 1.0); // set the diagonal to 1.0
 	
-	return matd_lup_new(L, U, P, num_permutations);
+	return mat_lup_new(L, U, P, num_permutations);
 }
 
 
@@ -770,11 +764,11 @@ matd_lup* matd_lup_solve(matd *m)
 // be solved
 //
 // Note: This function is usually used with an L matrix from a LU decomposition
-matd *lu_solvefwd(matd *L, matd *b)
+mat *solvefwd_lu(mat *L, mat *b)
 {
-	matd *x = new_matd(L->n_cols, 1);
+	mat *x = mat_new(L->n_cols, 1);
 	int i,j;
-	double tmp;
+	TYPE tmp;
 	for(i=0; i<L->n_cols; i++){
 		tmp = b->data[i*b->n_cols];
 		for(j=0; j<i; j++){
@@ -798,35 +792,35 @@ matd *lu_solvefwd(matd *L, matd *b)
 //
 // Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
 // be solved
-matd *lu_solvebck(matd *U, matd *b)
+mat *solvebck_lu(mat *U, mat *b)
 {
-	matd *x = new_matd(U->n_cols, 1);
+	mat *x = mat_new(U->n_cols, 1);
 	int i = U->n_cols, j;
-	double tmp;
+	TYPE tmp;
 	while(i-- > 0){
 		tmp = b->data[i*b->n_cols];
 		for(j=i; j<U->n_cols; j++) tmp -= U->data[i*U->n_cols+j] * x->data[j*x->n_cols];
 		x->data[i*x->n_cols] = tmp / U->data[i*U->n_cols+i];
 	}
 	return x;
-} 
+}
 
 
 
-matd *lu_solve(matd_lup *lu, matd* b)
+mat *solve_lu(mat_lup *lu, mat* b)
 {
-	matd *Pb, *x, *y;
+	mat *Pb, *x, *y;
 	if(lu->U->n_rows != b->n_rows || b->n_cols != 1){
 //		SLAP_ERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,b->n_rows,b->n_cols,lu->U->n_rows,1);
 		return NULL;
 	}
-	Pb = matd_mul(lu->P, b);
+	Pb = mat_mul(lu->P, b);
 	
-	y = lu_solvefwd(lu->L, Pb); // We solve L*y = P*b using forward substition
-	x = lu_solvebck(lu->U, y); // We solve U*x=y
+	y = solvefwd_lu(lu->L, Pb); // We solve L*y = P*b using forward substition
+	x = solvebck_lu(lu->U, y); // We solve U*x=y
 	
-	free_mat(y);
-	free_mat(Pb);
+	mat_free(y);
+	mat_free(Pb);
 	return x;
 }
 
@@ -844,34 +838,34 @@ matd *lu_solve(matd_lup *lu, matd* b)
 
 
 
-typedef struct _matd_qr {
-	matd *Q;
-	matd *R;
-} matd_qr;
+typedef struct _mat_qr {
+	mat *Q;
+	mat *R;
+} mat_qr;
 
 
-matd_qr* matd_qr_new()
+mat_qr* mat_qr_new()
 {
-	matd_qr *qr = malloc(sizeof(*qr));
+	mat_qr *qr = malloc(sizeof(*qr));
 	MEM_CHECK(qr);
 	return qr;
 }
 
-void matd_qr_free(matd_qr *qr)
+void mat_qr_free(mat_qr *qr)
 {
 	if(qr){
-		if(qr->Q) free_mat(qr->Q);
-		if(qr->R) free_mat(qr->R);
+		if(qr->Q) mat_free(qr->Q);
+		if(qr->R) mat_free(qr->R);
 		free(qr);
 	}
 }
 
 
-double matd_l2norm(matd* m)
+double mat_l2norm(mat* m)
 {
-	if(m->n_cols != 1 || m->n_rows != 1) return -1; // only vectors
-	double doublesum = 0.0;
 	int i;
+	TYPE doublesum = 0.0;
+	if(m->n_cols != 1 || m->n_rows != 1) return -1; // only vectors
 	for(i=0; i<MAX(m->n_rows,m->n_cols); i++){
 		doublesum += (m->data[i]*m->data[i]);
 	}
@@ -880,37 +874,37 @@ double matd_l2norm(matd* m)
 
 
 
-matd_qr* matd_qr_solve(matd *m)
+mat_qr* mat_qr_solve(mat *m)
 {
-	matd_qr *qr = matd_qr_new();
-	matd *Q = matd_copy(m);
-	matd *R = new_matd(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
+	mat_qr *qr = mat_qr_new();
+	mat *Q = mat_copy(m);
+	mat *R = mat_new(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
 	
 	int j, k;
-	double l2norm;
-	matd *rkj = new_matd(1,1); // scalar
-	matd *aj, *qk;
+	TYPE l2norm;
+	mat *rkj = mat_new(1,1); // scalar
+	mat *aj, *qk;
 	for(j=0; j<m->n_cols; j++){
 		rkj->data[0] = 0.0;
-		aj = matd_getcol(m, j);
+		aj = mat_getcol(m, j);
 		for(k=0; k<j; k++){
 //			rkj = nml_vect_dot(m, j, Q, k);
-			rkj = matd_mul(matd_transpose(matd_getcol(m,j)), matd_getcol(Q,k)); // scalar product
+			rkj = mat_mul(mat_transpose(mat_getcol(m,j)), mat_getcol(Q,k)); // scalar product
 			R->data[k*R->n_cols+j] = rkj->data[0];
-			qk = matd_getcol(Q, k);
-			matd_col_smul_r(qk, 0, rkj->data[0]);
-			matd_sub_r(aj, qk);
-			free_mat(qk);
+			qk = mat_getcol(Q, k);
+			mat_col_smul_r(qk, 0, rkj->data[0]);
+			mat_sub_r(aj, qk);
+			mat_free(qk);
 		}
 		for(k=0; k<Q->n_rows; k++) Q->data[k*Q->n_cols+j] = aj->data[k*aj->n_cols];
-		l2norm = matd_l2norm(matd_getcol(Q, j));
-		matd_col_smul_r(Q, j, 1/l2norm);
+		l2norm = mat_l2norm(mat_getcol(Q, j));
+		mat_col_smul_r(Q, j, 1/l2norm);
 		R->data[j*R->n_cols+j] = l2norm;
-		free_mat(aj);
+		mat_free(aj);
 	}
 	qr->Q = Q;
 	qr->R = R;
-	free_mat(rkj);
+	mat_free(rkj);
 	return qr;
 }
 
@@ -926,14 +920,14 @@ matd_qr* matd_qr_solve(matd *m)
 #include <stdio.h> // per "FILE"
 
 
-matd* matd_fromfile(FILE *f)
+mat* mat_fromfile(FILE *f)
 {
-	matd *m;
+	mat *m;
 	int r,c;
 	unsigned int num_rows = 0, num_cols = 0;
 	fscanf(f, "%d", &num_rows);
 	fscanf(f, "%d", &num_cols);
-	m = new_matd(num_rows, num_cols);
+	m = mat_new(num_rows, num_cols);
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
 			fscanf(f, "%lf\t", &m->data[r * m->n_cols + c]);
@@ -942,15 +936,15 @@ matd* matd_fromfile(FILE *f)
 	return m;
 }
 
-matd* matd_fromfilename(const char *file)
+mat* mat_fromfilename(const char *file)
 {
-	matd *m;
+	mat *m;
 	FILE *m_file = fopen(file, "r");
 	if (!m_file) {
 //		SLAP_FERROR(CANNOT_OPEN_FILE, file);
 		return NULL;
 	}
-	m = matd_fromfile(m_file);
+	m = mat_fromfile(m_file);
 	fclose(m_file);
 	return m;
 }
