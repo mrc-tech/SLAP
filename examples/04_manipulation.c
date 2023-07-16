@@ -28,7 +28,7 @@ int main()
 	mat *mat_arr[2];
 	mat_arr[0] = mat_copy(A);
 	mat_arr[1] = mat_copy(A);
-	B = mat_cathor(2,mat_arr); // ERROREEE!!!!!!!!!!!!!!!!!!!!
+	B = mat_cathor(2,mat_arr);
 	mat_print(B);
 	B = mat_catver(2,mat_arr);
 	mat_print(B);

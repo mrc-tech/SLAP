@@ -115,27 +115,27 @@ mat* mat_cathor(int N, mat **marr) // NON VERIFICATO!!!!!!
 	ncols = marr[0]->n_cols;
 	for(k=1; k<N; k++){
 		if (NULL == marr[k]){
-//			SLAP_FERROR(INCONSITENT_ARRAY, k, mnum);
+//			SLAP_ERROR(INCONSITENT_ARRAY, k, mnum);
 			return 0;
 		}
 		if (lrow != marr[k]->n_rows){
-//			SLAP_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
+//			SLAP_ERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
 			return 0;
 		}
 		ncols += marr[k]->n_cols;
 	}
 	// allocate memory for the resulting matrix
 	m = mat_new(lrow, ncols);
-	for(i = 0; i<m->n_rows; i++){
+	for(i=0; i<m->n_rows; i++){
 		k = 0;
 		offset = 0;
-		for(j = 0; j<m->n_cols; j++){
+		for(j=0; j<m->n_cols; j++){
 			// If the column index of marr[k] overflows
 			if(j-offset == marr[k]->n_cols){
 				offset += marr[k]->n_cols;
 				k++; // jump to the next matrix in the array
 			}
-		m->data[i*m->n_cols+j] = marr[k]->data[i*m->n_cols + j - offset];
+		m->data[i*m->n_cols+j] = marr[k]->data[i*marr[k]->n_cols + j - offset];
 		}
 	}
 	return m;
