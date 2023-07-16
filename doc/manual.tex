@@ -366,6 +366,7 @@ In letteratura sono presenti varie decomposizioni applicabili a diverse classi d
 \item[Decomposizione di Cholesky:] La matrice $\mathbf{A}=\mathbf{U}^T\mathbf{U}$ é scomposta tramite una matrice $\mathbf{U}$ triangolare superiore con elementi sulla diagonale positivi. Si applica a matrici quadrate, simmetriche, definite positive.
 \item[Decomposizione a valori singolari:] La matrice $\mathbf{A}=\mathbf{U}\mathbf{D}\mathbf{V}^H$ é scomposta in una matrice $\mathbf{D}$ diagonale non-negativa e due matrici unitarie $\mathbf{U}$ e $\mathbf{V}$ ($\mathbf{V}^H$ denota la trasposta coniugata di $\mathbf{V}$). Applicabile a matrici di dimensione $n\times m$.
 \item[Decomposizione spettrale:] La matrice $\mathbf{A}=\mathbf{V}\mathbf{D}\mathbf{V}^{-1}$ viene decomposta tramite la matrice $\mathbf{V}$ le cui colonne sono gli autovettori di $\mathbf{A}$ e la matrice $\mathbf{D}$ é diagonale con i corrispondenti autovalori come diagonale. Applicabile a matrici quadrate con autovettori distinti\footnote{non necessariamente anche distinti autovalori.}.
+\item[Decomposizione di Schur:]
 \item[Decomposizione in componenti principali:]
 \item[Decomposizione non-negativa:] La matrice $\mathbf{A}=\mathbf{W}\mathbf{H}$ è decomposta in due matrici che possiedono elementi positivi. É una soluzione, in genere di minimo locale, della funzione obiettivo $f(\mathbf{W},\mathbf{H})=\frac{1}{2}||\mathbf{A}-\mathbf{W}\mathbf{H}||^2_F$ con i vincoli $W_{ij} \geq 0$ e $H_{hk}\geq 0$. Applicabile a matrici $n\times m$ non-negative.
 \end{description}
@@ -490,6 +491,8 @@ Questa formula può essere generalizzata al caso $n\times n$.
 \subsection{Singular value decomposition (SVD)}
 
 \subsection{Spectral decomposition}
+
+\subsection{Schur decomposition}
 
 \subsection{Principal component analysis (PCA)}
 
@@ -716,8 +719,17 @@ QR algorithm & Hassenberg & all eigenvalues and all eigenpairs & $O(n^2)$ e $6n^
 
 \subsection{QR algorithm}
 
-L'algoritmo più affidabile e maggiormente utilizzato è quello inventato da John G.F. Francis che sfrutta la decomposizione QR.
+L'algoritmo più affidabile e maggiormente utilizzato è quello inventato da John G.F. Francis alla fine degli anni '60 che sfrutta la decomposizione QR.
 
+L'algoritmo parte dalla matrice $\mathbf{A}$ di cui vogliamo calcolare gli autovalori e iterativamente arriva a triangolarizzarla. Allo step iniziale $k=0$ la matrice $\mathbf{A}_0=\mathbf{A}$ è posta pari alla matrice di input. Al generico step $k$ si procede alla decomposizione QR $\mathbf{A}_k=\mathbf{Q}_k\mathbf{R}_k$. Quindi allo step successivo la matrice $\mathbf{A}_{k+1}$ è trovata tramite:
+\begin{equation}
+\mathbf{A}_{k+1} = \mathbf{R}_k\mathbf{Q}_k = \mathbf{Q}_k^{-1}\mathbf{Q}_k\mathbf{R}_k\mathbf{Q}_k = 
+\mathbf{Q}_k^{-1}\mathbf{A}_k\mathbf{Q}_k = \mathbf{Q}_k^T\mathbf{A}_k\mathbf{Q}_k
+\end{equation}
+Notare che tutte le matrici $\mathbf{A}_k$ sono simili e quindi hanno sempre gli stessi autovalori. L'algoritmo è numericamente stabile perché procede tramite trasformazioni simili ortogonali.
+Sotto certe condizioni le matrici $\mathbf{A}_k$ convergono ad una matrice triangolare, la \emph{forma di Schur} di $\mathbf{A}$ (gli autovalori sono gli elementi sulla diagonale).
+
+In questa forma grezza il calcolo delle iterazioni può essere computazionalmente oneroso e questo può essere ridotto trasformando inizialmente la matrice $\mathbf{A}$ in una forma di Hessenberg superiore. Questa trasformazione costa $\frac{10}{9}n^3+O(n^2)$ operazioni aritmetiche usando una riduzione di Householder. Il calcolo della decomposizione QR di una matrice di Hessenberg superiore ha un costo di $6n^2+O(n)$. Inoltre essendo la forma di Hessenberg una sorta di triangolare superiore questo riduce anche il numero di iterazioni per arrivare a convergenza.
 
 
 

@@ -2,7 +2,8 @@
 	Simple Linear Algebra Package (SLAP)
 */
 #include <stdlib.h>
-#include <string.h> // for memory menagement functions
+#include <string.h>	// for memory menagement functions
+#include <stdio.h>	// for error messages
 #include <math.h>
 
 
@@ -18,6 +19,7 @@
 #include "solvers/Gauss.h"
 #include "solvers/LUp.h" // LU(P) factorialization with partial pivoting
 #include "solvers/QR.h" // QR decomposition
+#include "eigen/eigen_qr.h" // Eigen-analysis using QR decomposition
 
 
 

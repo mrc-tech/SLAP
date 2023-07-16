@@ -19,11 +19,23 @@ int main()
 	mat_lup *lu = mat_lup_solve(A);
 	mat* x = solve_lu(lu, b);
 	printf("x =\n"); mat_print(x);
-	
+
+/*qr(A) =
+   -8.1240   -9.7242  -11.0782
+         0    1.8546    1.7647
+         0         0   -0.3982
+*/
 	printf("\nQR decomposition:\nA=Q*R\n");
-	mat_qr *qr = mat_qr_solve(A); // QUALCHE VOLTA DA ERRORE DI MEMORIA!!!!! inoltre il risultato va controllato bene!@!!!!!
+	mat_qr *qr = mat_qr_solve(A);
 	mat_print(qr->Q);
 	mat_print(qr->R);
+	
+	printf("Example (Wikipedia):\n");
+	A = mat_init2(3,3, (TYPE[]){12,-51,4,6,167,-68,-4,24,-41});
+	qr = mat_qr_solve(A);
+	printf("Q =\n"); mat_print(qr->Q);
+	printf("R =\n"); mat_print(qr->R);
+	
 	
 	printf("\n\n\nGauss elimination of A:\n");
 	mat_print(mat_GaussJordan(A));
