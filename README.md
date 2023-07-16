@@ -16,6 +16,8 @@ All the functions that return a matrix allocate new memory for the returned matr
 | --- | --- | --- |
 | `mat_new(n,m)` | allocate memory for $n\times m$ matrix ($n$ rows and $m$ cols); set all values to zero | |
 | `mat_free(A)` | free the allocated memory for matrix $\mathbf{A}$ | |
+| `mat_set(A,i,j,a)` | set the member of $\mathbf{A}$ at row $i$ and column $j$ equal to $a$ | $A_{ij}=a$ |
+| `a = mat_get(A,i,j)` | get the member of $\mathbf{A}$ at row $i$ and column $j$ equal to $a$ | $a=A_{ij}$ |
 | `B = mat_copy(A)` | copy the matrix $\mathbf{A}$ into $\mathbf{B}$ allocating memory | |
 | `mat_add_r(A,B)` | add matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ (_reference_) | $\mathbf{A}=\mathbf{A}+\mathbf{B}$ |
 | `mat_sub_r(A,B)` | subtract matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ (_reference_) | $\mathbf{A}=\mathbf{A}-\mathbf{B}$ |
@@ -29,6 +31,7 @@ All the functions that return a matrix allocate new memory for the returned matr
 | `mat_transpose_r(A)` | transpose the matrix $\mathbf{A}$ without allocating memory (_reference_) | $\mathbf{A}=\mathbf{A}^T$ |
 | `I = mat_eye(n)` | create an $n\times n$ identity matrix | |
 | `U = mat_GaussJordan(A)` | transform matrix $\mathbf{A}$ in row echelon form $\mathbf{U}$ (upper triangular) via Gauss elimination | |
+| `LU = mat_lup_solve(A)` | find the LU(P) decomposition of $\mathbf{A}$; $\mathbf{L}$ is a lower triangular, $\mathbf{U}$ an upper triangular and $\mathbf{P}$ a permutation matrix | $\{\mathbf{L},\mathbf{U},\mathbf{P}\}\gets\mathbf{A}$ |
 | `a = eigen_qr(A)` | calculate eigenvalues of $\mathbf{A}$ with QR decomposition and put the result in $\mathbf{a}$ | |
 | `mat_print(A)` | print matrix $\mathbf{A}$ | |
 
@@ -44,7 +47,7 @@ All the functions that return a matrix allocate new memory for the returned matr
 void main()
 {
 	// allocate the matrix structure and set the values:
-	mat *A = mat_init2(3,3, (double[]){1,2,3,4,5,6,7,8,9});
+	mat *A = mat_init(3,3, (double[]){1,2,3,4,5,6,7,8,9});
 	printf("A = \n"); mat_print(A); // print the matrix
 	
 	mat_free(A); // free the allocated memory
@@ -60,20 +63,20 @@ void main()
 {
 	mat *A, *I, *u, *v;
 	
-	A = mat_init2(3,3, (double[]){1,2,3,4,5,6,7,8,9});
-	I = mat_init2(3,3, (double[]){1,0,0,0,1,0,0,0,1}); // identity matrix
+	A = mat_init(3,3, (double[]){1,2,3,4,5,6,7,8,9});
+	I = mat_init(3,3, (double[]){1,0,0,0,1,0,0,0,1}); // identity matrix
 	
 	// scalar-matrix multiplication:
 	mat_print(mat_smul(A, 2.5)); // print 2.5 * A
 	
 	// vector-vector multiplication:
-	u = mat_init2(1,3, (double[]){1,2,3}); // row vector
-	v = mat_init2(1,3, (double[]){2,2,2}); // row vector
-	printf("u * v^T = ");  mat_print(mat_mul(u, mat_transpose(v))); // scalar product
-	printf("u^T * v =\n"); mat_print(mat_mul(mat_transpose(u), v)); // tensor product
+	u = mat_init(3,1, (double[]){1,2,3}); // column vector
+	v = mat_init(3,1, (double[]){2,2,2}); // column vector
+	printf("u^T * v =\n"); mat_print(mat_mul(mat_transpose(u), v)); // scalar product
+	printf("u * v^T = ");  mat_print(mat_mul(u, mat_transpose(v))); // tensor product
 	
 	// matrix-vector multiplication:
-	mat_print(mat_mul(A,mat_transpose(u)));
+	mat_print(mat_mul(A,u)); // A * u
 	
 	// matrix-matrix multiplication:
 	mat_print(mat_mul(A,I)); // A * I
@@ -90,8 +93,8 @@ void main()
 
 void main()
 {
-	mat *A = mat_init2(3,3, (double[]){1,3,3,4,5,6,7,8,9});
-	mat *b = mat_init2(3,1, (double[]){1,1,1});
+	mat *A = mat_init(3,3, (double[]){1,3,3,4,5,6,7,8,9});
+	mat *b = mat_init(3,1, (double[]){1,1,1});
 	
 	printf("A =\n"); mat_print(A);
 	printf("b =\n"); mat_print(b);
@@ -114,6 +117,7 @@ void main()
 # ToDo
 - [ ] **CORE**
 	- [ ] BTC++ `mat_init_DOS`
+	- [ ] error handling
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
 		- [ ] Strassen
@@ -132,9 +136,19 @@ void main()
 	- [ ] ...
 - [ ] **ADVANCED OPERATIONS**
 	- [ ] determinant
+		- [ ] LU(P) decomposition (_nml_)
 	- [ ] inverse
+		- [ ] LU(P) decomposition (_nml_)
+	- [ ] positive defined check
+	- [ ] matrix distances
+	- [ ] exponent
+	- [ ] least squares
+	- [ ] order of a matrix
+	- [ ] scalar `vec3 * vec3`
 	- [ ] Hessenberg form
 	- [ ] Vandermonde, Hankel, etc.
+	- [ ] Jacobian
+	- [ ] Hessian
 	- [ ] FFT
 	- [ ] ...
 - [ ] **SOLVER**
@@ -157,13 +171,15 @@ void main()
 	- [ ] QR decomposition
 		- [ ] definire meglio quando finire la procedura iterativa
 		- [ ] forma di Hessenberg per aumentare l'efficienza
-		- [ ] implicit QR algorithm
+		- [ ] implicit QR algorithm?
 	- [ ] Iterative power methods
 	- [ ] ...
 - [ ] **UTILS**
 	- [ ] random number generator
 		- [ ] sample from gaussian distribution
+	- [ ] complex matrices
 	- [ ] ...
+
 <!--
 - [ ] **SOLVER**
 	- [ ] iterative algorithms (for large scale problems)
