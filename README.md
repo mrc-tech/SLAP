@@ -149,16 +149,6 @@ void main()
 		- [ ] Successive over Relaxation SOR method
 		- [ ] Conjugate gradient
 		- [ ] Bi-conjugate gradient
-<!--		- [ ] preconditioned conjugate gradients (`pcg`)
-		- [ ] least squares (`lsqr`)
-		- [ ] minimum residual (`minres`)
-		- [ ] symmetric LQ (`symmlq`)
-		- [ ] biconjugate gradient (`bicg`)
-		- [ ] miconjugate gradient stabilized (`bicgstab`)
-		- [ ] conjugate gradient squared (`cgs`)
-		- [ ] generalized minimum residual (`gmres`)
-		- [ ] quasi-minimal residual (`qmr`)
-		- [ ] transpose-free quasi-minimal residual (`tfqmr`) -->
 	- [ ] Sparse solvers
 		- [ ] conjugate gradient?
 		- [ ] preconditioning?
@@ -174,3 +164,17 @@ void main()
 	- [ ] random number generator
 		- [ ] sample from gaussian distribution
 	- [ ] ...
+<!--
+- [ ] **SOLVER**
+	- [ ] iterative algorithms (for large scale problems)
+		- [ ] preconditioned conjugate gradients (`pcg`)
+		- [ ] least squares (`lsqr`)
+		- [ ] minimum residual (`minres`)
+		- [ ] symmetric LQ (`symmlq`)
+		- [ ] biconjugate gradient (`bicg`)
+		- [ ] biconjugate gradient stabilized (`bicgstab`)
+		- [ ] conjugate gradient squared (`cgs`)
+		- [ ] generalized minimum residual (`gmres`)
+		- [ ] quasi-minimal residual (`qmr`)
+		- [ ] transpose-free quasi-minimal residual (`tfqmr`)
+-->
