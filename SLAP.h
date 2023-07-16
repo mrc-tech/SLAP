@@ -23,6 +23,7 @@
 #endif
 #endif // TYPE
 
+
 #ifndef SLAP_DEBUG
 #define SLAP_DEBUG 0 // no debug
 #endif
