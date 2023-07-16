@@ -1,0 +1,29 @@
+  - [x] **CORE**
+  - [ ] **BASIC OPERATIONS**
+    - [ ] trace
+    - [ ] ...
+  - [ ] **DECOMPOSITION**
+    - [ ] QR
+      - [ ] Householder method
+      - [ ] Gibs rotations?
+    - [ ] others?
+  - [ ] **ADVANCED OPERATIONS**
+    - [ ] determinant
+    - [ ] inverse
+    - [ ] Hessenberg form
+    - [ ] ...
+  - [ ] **SOLVER**
+    - [ ] controllare la stabilità (e la velocità)
+    - [ ] QR decomposition
+      - [ ] devo solamente implementare la routine che risolve il sistema
+    - [ ] iterative?
+    - [ ] others?
+  - [ ] **EIGEN**
+    - [ ] QR decomposition
+      - [ ] definire meglio quando finire la procedura iterativa
+      - [ ] forma di Hessenberg per aumentare l'efficienza
+    - [ ] Iterative methods
+    - [ ] others?
+  - [ ] **UTILS**
+    - [ ] random number generator
+    - [ ] ...
