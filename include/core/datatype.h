@@ -41,7 +41,7 @@ mat* mat_new(unsigned int num_rows, unsigned int num_cols)
 	m->data = calloc(num_rows*num_cols, sizeof(*m->data));
 	MEM_CHECK(m->data);
 	for(i=0; i<num_rows*num_cols; i++) m->data[i] = 0; // set to zero
-	printf("mat_new\n"); // for memory allocation check
+	if(SLAP_DEBUG) printf("mat_new\n"); // for memory allocation check
 	
 	return m;
 }
@@ -51,7 +51,7 @@ void mat_free(mat* matrix)
 	if(matrix){
 		if(matrix->data) free(matrix->data); // delete the data
 		free(matrix); // delete the data structure
-		printf("mat_free\n"); // for memory allocation check
+		if(SLAP_DEBUG) printf("mat_free\n"); // for memory allocation check
 	}
 }
 

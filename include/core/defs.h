@@ -15,6 +15,10 @@
 #endif
 #endif // TYPE
 
+#ifndef SLAP_DEBUG
+#define SLAP_DEBUG 0 // no debug
+#endif
+
 
 //#define NULL 0
 #define SLAP_MIN_COEF 0.000000000000001 // DIPENDE DAL SISTEMA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
