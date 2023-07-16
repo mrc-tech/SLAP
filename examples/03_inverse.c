@@ -8,8 +8,8 @@
 
 int main()
 {
-	mat *A = mat_init2(3,3, (double[]){1,3,3,4,5,6,7,8,9});
-	mat *b = mat_init2(3,1, (double[]){1,1,1});
+	mat *A = mat_init(3,3, (double[]){1,3,3,4,5,6,7,8,9});
+	mat *b = mat_init(3,1, (double[]){1,1,1});
 	
 	printf("A =\n"); mat_print(A);
 	printf("b =\n"); mat_print(b);
@@ -31,7 +31,7 @@ int main()
 	mat_print(qr->R);
 	
 	printf("Example (Wikipedia):\n");
-	A = mat_init2(3,3, (TYPE[]){12,-51,4,6,167,-68,-4,24,-41});
+	A = mat_init(3,3, (TYPE[]){12,-51,4,6,167,-68,-4,24,-41});
 	qr = mat_qr_solve(A);
 	printf("Q =\n"); mat_print(qr->Q);
 	printf("R =\n"); mat_print(qr->R);

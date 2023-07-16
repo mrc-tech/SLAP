@@ -9,6 +9,7 @@
 #ifndef TYPE // data type of the matrix
 #ifdef __BORLANDC__
 #pragma message You are compiling using Borland C++ version __BORLANDC__.
+#define SLAP_DOS
 #define TYPE long double // DOS systems
 #else
 #define TYPE double // other non-DOS systems

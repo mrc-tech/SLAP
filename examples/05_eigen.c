@@ -3,7 +3,7 @@
 
 int main()
 {
-	mat *A = mat_init2(3,3, (double[]){1,3,3,4,5,6,7,8,9});
+	mat *A = mat_init(3,3, (double[]){1,3,3,4,5,6,7,8,9});
 	
 	// eig(A) = [16.3666, -1.0000, -0.3666]
 	mat *eig = eigen_qr(A);
