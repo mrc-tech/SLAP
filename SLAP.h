@@ -12,17 +12,14 @@
 #define SLAP_DEFS
 
 
-#ifdef __MSDOS__
-#pragma message MS-DOS system?
-#endif
 
 #ifndef TYPE // data type of the matrix
-#ifdef __BORLANDC__
+#ifdef __MSDOS__ // MS-DOS system
 #pragma message You are compiling using Borland C++ version __BORLANDC__.
 #define SLAP_DOS
-#define TYPE long double // DOS systems
-#else
-#define TYPE double // other non-DOS systems
+#define TYPE long double
+#else // other non-DOS systems
+#define TYPE double
 #endif
 #endif // TYPE
 
