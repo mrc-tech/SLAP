@@ -108,3 +108,40 @@ All the functions that return a matrix allocate new memory for the returned matr
 | `U = mat_GaussJordan(A)` | transform matrix $\mathbf{A}$ in row echelon form $\mathbf{U}$ (upper triangular) via Gauss elimination | |
 | `a = eigen_qr(A)` | calculate eigenvalues of $\mathbf{A}$ with QR decomposition and put the result in $\mathbf{a}$ | |
 | `mat_print(A)` | print matrix $\mathbf{A}$ | |
+
+
+# ToDo
+- [ ] **CORE**
+	- [ ] BTC++ `mat_init` (_DOS_)
+- [ ] **BASIC OPERATIONS**
+	- [ ] trace
+	- [ ] diagonal square matrix from vector
+	- [ ] ...
+- [ ] **DECOMPOSITION**
+	- [ ] QR
+		- [ ] Householder method
+		- [ ] Gibs rotations?
+	- [ ] Singular Value Decomposition (SVD)
+	- [ ] Principal Component Analysis (PCA)
+	- [ ] ...
+- [ ] **ADVANCED OPERATIONS**
+	- [ ] determinant
+	- [ ] inverse
+	- [ ] Hessenberg form
+	- [ ] FFT
+	- [ ] ...
+- [ ] **SOLVER**
+	- [ ] controllare la stabilità (e la velocità)
+	- [ ] QR decomposition
+		- [ ] devo solamente implementare la routine che risolve il sistema
+	- [ ] iterative?
+	- [ ] ...
+- [ ] **EIGEN**
+	- [ ] QR decomposition
+		- [ ] definire meglio quando finire la procedura iterativa
+		- [ ] forma di Hessenberg per aumentare l'efficienza
+	- [ ] Iterative methods
+	- [ ] ...
+- [ ] **UTILS**
+	- [ ] random number generator
+	- [ ] ...
