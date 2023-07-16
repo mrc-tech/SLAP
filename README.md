@@ -115,6 +115,9 @@ void main()
 - [ ] **CORE**
 	- [ ] BTC++ `mat_init_DOS`
 - [ ] **BASIC OPERATIONS**
+	- [ ] multiplication
+		- [ ] Strassen
+		- [ ] Coppersmith
 	- [ ] trace
 	- [ ] diagonal square matrix from vector
 	- [ ] rename `smul` into `scale`?
@@ -123,6 +126,7 @@ void main()
 	- [ ] QR
 		- [ ] Householder method
 		- [ ] Gibs rotations?
+	- [ ] Cholesky factorization
 	- [ ] Singular Value Decomposition (SVD)
 	- [ ] Principal Component Analysis (PCA)
 	- [ ] ...
@@ -130,18 +134,40 @@ void main()
 	- [ ] determinant
 	- [ ] inverse
 	- [ ] Hessenberg form
+	- [ ] Vandermonde, Hankel, etc.
 	- [ ] FFT
 	- [ ] ...
 - [ ] **SOLVER**
 	- [ ] controllare la stabilità (e la velocità)
+	- [ ] LU decomposition
+		- [ ] use Cholesky factorialization for positive definite matrix to improve speed
 	- [ ] QR decomposition
 		- [ ] devo solamente implementare la routine che risolve il sistema
-	- [ ] iterative?
+	- [ ] iterative algorithms (for large scale problems)
+		- [ ] Jacobi iterative method
+		- [ ] Gauss-Seidel iterative method
+		- [ ] Successive over Relaxation SOR method
+		- [ ] Conjugate gradient
+		- [ ] Bi-conjugate gradient
+<!--		- [ ] preconditioned conjugate gradients (`pcg`)
+		- [ ] least squares (`lsqr`)
+		- [ ] minimum residual (`minres`)
+		- [ ] symmetric LQ (`symmlq`)
+		- [ ] biconjugate gradient (`bicg`)
+		- [ ] miconjugate gradient stabilized (`bicgstab`)
+		- [ ] conjugate gradient squared (`cgs`)
+		- [ ] generalized minimum residual (`gmres`)
+		- [ ] quasi-minimal residual (`qmr`)
+		- [ ] transpose-free quasi-minimal residual (`tfqmr`) -->
+	- [ ] Sparse solvers
+		- [ ] conjugate gradient?
+		- [ ] preconditioning?
 	- [ ] ...
 - [ ] **EIGEN**
 	- [ ] QR decomposition
 		- [ ] definire meglio quando finire la procedura iterativa
 		- [ ] forma di Hessenberg per aumentare l'efficienza
+		- [ ] implicit QR algorithm
 	- [ ] Iterative power methods
 	- [ ] ...
 - [ ] **UTILS**
