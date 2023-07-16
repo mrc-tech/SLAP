@@ -117,6 +117,7 @@ void main()
 
 
 # ToDo
+<!--  v0.2  to  v0.3  -->
 - [ ] **CORE**
 	- [ ] BTC++ `mat_init_DOS`
 	- [ ] error handling
