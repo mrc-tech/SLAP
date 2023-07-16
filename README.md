@@ -85,5 +85,16 @@ void main()
 
 
 
-# ToDo
+# Functions
 
+| function | operation | math |
+| --- | --- | --- |
+| `mat_new` | | |
+| `mat_free` | | |
+| `mat_add_r(A,B)` | | |
+| `mat_sub_r(A,B)` | | |
+| `C = mat_add(A,B)` | | |
+| `C = mat_sub(A,B)` | | |
+| `C = mat_mul(A,B)` | | |
+
+| `mat_print(A)` | print matrix $\mathbf{A}$ | |
