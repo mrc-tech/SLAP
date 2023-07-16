@@ -142,8 +142,9 @@ void main()
 	- [ ] QR decomposition
 		- [ ] definire meglio quando finire la procedura iterativa
 		- [ ] forma di Hessenberg per aumentare l'efficienza
-	- [ ] Iterative methods
+	- [ ] Iterative power methods
 	- [ ] ...
 - [ ] **UTILS**
 	- [ ] random number generator
+		- [ ] sample from gaussian distribution
 	- [ ] ...
