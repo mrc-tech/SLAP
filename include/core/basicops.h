@@ -163,6 +163,16 @@ mat* mat_mul(mat* m1, mat* m2)
 }
 
 
+TYPE mat_trace(mat *m)
+{
+	// trace of the matrix m
+	TYPE tr = 0;
+	int i;
+	for(i=0; i<MIN(m->n_rows,m->n_cols); i++) tr += m->data[i * m->n_cols + i];
+	return tr;
+}
+
+
 
 
 mat* mat_eye(unsigned int size)

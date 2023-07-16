@@ -29,6 +29,7 @@ All the functions that return a matrix allocate new memory for the returned matr
 | `mat_equal(A,B,tol)` | check if matrix $\mathbf{A}$ and $\mathbf{B}$ are equal | true if $abs(A_{ij}-B_{ij}) < tol$ |
 | `B = mat_transpose(A)` | transpose the matrix $\mathbf{A}$ and put into matrix $\mathbf{B}$ | $\mathbf{B}=\mathbf{A}^T$ |
 | `mat_transpose_r(A)` | transpose the matrix $\mathbf{A}$ without allocating memory (_reference_) | $\mathbf{A}=\mathbf{A}^T$ |
+| `t = mat_trace(A)` | return the trace of $\mathbf{A}$ | $a = tr(\mathbf{A}) = \sum_{i=1}^{min(n,m)} A_{ii}$ |
 | `I = mat_eye(n)` | create an $n\times n$ identity matrix | |
 | `U = mat_GaussJordan(A)` | transform matrix $\mathbf{A}$ in row echelon form $\mathbf{U}$ (upper triangular) via Gauss elimination | |
 | `LUP = mat_lup_solve(A)` | find the LU(P) decomposition of $\mathbf{A}$; $\mathbf{L}$ is a lower triangular, $\mathbf{U}$ an upper triangular and $\mathbf{P}$ a permutation matrix (return a `lup` struct) | $\{\mathbf{L},\mathbf{U},\mathbf{P}\}\gets\mathbf{A}\quad$ $\mathbf{P}\mathbf{A}=\mathbf{L}\mathbf{U}$ |
@@ -123,7 +124,7 @@ void main()
 	- [ ] multiplication
 		- [ ] Strassen
 		- [ ] Coppersmith
-	- [ ] trace
+	- [x] trace
 	- [ ] diagonal square matrix from vector
 	- [ ] rename `smul` into `scale`?
 	- [ ] ...
@@ -139,13 +140,15 @@ void main()
 	- [ ] determinant
 		- [ ] LU(P) decomposition (_nml_)
 	- [ ] inverse
+		- [ ] Sviluppo di Laplace
 		- [ ] LU(P) decomposition (_nml_)
 	- [ ] positive defined check
 	- [ ] matrix distances
 	- [ ] exponent
 	- [ ] least squares
 	- [ ] order of a matrix
-	- [ ] scalar `vec3 * vec3`
+	- [ ] vector product `vec3 * vec3`
+	- [ ] conjugate matrix
 	- [ ] Hessenberg form
 	- [ ] Vandermonde, Hankel, etc.
 	- [ ] Jacobian
