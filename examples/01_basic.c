@@ -50,6 +50,7 @@ int main()
 	printf("diag(3, {1,2,3}) =\n");
 	mat_print(mat_new_diag(3, (TYPE[]){1,2,3}));
 	
+	mat_print(vec_prod(mat_init(3,1, (TYPE[]){1,2,3}),mat_init(3,1, (TYPE[]){3,2,1})));
 	
 	
 	printf("end program.\n");

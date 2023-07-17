@@ -148,7 +148,7 @@ void main()
 	- [ ] exponent
 	- [ ] least squares
 	- [ ] order of a matrix
-	- [ ] vector product `vec3 * vec3`
+	- [x] vector product `vec3 * vec3`
 	- [ ] conjugate matrix
 	- [ ] Hessenberg form
 	- [ ] Vandermonde, Hankel, etc.
