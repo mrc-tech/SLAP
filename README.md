@@ -123,6 +123,7 @@ void main()
 	- [ ] error handling
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
+		- [ ] cache aligned
 		- [ ] Strassen
 		- [ ] Coppersmith
 	- [x] trace
