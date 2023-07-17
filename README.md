@@ -43,7 +43,6 @@ All the functions that return a matrix allocate new memory for the returned matr
 
 ### Matrix creation
 ```C++
-#include <stdio.h>
 #include "SLAP.h"
 
 void main()
@@ -58,7 +57,6 @@ void main()
 
 ### Multiplication
 ```C++
-#include <stdio.h>
 #include "SLAP.h"
 
 void main()
@@ -90,7 +88,6 @@ void main()
 
 ### Solve linear system
 ```C++
-#include <stdio.h>
 #include "SLAP.h"
 
 void main()
@@ -114,6 +111,18 @@ void main()
 }
 ```
 
+### Eigenvalues / Eigenvectors
+```C++
+#include "SLAP.h"
+
+void main()
+{
+	mat *A = mat_init(3,3, (double[]){1,3,3,4,5,6,7,8,9});
+	mat *eig = eigen_qr(A); // find eigenvalues using QR decomposition
+	mat_print(eig);
+}
+```
+
 
 
 # ToDo
@@ -121,11 +130,12 @@ void main()
 - [ ] **CORE**
 	- [ ] BTC++ `mat_init_DOS`
 	- [ ] error handling
+	- [ ] `push_back()` like `vector<TYPE>` for vectors (column or row matrices)
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
-		- [ ] cache aligned
+		- [ ] cache aligned (for _row-major_)
 		- [ ] Strassen
-		- [ ] Coppersmith
+		- [ ] Coppersmith?
 	- [x] trace
 	- [x] diagonal square matrix from vector
 	- [ ] rename `smul` into `scale`?
@@ -170,6 +180,7 @@ void main()
 		- [ ] LU(P) decomposition (_nml_)
 		- [ ] matrice aggiunta e determinante
 	- [ ] positive defined check
+		- [ ] Eigenvalues?
 	- [ ] matrix distances
 	- [ ] exponent
 	- [ ] least squares
