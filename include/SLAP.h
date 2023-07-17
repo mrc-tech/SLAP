@@ -14,11 +14,18 @@
 #include "core/datatype.h" // matrix and other data type and menagement
 #include "core/basicops.h" // basic operations
 
-// OPERATIONS:
-#include "core/strmod.h" // matrix structure modification
-#include "solvers/Gauss.h"
+// DECOMPOSITIONS:
 #include "solvers/LUp.h" // LU(P) factorialization with partial pivoting
 #include "solvers/QR.h" // QR decomposition
+
+// OPERATIONS:
+#include "core/strmod.h" // matrix structure modification
+#include "fun/FUN.h" // additional functions (det, inv, etc.)
+
+// SOLVERS:
+#include "solvers/Gauss.h"
+
+// EIGEN:
 #include "eigen/eigen_qr.h" // Eigen-analysis using QR decomposition
 
 

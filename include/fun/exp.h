@@ -1,0 +1,3 @@
+/*
+	matrix exponent exp(A)
+*/
