@@ -130,6 +130,7 @@ void main()
 	- [ ] rename `smul` into `scale`?
 	- [ ] ...
 - [ ] **DECOMPOSITION**
+	- [ ] separare l'implementazione di LU e QR dai solver (files separati)
 	- [ ] QR
 		- [ ] Householder method
 		- [ ] Gibs rotations?
