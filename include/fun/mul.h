@@ -1,4 +1,4 @@
-/* efficient matrix multiplication */
+// --- efficient matrix multiplication ---
 
 mat* mat_mul_cache1(mat* m1, mat* m2)
 {
