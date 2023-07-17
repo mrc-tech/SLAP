@@ -47,6 +47,9 @@ int main()
 	printf("trace(A) = %f\n", mat_trace(A));
 	printf("trace(1,2,3;4,5,6;7,8,9) = %f\n", mat_trace(mat_init(3,3, (double[]){1,2,3,4,5,6,7,8,9})));
 	
+	printf("diag(3, {1,2,3}) =\n");
+	mat_print(mat_new_diag(3, (TYPE[]){1,2,3}));
+	
 	
 	
 	printf("end program.\n");

@@ -95,7 +95,24 @@ double *mat_getrow_array(mat *m, unsigned int row)
 }
 
 
+mat* mat_get_diag(mat *m)
+{
+	// returns the diagonal of the matrix m as a column vector
+	int N = MIN(m->n_rows,m->n_cols); // for non-square matrices
+	mat *d = mat_new(N,1); // column vector
+	int i;
+	for(i=0; i<N; i++) d->data[i] = m->data[i*m->n_cols+i];
+	return d;
+}
 
+mat* mat_new_diag(unsigned int n, TYPE data[])
+{
+	// create a square diagonal matrix
+	int i;
+	mat *m = mat_new(n,n); // square matrix
+	for (i=0; i<n; i++) m->data[i * m->n_cols + i] = data[i];
+	return m;
+}
 
 
 

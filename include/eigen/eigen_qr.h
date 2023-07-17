@@ -4,15 +4,6 @@
 #ifndef SLAP_EIGEN_QR
 #define SLAP_EIGEN_QR
 
-mat* mat_get_diag(mat *m) // DA METTERE IN STRMOD!!!!!!!!!!!!!
-{
-	// returns the diagonal of the matrix m as a column vector
-	int N = MIN(m->n_rows,m->n_cols); // for non-square matrices
-	mat *d = mat_new(N,1); // column vector
-	int i;
-	for(i=0; i<N; i++) d->data[i] = m->data[i*m->n_cols+i];
-	return d;
-}
 
 mat* eigen_qr(mat *m)
 {

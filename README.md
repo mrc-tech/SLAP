@@ -126,7 +126,7 @@ void main()
 		- [ ] Strassen
 		- [ ] Coppersmith
 	- [x] trace
-	- [ ] diagonal square matrix from vector
+	- [x] diagonal square matrix from vector
 	- [ ] rename `smul` into `scale`?
 	- [ ] ...
 - [ ] **DECOMPOSITION**
