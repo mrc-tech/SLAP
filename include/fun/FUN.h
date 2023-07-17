@@ -8,6 +8,7 @@
 #include "inv.h"	// inverse matrix
 #include "exp.h"	// exponent
 #include "conj.h"	// conjugate matrix
+#include "norm.h"	// matrix norms
 #include "vec_prod.h"	// vector product
 
 #endif
