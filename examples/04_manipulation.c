@@ -34,5 +34,6 @@ int main()
 	mat_print(B);
 	
 	
+	
 	return 0;
 }

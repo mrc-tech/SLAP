@@ -150,7 +150,7 @@ mat* mat_mul(mat* m1, mat* m2)
 //		SLAP_ERROR(CANNOT_MULTIPLY);
 		return NULL;
 	}
-	m = mat_new(m1->n_rows, m2->n_cols);
+	m = mat_new(m1->n_rows, m2->n_cols); // also set all values to zero
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
 			for(i=0; i<m1->n_cols; i++){
