@@ -140,9 +140,10 @@ void main()
 - [ ] **ADVANCED OPERATIONS**
 	- [ ] determinant
 		- [ ] LU(P) decomposition (_nml_)
-	- [ ] inverse
 		- [ ] Sviluppo di Laplace
+	- [ ] inverse
 		- [ ] LU(P) decomposition (_nml_)
+		- [ ] matrice aggiunta e determinante
 	- [ ] positive defined check
 	- [ ] matrix distances
 	- [ ] exponent
