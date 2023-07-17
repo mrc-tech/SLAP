@@ -138,26 +138,6 @@ void main()
 	- [ ] Singular Value Decomposition (SVD)
 	- [ ] Principal Component Analysis (PCA)
 	- [ ] ...
-- [ ] **ADVANCED OPERATIONS**
-	- [ ] determinant
-		- [ ] LU(P) decomposition (_nml_)
-		- [ ] Sviluppo di Laplace
-	- [ ] inverse
-		- [ ] LU(P) decomposition (_nml_)
-		- [ ] matrice aggiunta e determinante
-	- [ ] positive defined check
-	- [ ] matrix distances
-	- [ ] exponent
-	- [ ] least squares
-	- [ ] order of a matrix
-	- [x] vector product `vec3 * vec3`
-	- [ ] conjugate matrix
-	- [ ] Hessenberg form
-	- [ ] Vandermonde, Hankel, etc.
-	- [ ] Jacobian
-	- [ ] Hessian
-	- [ ] FFT
-	- [ ] ...
 - [ ] **SOLVER**
 	- [ ] controllare la stabilità (e la velocità)
 	- [ ] LU decomposition
@@ -180,6 +160,26 @@ void main()
 		- [ ] forma di Hessenberg per aumentare l'efficienza
 		- [ ] implicit QR algorithm?
 	- [ ] Iterative power methods
+	- [ ] ...
+- [ ] **ADVANCED OPERATIONS**
+	- [ ] determinant
+		- [ ] LU(P) decomposition (_nml_)
+		- [ ] Sviluppo di Laplace
+	- [ ] inverse
+		- [ ] LU(P) decomposition (_nml_)
+		- [ ] matrice aggiunta e determinante
+	- [ ] positive defined check
+	- [ ] matrix distances
+	- [ ] exponent
+	- [ ] least squares
+	- [ ] order of a matrix
+	- [x] vector product `vec3 * vec3`
+	- [ ] conjugate matrix
+	- [ ] Hessenberg form
+	- [ ] Vandermonde, Hankel, etc.
+	- [ ] Jacobian
+	- [ ] Hessian
+	- [ ] FFT
 	- [ ] ...
 - [ ] **UTILS**
 	- [ ] random number generator
