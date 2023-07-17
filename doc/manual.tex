@@ -235,6 +235,15 @@ Una variante che funziona per matrici non-quadrate si basa sul dividere le matri
 \end{algorithm}
 
 
+\paragraph{Strassen algorithm}
+
+L'osservazione chiave è che per matrici $2\times 2$ le moltiplicazioni necessarie sono 7 invece che 8, al costo di 11 operazioni aggiuntive tra somme e sottrazioni. Quindi si tratta di un algoritmo \textit{dividi e conquista} in cui la matrici di input sono suddivise in blocchi $2\times 2$ e quindi bisogna moltiplicare sette $\frac{n}{2}\times\frac{n}{2}$ matrici. Applicando ricorsivamente l'algoritmo richiede in totale $O(n^{\log_27}\approx O(n^{2.807})$ operazioni sul campo.
+
+La stabilità è inferiore rispetto all'algoritmo naive, ma più veloce nel caso in cui $n>100$ circa.
+
+\textcolor{red}{continuare a scrivere...}
+
+
 
 
 

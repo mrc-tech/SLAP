@@ -118,8 +118,7 @@ void main()
 void main()
 {
 	mat *A = mat_init(3,3, (double[]){1,3,3,4,5,6,7,8,9});
-	mat *eig = eigen_qr(A); // find eigenvalues using QR decomposition
-	mat_print(eig);
+	mat_print(eigen_qr(A)); // print eigenvalues using QR decomposition
 }
 ```
 
@@ -131,6 +130,10 @@ void main()
 	- [ ] BTC++ `mat_init_DOS`
 	- [ ] error handling
 	- [ ] `push_back()` like `vector<TYPE>` for vectors (column or row matrices)
+	- [ ] `__attribute__((cleanup(mat_free)))` prima della definizione delle matrici che devono auto-eliminarsi?
+	- [ ] usare `static` davanti a `mat*` di ritorno di alcune funzioni?
+	- [ ] `inline void` per `mat_free`?
+	- [ ] `const mat*` come arg alle funzioni migliora la gestione della memoria?
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
 		- [ ] cache aligned (for _row-major_)
@@ -176,6 +179,9 @@ void main()
 	- [ ] determinant
 		- [ ] LU(P) decomposition (_nml_)
 		- [ ] Sviluppo di Laplace
+		- [ ] Bareiss algorithm
+		- [ ] Division-free algorithm
+		- [ ] Fast matrix multiplication
 	- [ ] inverse
 		- [ ] LU(P) decomposition (_nml_)
 		- [ ] matrice aggiunta e determinante
@@ -192,6 +198,7 @@ void main()
 	- [ ] Jacobian
 	- [ ] Hessian
 	- [ ] FFT
+	- [ ] _Control systems methods_
 	- [ ] ...
 - [ ] **UTILS**
 	- [ ] random number generator
