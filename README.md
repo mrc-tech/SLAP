@@ -139,6 +139,7 @@ void main()
 		- [ ] cache aligned (for _row-major_)
 		- [ ] Strassen
 		- [ ] Coppersmith?
+	- [ ] Hadamard product
 	- [x] trace
 	- [x] diagonal square matrix from vector
 	- [ ] rename `smul` into `scale`?
