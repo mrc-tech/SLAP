@@ -12,4 +12,4 @@
 #include "norm.h"	// matrix norms
 #include "vec_prod.h"	// vector product
 
-#endif
+#endif // SLAP_FUN
