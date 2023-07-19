@@ -202,7 +202,8 @@ void main()
 	- [ ] ...
 - [ ] **UTILS**
 	- [ ] random number generator
-		- [ ] sample from gaussian distribution
+		- [ ] simple mod-type pseudo-random generator
+   		- [ ] sample from gaussian distribution
 	- [ ] complex matrices
 	- [ ] ...
 
