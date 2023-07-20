@@ -21,3 +21,16 @@ mat* mat_mul_cache1(mat* m1, mat* m2)
 	
 	return m;
 }
+
+
+int mat_mul_Hadamard_r{mat* A, mat* B}
+{
+	// tensor inner product (element-wise)
+	// put the result into A (reference)
+	int i;
+	if((A->n_rows != B->n_rows) || (A->n_cols != B->n_cols)) return 0; // dimension of A and B must be the same
+	for(i=0; i<A->n_rows*A->n_cols; i++){
+		A->data[i] *= B->data[i];
+	}
+	return 1;
+}
