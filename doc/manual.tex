@@ -246,6 +246,37 @@ La stabilità è inferiore rispetto all'algoritmo naive, ma più veloce nel caso
 
 
 
+\section{Functions}
+
+\subsection{Matrix norm}
+
+La norma di una matrice è una funzione $||\cdot|| : \mathbb{K}^{n\times m} \mapsto \mathbb{K}$ che soddisfa le seguenti proprietà:
+\begin{itemize}[noitemsep]
+\item $||\mathbf{A}|| \geq 0$ con l'uguaglianza solamente se $\mathbf{A}=\mathbf{0}$ (sempre positiva)
+\item $||\alpha\mathbf{A}||=|\alpha| \; ||\mathbf{A}||$ per ogni $\alpha\in\mathbb{K}$ (omogeneità)
+\item $||\mathbf{A}+\mathbf{B}||\leq ||\mathbf{A}||+||\mathbf{B}||$ (disuguaglianza triangolare)
+\end{itemize}
+Si tratta di un operatore analogo alla norma di un vettore, ma applicata alle matrici.
+
+Un'importante classe di norme matriciali è data dalla \textit{subordinate matrix norm} definita a partire dalla norma di un vettore:
+\begin{equation}
+||\mathbf{A}||_p = \max_{\mathbf{x}\neq\mathbf{0}} \frac{||\mathbf{A}\mathbf{x}||_p}{||\mathbf{x}||_p}
+\end{equation}
+che equivalentemente può essere scritta come $||\mathbf{A}||_p = \max_{||\mathbf{x}||_p=1} ||\mathbf{A}\mathbf{x}||_p$.
+Per le norme 1--, 2-- e $\infty$-- del vettore si ha che:
+\begin{align}
+||\mathbf{A}||_1 & = \max_{1\leq j\leq m} \sum_{i=1}^n |A_{ij}| \\
+||\mathbf{A}||_2 & = \max_{1\leq i\leq n} \sum_{j=1}^m |A_{ij}| \\
+||\mathbf{A}||_\infty & = \sigma_{\max}(\mathbf{A})
+\end{align}
+dove $\sigma_{\max}(\mathbf{A})$ denota il valore singolare maggiore di $\mathbf{A}$. per la forma generale della norma $p$-esima di H\"older non è presente una formula esplicita per i casi in cui $p\neq 1,2,\infty$.
+
+Un'altra norma importante è quella di Frobenius (usata ad esempio nella definizione dell'errore per la regressione lineare):
+\begin{equation}
+||\mathbf{A}||_F = \sqrt{\sum_{i=1}^n \sum_{j=1}^m |A_{ij}^2|} = 
+\sqrt{\text{tr}(\mathbf{A}\mathbf{A}^T)}
+\end{equation}
+
 
 
 \section{Gauss elimination}

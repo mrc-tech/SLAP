@@ -188,7 +188,7 @@ void main()
 		- [ ] matrice aggiunta e determinante
 	- [ ] positive defined check
 		- [ ] Eigenvalues?
-	- [ ] matrix distances
+	- [x] matrix norms
 	- [ ] exponent
 	- [ ] least squares
 	- [ ] order of a matrix

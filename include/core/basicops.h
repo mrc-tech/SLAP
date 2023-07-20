@@ -173,6 +173,15 @@ TYPE mat_trace(mat *m)
 }
 
 
+double mat_l2norm(mat* m)
+{
+	// L-2 norm (Euclidean)
+	int i;
+	TYPE sum = 0.0;
+	if(m->n_cols != 1 && m->n_rows != 1) return -1; // only vectors
+	for(i=0; i<MAX(m->n_rows,m->n_cols); i++) sum += m->data[i] * m->data[i];
+	return sqrt(sum);
+}
 
 
 mat* mat_eye(unsigned int size)
