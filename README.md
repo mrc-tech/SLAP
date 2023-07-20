@@ -163,7 +163,8 @@ void main()
 		- [ ] Jacobi iterative method
 		- [ ] Gauss-Seidel iterative method
 		- [ ] Successive over Relaxation SOR method
-		- [ ] Conjugate gradient
+		- [x] Conjugate gradient
+			- [ ] Fix for 3x3 example (2x2 works)
 		- [ ] Bi-conjugate gradient
 	- [ ] Sparse solvers
 		- [ ] conjugate gradient?
@@ -190,7 +191,7 @@ void main()
 		- [ ] Eigenvalues?
 	- [x] matrix norms
 	- [ ] exponent
-	- [ ] least squares
+	- [ ] least squares (_example_)
 	- [ ] order of a matrix
 	- [x] vector product `vec3 * vec3`
 	- [ ] conjugate matrix

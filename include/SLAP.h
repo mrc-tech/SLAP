@@ -18,6 +18,7 @@
 // DECOMPOSITIONS:
 #include "solvers/LUp.h" // LU(P) factorialization with partial pivoting
 #include "solvers/QR.h" // QR decomposition
+#include "solvers/conjgrad.h" // conjugate gradient
 
 // OPERATIONS:
 #include "fun/FUN.h" // additional functions (det, inv, etc.)

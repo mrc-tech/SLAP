@@ -693,7 +693,123 @@ Il calcolo del vettore temporaneo $\mathbf{y} = \mathbf{Q}^T \mathbf{b}$ richied
 
 
 
+\subsection{Conjugate gradient method}
 
+Il metodo del gradiente coniugato in matematica serve per trovare iterativamente la soluzione di sistemi lineari definiti da una matrice positiva.
+Spesso è usato per matrici definite positive sparse che hanno una dimensione eccessiva per poterli risolvere convenientemente con metodi diretti come la decomposizione di Cholesky.
+Il metodo del gradiente coniugato è usato anche per risolvere problemi di ottimizzazione non-condizionati.
+
+Il metodo del gradiente bi-coniugato provvede la generalizzazione a matrici non-simmetriche.
+Esistono anche metodi del gradiente coniugato non-lineari.
+
+Supponiamo di avere un sistema lineare~\eqref{eq:lin_sys} con vettore $\mathbf{x}$ di incognite di dimensione $n$ e con la matrice $\mathbf{A} \in \mathbb{K}^{n\times n}$ simmetrica, ovvero con $\mathbf{A}^T=\mathbf{A}$, definita positiva, ovvero con $\mathbf{x}^T\mathbf{A}\mathbf{x}>0$ per ogni vettore non-nullo $\mathbf{x}\in\mathbb{K}^n$ e reale.
+
+Questo metodo può essere visto come una variazione del metodo iterativo di Arnoldi/Lanczos per il problema agli autovalori.
+
+Diciamo che due vettori $\mathbf{u}$ e $\mathbf{v}$ sono coniugati rispetto a $\mathbf{A}$ se:
+\begin{equation}
+\mathbf{u}^T \mathbf{A} \mathbf{v} = 0
+\end{equation}
+Dal momento che $\mathbf{A}$ è simmetrica e definita positiva, la parte a sinistra dell'uguale definisce un prodotto interno:
+\begin{equation}
+\mathbf{u}^T\mathbf{A}\mathbf{v} = \left<\mathbf{u},\mathbf{v}\right>_\mathbf{A} :=
+\left<\mathbf{Au},\mathbf{v}\right> = \left<\mathbf{u},\mathbf{A}^T\mathbf{v}\right> = \left<\mathbf{u}, \mathbf{Av}\right>
+\end{equation}
+Due vettori sono coniugati rispetto ad $\mathbf{A}$ se e solo se sono ortogonali rispetto a questo prodotto interno (se il prodotto interno è pari a zero).
+
+Supponiamo che $P=\{\mathbf{p}_1, \mathbf{p}_2, \ldots, \mathbf{p}_n\}$ è un insieme di $n$ vettori mutuamente coniugati rispetto a $\mathbf{A}$, ovvero che $\mathbf{p}_i^T\mathbf{A}\mathbf{p}_j=0$ per ogni $i\neq j$. Allora $P$ forma una base di $\mathbb{K}^n$ ed esprimiamo le soluzioni $\mathbf{x}^*$ del sistema $\mathbf{Ax}=\mathbf{b}$ in questa base:
+\begin{equation}
+\mathbf{x}^* = \sum_{i=1}^n \alpha_i \mathbf{p}_i
+\qquad \rightarrow \qquad
+\mathbf{A}\mathbf{x}^* = \sum_{i=1}^n \alpha_i \mathbf{A}\mathbf{p}_i
+\end{equation}
+Moltiplicando a sinistra il sistema $\mathbf{Ax}=\mathbf{b}$ con il vettore $\mathbf{p}_k^T$ si ottiene:
+\begin{equation}
+\mathbf{p}_k^T \mathbf{b} = \mathbf{p}_k^T \mathbf{A} \mathbf{x}^* = \sum_{i=1}^n \alpha_i \mathbf{p}_k^T \mathbf{A} \mathbf{p}_i = \sum_{i=1}^n \alpha_i \left<\mathbf{p}_k,\mathbf{p}_i\right>_\mathbf{A} = \alpha_k \left<\mathbf{p}_k,\mathbf{p}_k\right>_\mathbf{A}
+\end{equation}
+e quindi otteniamo:
+\begin{equation}
+\alpha_k = \frac{\left<\mathbf{p}_k,\mathbf{b}\right>}{\left<\mathbf{p}_k,\mathbf{p}_k\right>}
+\end{equation}
+Quindi il metodo per risolvere il sistema \eqref{eq:lin_sys} consiste nel trovare una sequenza $P$ di $n$ direzioni coniugate e poi calcolare i coefficienti $\alpha_k$.
+
+Se scegliamo i vettori $\mathbf{p}_k$ adeguatamente, allora non necessitiamo neanche di tutti i vettori per avere una approssimazione soddisfacente della soluzione $\mathbf{x}$.
+
+Definiamo il valore iniziale di $\mathbf{x}^*$ come $\mathbf{x}_0$ (inizialmente possiamo porre $\mathbf{x}_0=\mathbf{0}$).
+La funzione obiettivo da minimizzare è la seguente forma quadratica:
+\begin{equation}
+f(\mathbf{x}) = \frac{1}{2} \mathbf{x}^T \mathbf{A} \mathbf{x} - \mathbf{x}^T \mathbf{b}
+\end{equation}
+Il gradiente (derivata prima) è pari a:
+\begin{equation}
+\nabla f(\mathbf{x}) = \mathbf{Ax}-\mathbf{b}
+\end{equation}
+mentre la derivata seconda è pari alla matrice Hessiana $\mathbf{H}(f(\mathbf{x})) = \mathbf{A}$ che per definizione della matrice $\mathbf{A}$ è anch'essa definita positiva.
+
+Questo suggerisce a prendere come vettore $\mathbf{p}_0$ il negativo del gradiente di $f$ a $\mathbf{x}=\mathbf{x}_0$. Questo vuol dire che $\mathbf{p}_0=\mathbf{b}-\mathbf{Ax}_0$. Gli altri vettori saranno coniugati al gradiente (da qui il nome del metodo). Si noti inoltre che $\mathbf{p}_0$ è anche il residuo calcolato dal primo step dell'algoritmo.
+Sia $\mathbf{r}_k$ il residuo al $k$-esimo step (anche uguale al negativo del gradiente di $f$ al $k$-esimo step):
+\begin{equation}
+\mathbf{r}_k = \mathbf{b} - \mathbf{Ax}_k
+\end{equation}
+lo step successivo dovrà muoversi in direzione $\mathbf{r}_k$ dove le altre direzioni sono coniugate l'una all'altra.
+Una maniera pratica per assicurarsi questo è trovare le direzioni successive dal residuo corrente e da tutte le direzioni precedenti. Questo metodo di calcolare il vincolo può essere visto come un esempio dell'ortonormalizzazione di Gram-Schmidt:
+\begin{equation}
+\mathbf{p}_k = \mathbf{r}_k - \sum_{i<k} \frac{\mathbf{p}_i^T\mathbf{A}\mathbf{r}_k}{\mathbf{p}_i^T\mathbf{A}\mathbf{p}_i}\mathbf{p}_i
+\end{equation}
+Seguendo questa direzione la seguente posizione ottimale è:
+\begin{equation}
+\mathbf{x}_{k+1} = \mathbf{x}_k + \alpha_k \mathbf{p}_k
+\end{equation}
+con
+\begin{equation}
+\alpha_k = \frac{\mathbf{p}_k^T(\mathbf{b}-\mathbf{Ax}_k)}{\mathbf{p}_k^T\mathbf{Ap}_k} = 
+\frac{\mathbf{p}_k^T\mathbf{r}_k}{\mathbf{p}_k^T\mathbf{Ap}_k}
+\end{equation}
+che deriva dall'aver posto pari a zero la derivata di $f(\mathbf{x}_{k+1})$ rispetto a $\alpha_k$.
+
+
+\begin{algorithm}
+\caption{Conjugate gradient}\label{alg:mul_simple}
+\begin{algorithmic}[1]
+\Require matrix $\mathbf{A}$, vector $\mathbf{b}$
+\State $\mathbf{r}_0 \gets \mathbf{b} - \mathbf{Ax}_0$
+\State $\mathbf{p}_0 \gets \mathbf{r}_0$
+\State $k \gets 0$
+\While{$\mathbf{r}_k$ is sufficiently small}
+	\State $\alpha_k \gets \frac{\mathbf{p}_k^T\mathbf{r}_k}{\mathbf{p}_k^T\mathbf{Ap}_k}$
+	\State $\mathbf{x}_{k+1} \gets \mathbf{x}_k + \alpha_k \mathbf{p}_k$
+	\State $\mathbf{r}_{k+1} \gets \mathbf{r}_k - \alpha_k \mathbf{Ap}_k$
+	\State $\beta_k \gets \frac{\mathbf{r}_{k+1}^T\mathbf{r}_{k+1}}{\mathbf{r}_k^T\mathbf{r}_k}$
+	\State $\mathbf{p}_{k+1} \gets \mathbf{r}_{k+1} + \beta_k \mathbf{p}_k$
+	\State $k \gets k + 1$
+\EndWhile
+\State return $\mathbf{x}_{k+1}$ as the result
+\end{algorithmic}
+\end{algorithm}
+
+Nell'algoritmo $\alpha_k$ è scelto in maniera tale che $\mathbf{t}_{k+1}$ è ortogonale a $\mathbf{r}_k$
+
+Codice Matlab
+\begin{verbatim}
+function x = conjgrad(A, b, x)
+    r = b - A * x;
+    p = r;
+    rsold = r' * r;
+
+    for i = 1:length(b)
+        Ap = A * p;
+        alpha = rsold / (p' * Ap);
+        x = x + alpha * p;
+        r = r - alpha * Ap;
+        rsnew = r' * r;
+        if sqrt(rsnew) < 1e-10
+            break
+        end
+        p = r + (rsnew / rsold) * p;
+        rsold = rsnew;
+    end
+end
+\end{verbatim}
 
 
 
