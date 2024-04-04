@@ -6,7 +6,7 @@ Simple Linear Algebra Package (SLAP) -->
 - Written in `C` for maximum compatibility among various systems
 - No external libraries (all-in-one header file)
 - Small enough to fit inside **MS-DOS** (and eventually embedded systems)
-- Tailored to be used in _Finite Element_ and _Machine Learning_ softwares
+- Tailored to be used in *Finite Element* and *Machine Learning* softwares
 
 
 # Functions
@@ -17,7 +17,7 @@ All the functions that return a matrix allocate new memory for the returned matr
 | `mat_new(n,m)` | allocate memory for $n\times m$ matrix ($n$ rows and $m$ cols); set all values to zero | |
 | `mat_free(A)` | free the allocated memory for matrix $\mathbf{A}$ | |
 | `mat_set(A,i,j,a)` | set the member of $\mathbf{A}$ at row $i$ and column $j$ equal to $a$ | $A_{ij}=a$ |
-| `a = mat_get(A,i,j)` | get the member of $\mathbf{A}$ at row $i$ and column $j$ equal to $a$ | $a=A_{ij}$ |
+| `a = mat_get(A,i,j)` | get the member of $\mathbf{A}$ at row $i$ and column $j$ | $a=A_{ij}$ |
 | `B = mat_copy(A)` | copy the matrix $\mathbf{A}$ into $\mathbf{B}$ allocating memory | |
 | `mat_add_r(A,B)` | add matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ (_reference_) | $\mathbf{A}=\mathbf{A}+\mathbf{B}$ |
 | `mat_sub_r(A,B)` | subtract matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ (_reference_) | $\mathbf{A}=\mathbf{A}-\mathbf{B}$ |
