@@ -1,0 +1,3 @@
+mettere anche metodi " Krylov subspace method " che dovrebbero portare alla soluzione di problemi di minimizzazione
+come ad esempio: Minimal Residual Method or MINRES
+o anche: generalized minimal residual method (GMRES)
