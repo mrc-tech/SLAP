@@ -34,6 +34,6 @@ int main()
 	mat_print(B);
 	
 	
-	
+	printf("\nend program.\n");
 	return 0;
 }

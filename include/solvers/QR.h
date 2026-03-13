@@ -103,5 +103,76 @@ mat_qr* mat_qr_solve(mat *m) // without memory leakage
 	return qr;
 }
 
+mat_qr* mat_qr_solve_Gemini(mat *m) 
+{
+	if (!m || m->n_cols == 0 || m->n_rows == 0) return NULL;// Controlli di sicurezza di base
+	mat_qr *qr = mat_qr_new();
+	mat *Q = mat_copy(m); // Q inizia come una copia speculare di A (m) e verrà modificata "in-place"
+	
+	// R è una matrice triangolare superiore.
+	// Nota: idealmente R per una decomposizione "thin" è di dimensioni (n_cols x n_cols).
+	// Mantengo le dimensioni originali per non rompere il resto del tuo codice.
+	mat *R = mat_new(m->n_rows, m->n_cols); 
+
+	int i, j, k;
+	unsigned int rows = Q->n_rows;
+	unsigned int cols = Q->n_cols;
+
+	// Modified Gram-Schmidt (MGS) Algorithm
+	/* Il passaggio dalla versione Gram-Schmidt Classica (CGS) alla Gram-Schmidt Modificata (MGS)
+	consiste in una sottile differenza matematica . Nel metodo Classico, calcoli tutte le proiezioni
+	rispetto ai vettori originali. Nel metodo Modificato, aggiorni i vettori in place mano a mano che
+	trovi le basi ortogonali, riducendo immensamente l'errore di arrotondamento (cancellazione numerica). */
+	for(k=0; k<cols; k++) {
+		
+		// 1. Calcolo della norma L2 della colonna k-esima di Q
+		TYPE norm_sq = 0.0;
+		for(i=0; i<rows; i++) {
+			TYPE val = Q->data[i*cols+k];
+			norm_sq += val * val;
+		}
+		TYPE l2norm = sqrt(norm_sq);
+		R->data[k*R->n_cols+k] = l2norm; // R_{k,k} = ||q_k||
+
+		// Prevenzione della divisione per zero in caso di matrici singolari/dipendenti
+		if(l2norm < SLAP_MIN_COEF) {
+			// Se la colonna è un vettore nullo, evitiamo NaN e saltiamo la normalizzazione
+			l2norm = 1.0; 
+		}else{
+			// 2. Normalizzazione della colonna k-esima di Q: q_k = v_k / ||v_k||
+			for(i=0; i<rows; i++) {
+				Q->data[i*cols+k] /= l2norm;
+			}
+		}
+
+		// 3. Ortogonalizzazione di tutte le colonne successive j contro la colonna ortogonale k
+		for(j=k+1; j<cols; j++) {
+			TYPE dot_product = 0.0;
+			
+			// Prodotto scalare: R_{k,j} = q_k^T * v_j
+			for(i=0; i<rows; i++) {
+				dot_product += Q->data[i*cols+k] * Q->data[i*cols+j];
+			}
+			R->data[k*R->n_cols+j] = dot_product;
+
+			// Sottrazione della proiezione: v_j = v_j - R_{k,j} * q_k
+			for(i=0; i<rows; i++) {
+				Q->data[i*cols+j] -= dot_product * Q->data[i*cols+k];
+			}
+		}
+	}
+
+	qr->Q = Q;
+	qr->R = R;
+	
+	return qr;
+}
+/*
+- Zero Allocazioni all'interno del ciclo: La tua versione originale chiamava mat_getcol, mat_transpose, e mat_mul decine o centinaia di volte. Sotto al cofano, il C invocava malloc e free a ripetizione, operazione lentissima e prona alla frammentazione della memoria. Qui allochiamo solo Q e R in partenza: zero malloc nascoste nel core loop.
+- Accesso diretto in Memoria (Pointer Math): Accedendo ai valori con Q->data[i * cols + j], facciamo calcoli scalari purissimi. Il compilatore (anche quelli vecchi per MS-DOS) riesce a ottimizzare o vettorizzare questi cicli nativamente (se compili con -O2 o -O3 in GCC).
+- Stabilità (MGS): Noterai che l'indice j parte da k + 1 (guarda avanti) e modifichiamo direttamente Q per sottrarre le componenti. Questo è l'algoritmo Modified Gram-Schmidt, che preserva l'ortogonalità della matrice $Q$ molto meglio rispetto alla versione in cui k va da 0 a j.
+- Gestione dello zero: Ho aggiunto un controllo if (l2norm < SLAP_MIN_COEF). Senza questo, se calcoli il QR di una matrice non a rango massimo (con vettori linearmente dipendenti), divideresti per zero ottenendo NaN in tutta la matrice.
+*/
+
 
 #endif // SLAP_QR

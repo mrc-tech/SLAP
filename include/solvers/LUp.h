@@ -87,10 +87,11 @@ mat_lup* mat_lup_solve(mat *m)
 	for(j=0; j<U->n_cols; j++){
 		// Retrieves the row with the biggest element for column (j)
 		pivot = mat_absmaxr(U, j);
-//		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_MIN_COEF){ // DA PROBLEMI DI MEMORIA RUNTIME!!!!!!!
-////			SLAP_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
-//			return NULL;
-//		}
+		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_MIN_COEF){ // evita la divisione per zero
+//			SLAP_ERROR(CANNOT_LU_MATRIX_DEGENERATE); // MOSTRARE ANCHE LA RIGA E COLONNA CHE HA FALLITO??
+			mat_free(L); mat_free(U); mat_free(P); // Evita il memory leak liberando la memoria prima di uscire
+			return NULL;
+		}
 		if(pivot!=j){
 			// Pivots LU and P accordingly to the rule
 			mat_row_swap_r(U, j, pivot);
@@ -172,6 +173,10 @@ mat *solvebck_lu(mat *U, mat *b)
 mat *solve_lu(mat_lup *lu, mat* b)
 {
 	mat *Pb, *x, *y;
+	if(lu == NULL){
+//		SLAP_ERROR(CANNOT_SOLVE_LIN_SYS_INVALID_LU);
+		return NULL;
+	}
 	if(lu->U->n_rows != b->n_rows || b->n_cols != 1){
 //		SLAP_ERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,b->n_rows,b->n_cols,lu->U->n_rows,1);
 		return NULL;

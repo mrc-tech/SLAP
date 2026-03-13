@@ -27,7 +27,7 @@ int main()
 	x = mat_conjgrad(A, b);
 	printf("x =\n"); mat_print(x);
 	
-	return 0;
+//	return 0;
 
 /*qr(A) =
    -8.1240   -9.7242  -11.0782
@@ -35,9 +35,9 @@ int main()
          0         0   -0.3982
 */
 	printf("\nQR decomposition:\nA=Q*R\n");
-	mat_qr *qr = mat_qr_solve(A);
-	mat_print(qr->Q);
-	mat_print(qr->R);
+	mat_qr *qr = mat_qr_solve_Gemini(A);
+	printf("Q = \n"); mat_print(qr->Q);
+	printf("R = \n"); mat_print(qr->R);
 	
 	
 	printf("Example (Wikipedia):\n");
@@ -51,5 +51,6 @@ int main()
 	mat_print(mat_GaussJordan(A));
 	
 	
+	printf("\nend program.\n");
 	return 0;
 }

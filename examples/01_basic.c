@@ -53,6 +53,6 @@ int main()
 	mat_print(vec_prod(mat_init(3,1, (TYPE[]){1,2,3}),mat_init(3,1, (TYPE[]){3,2,1})));
 	
 	
-	printf("end program.\n");
+	printf("\nend program.\n");
 	return 0;
 }

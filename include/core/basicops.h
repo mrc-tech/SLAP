@@ -17,9 +17,13 @@ void mat_print(mat* matrix)
 {
 	// FARE IN MODO CHE STAMPA COME UNA TABELLA PREORDINATA DAL NUMERO DELLE CIFRE (tutto compatto)
 	int r,c;
+	if(matrix == NULL){
+		printf("NULL\n");
+		return;
+	}
 	for(r=0; r<matrix->n_rows; r++){
 		for(c=0; c<matrix->n_cols; c++){
-			printf("%lf\t", mat_get(matrix, r,c));
+			printf(SLAP_FORMAT "\t", mat_get(matrix, r,c));
 		}
 		printf("\n");
 	}
@@ -30,6 +34,7 @@ short mat_equal(mat* m1, mat* m2, TYPE tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
 	int i;
+	if(m1==NULL || m2==NULL) return 0; // basta che uno è nullo per dire che sono diversi
 	if((m1->n_rows != m2->n_rows) || (m1->n_cols != m2->n_cols)) return 0; // check dimensions
 	for(i=0; i<m1->n_rows*m1->n_cols; i++){
 		if(fabs(m1->data[i] - m2->data[i]) > tolerance) return 0;

@@ -7,6 +7,7 @@ int main()
 	mat_lup *lu;
 	mat *tmp;
 	
+	printf("TEST 1 :  ");
 	printf("solve_lu : ");
 	A = mat_init(3,3, (TYPE[]){1,3,3,4,5,6,7,8,9});
 	b = mat_init(3,1, (TYPE[]){1,1,1});
@@ -14,16 +15,19 @@ int main()
 	x = solve_lu(lu, b);
 	tmp = mat_init(3,1, (double[]){-0.5,0,0.5}); // solution
 	if(mat_equal(x,tmp,1e-15)) printf("passed\n"); else printf("NOT PASSED!!!\n");
+	printf("TEST 2 :  ");
 	A = mat_init(3,3, (TYPE[]){1,2,3,4,5,6,7,8,9}); // nearly singular (UNSTABLE MATRIX)
 	lu = mat_lup_solve(A);
 	x = solve_lu(lu, b);
+	mat_print(x);
 	tmp = mat_init(3,1, (double[]){-2,5,1.5}); // solution (MATLAB with RCOND = 1.541976e-18)
-	if(mat_equal(x,tmp,1e-15)) printf("unstable-> passed\n"); else printf("unstable-> NOT PASSED!!!\n");
+	if(mat_equal(x,tmp,1e-15)) printf("stable-> passed\n"); else printf("unstable-> NOT PASSED!!!\n"); // PER FARLO PASSARE DOVREI METTERE "SLAP_MIN_COEF = 1.0e-20"
 //	mat_print(x);
 	
 	
 	
 	mat_free(A); mat_free(x); mat_free(b); mat_lup_free(lu);
+	printf("\npress a key to exit...");
 	getch();
 	
 	return 0;

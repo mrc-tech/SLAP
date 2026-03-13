@@ -13,24 +13,41 @@
 
 
 
-#ifndef TYPE // data type of the matrix
-#ifdef __MSDOS__ // MS-DOS system
-#pragma message You are compiling using Borland C++ version __BORLANDC__.
-#define SLAP_DOS
-#define TYPE long double
-#else // other non-DOS systems
-#define TYPE double
-#endif
-#endif // TYPE
+#include <float.h> // <-- FONDAMENTALE per i limiti numerici
 
+#ifndef TYPE // data type of the matrix
+    #ifdef __MSDOS__ // MS-DOS system
+        #pragma message You are compiling using Borland C++ version __BORLANDC__.
+        #define SLAP_DOS
+        #define TYPE long double
+        #define SLAP_FORMAT "%Lf" // L maiuscola per i long double
+        
+        // In MS-DOS long double è spesso 80-bit.
+        // LDBL_EPSILON è circa 1.08e-19. 
+        // Moltiplichiamo per 10 o 100 per avere una tolleranza sicura per gli arrotondamenti.
+        #define SLAP_MIN_COEF (LDBL_EPSILON * 100.0L) 
+        /* Se fai operazioni su una matrice (es. Gauss-Jordan o decomposizione QR), gli errori in 
+		virgola mobile si accumulano a ogni moltiplicazione e addizione. Se la tua matrice è, per 
+		esempio, 10x10 o 50x50, il rumore di fondo crescerà. Usare Epsilon * 100 (che per un double 
+		moderno equivale a dire "considera zero tutto ciò che è più piccolo di ~2e-14") garantisce 
+		che l'algoritmo non scambi del rumore di arrotondamento per un pivot valido, 
+		evitando divisioni disastrose.*/
+        
+    #else // other non-DOS systems
+        #define TYPE double
+        #define SLAP_FORMAT "%lf" // l minuscola per i double
+        
+        // Nei sistemi moderni double è 64-bit.
+        // DBL_EPSILON è circa 2.22e-16.
+        #define SLAP_MIN_COEF (DBL_EPSILON * 100.0)
+        
+    #endif
+#endif // TYPE
 
 #ifndef SLAP_DEBUG
 #define SLAP_DEBUG 0 // no debug
 #endif
 
-
-//#define NULL 0
-#define SLAP_MIN_COEF 0.000000000000001 // DIPENDE DAL SISTEMA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 #define MEM_CHECK(ptr) \
@@ -178,9 +195,13 @@ void mat_print(mat* matrix)
 {
 	// FARE IN MODO CHE STAMPA COME UNA TABELLA PREORDINATA DAL NUMERO DELLE CIFRE (tutto compatto)
 	int r,c;
+	if(matrix == NULL){
+		printf("NULL\n");
+		return;
+	}
 	for(r=0; r<matrix->n_rows; r++){
 		for(c=0; c<matrix->n_cols; c++){
-			printf("%lf\t", mat_get(matrix, r,c));
+			printf(SLAP_FORMAT "\t", mat_get(matrix, r,c));
 		}
 		printf("\n");
 	}
@@ -191,6 +212,7 @@ short mat_equal(mat* m1, mat* m2, TYPE tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
 	int i;
+	if(m1==NULL || m2==NULL) return 0; // basta che uno è nullo per dire che sono diversi
 	if((m1->n_rows != m2->n_rows) || (m1->n_cols != m2->n_cols)) return 0; // check dimensions
 	for(i=0; i<m1->n_rows*m1->n_cols; i++){
 		if(fabs(m1->data[i] - m2->data[i]) > tolerance) return 0;
@@ -311,7 +333,7 @@ mat* mat_mul(mat* m1, mat* m2)
 //		SLAP_ERROR(CANNOT_MULTIPLY);
 		return NULL;
 	}
-	m = mat_new(m1->n_rows, m2->n_cols);
+	m = mat_new(m1->n_rows, m2->n_cols); // also set all values to zero
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
 			for(i=0; i<m1->n_cols; i++){
@@ -324,6 +346,25 @@ mat* mat_mul(mat* m1, mat* m2)
 }
 
 
+TYPE mat_trace(mat *m)
+{
+	// trace of the matrix m
+	TYPE tr = 0;
+	int i;
+	for(i=0; i<MIN(m->n_rows,m->n_cols); i++) tr += m->data[i * m->n_cols + i];
+	return tr;
+}
+
+
+double mat_l2norm(mat* m)
+{
+	// L-2 norm (Euclidean)
+	int i;
+	TYPE sum = 0.0;
+	if(m->n_cols != 1 && m->n_rows != 1) return -1; // only vectors
+	for(i=0; i<MAX(m->n_rows,m->n_cols); i++) sum += m->data[i] * m->data[i];
+	return sqrt(sum);
+}
 
 
 mat* mat_eye(unsigned int size)
@@ -339,8 +380,6 @@ mat* mat_eye(unsigned int size)
 
 
 #endif // SLAP_BASICOPS
-
-// OPERATIONS:
 /*
 	matrix structure modification
 */
@@ -438,7 +477,24 @@ double *mat_getrow_array(mat *m, unsigned int row)
 }
 
 
+mat* mat_get_diag(mat *m)
+{
+	// returns the diagonal of the matrix m as a column vector
+	int N = MIN(m->n_rows,m->n_cols); // for non-square matrices
+	mat *d = mat_new(N,1); // column vector
+	int i;
+	for(i=0; i<N; i++) d->data[i] = m->data[i*m->n_cols+i];
+	return d;
+}
 
+mat* mat_new_diag(unsigned int n, TYPE data[])
+{
+	// create a square diagonal matrix
+	int i;
+	mat *m = mat_new(n,n); // square matrix
+	for (i=0; i<n; i++) m->data[i * m->n_cols + i] = data[i];
+	return m;
+}
 
 
 
@@ -524,6 +580,433 @@ mat* mat_catver(unsigned int N, mat **marr)
 
 
 #endif // SLAP_STRMOD
+
+// DECOMPOSITIONS:
+/*
+	LU factorialization (or decomposition) with partial pivoting
+	
+	P * A = L * U
+		A : square matrix to be decomposed
+		P : represents any valid (row) permutation of the Identity I matrix, and it’s computed during the process
+		L : is a lower diagonal matrix, with all the elements of the first diagonal = 1
+		U : is an upper diagonal matrix
+*/
+#ifndef SLAP_LUP
+#define SLAP_LUP
+
+
+
+typedef struct _mat_lup {
+	mat *L;
+	mat *U;
+	mat *P;
+	unsigned int num_permutations; // useful when computing the determinant
+} mat_lup;
+
+
+mat_lup* mat_lup_new(mat *L, mat *U, mat *P, unsigned int num_permutations)
+{
+	mat_lup *m = malloc(sizeof(*m));
+	MEM_CHECK(m);
+	m->L = L;
+	m->U = U;
+	m->P = P;
+	m->num_permutations = num_permutations;
+	return m;
+}
+
+void mat_lup_free(mat_lup* lu)
+{
+	if(lu){
+		mat_free(lu->L);
+		mat_free(lu->U);
+		mat_free(lu->P);
+		free(lu);
+	}
+}
+
+
+int mat_setdiag(mat *m, TYPE value)
+{
+	// Sets all elements of the matrix to given value
+	int i;
+	if(m->n_rows != m->n_cols){ /* SLAP_ERROR(CANNOT_SET_DIAG, value); */ return 0; }
+	for(i=0; i<m->n_rows; i++) m->data[i*m->n_cols+i] = value;
+	return 1;
+}
+
+
+int mat_absmaxr(mat *m, unsigned int k)
+{
+	// Finds the id of the max on the column (starting from k -> num_rows)
+	int i;
+	TYPE max = m->data[k*m->n_cols+k];
+	int maxIdx = k;
+	for(i=k+1; i<m->n_rows; i++){
+		if(fabs(m->data[i*m->n_cols+k]) > max){
+			max = fabs(m->data[i*m->n_cols+k]);
+			maxIdx = i;
+		}
+	}
+	return maxIdx;
+}
+
+
+mat_lup* mat_lup_solve(mat *m)
+{
+	// perform the LU(P) factorization
+	mat *L, *U, *P;
+	int j,i, pivot;
+	unsigned int num_permutations = 0;
+	TYPE mul;
+	if(m->n_rows != m->n_cols){
+//		SLAP_ERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
+		return NULL;
+	}
+	L = mat_new(m->n_rows, m->n_rows);
+	U = mat_copy(m);
+	P = mat_eye(m->n_rows);
+	
+	for(j=0; j<U->n_cols; j++){
+		// Retrieves the row with the biggest element for column (j)
+		pivot = mat_absmaxr(U, j);
+		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_MIN_COEF){ // evita la divisione per zero
+//			SLAP_ERROR(CANNOT_LU_MATRIX_DEGENERATE); // MOSTRARE ANCHE LA RIGA E COLONNA CHE HA FALLITO??
+			mat_free(L); mat_free(U); mat_free(P); // Evita il memory leak liberando la memoria prima di uscire
+			return NULL;
+		}
+		if(pivot!=j){
+			// Pivots LU and P accordingly to the rule
+			mat_row_swap_r(U, j, pivot);
+			mat_row_swap_r(L, j, pivot);
+			mat_row_swap_r(P, j, pivot);
+			num_permutations++; // Keep the number of permutations to easily calculate the determinant sign afterwards
+		}
+		for(i=j+1; i<U->n_rows; i++){
+			mul = U->data[i*U->n_cols+j] / U->data[j*U->n_cols+j];
+			mat_row_addrow_r(U, i, j, -mul); // Building the U upper rows
+			L->data[i*L->n_cols+j] = mul; // Store the multiplier in L
+		}
+	}
+	mat_setdiag(L, 1.0); // set the diagonal to 1.0
+	
+	return mat_lup_new(L, U, P, num_permutations);
+}
+
+
+
+// Forward substitution algorithm
+// Solves the linear system L * x = b
+//
+// L is lower triangular matrix of size NxN
+// B is column matrix of size Nx1
+// x is the solution column matrix of size Nx1
+//
+// Note: In case L is not a lower triangular matrix, the algorithm will try to
+// select only the lower triangular part of the matrix L and solve the system
+// with it.
+//
+// Note: In case any of the diagonal elements (L[i][i]) are 0 the system cannot
+// be solved
+//
+// Note: This function is usually used with an L matrix from a LU decomposition
+mat *solvefwd_lu(mat *L, mat *b)
+{
+	mat *x = mat_new(L->n_cols, 1);
+	int i,j;
+	TYPE tmp;
+	for(i=0; i<L->n_cols; i++){
+		tmp = b->data[i*b->n_cols];
+		for(j=0; j<i; j++){
+			tmp -= L->data[i*L->n_cols+j] * x->data[j*x->n_cols];
+		}
+		x->data[i*x->n_cols] = tmp / L->data[i*L->n_cols+i];
+	}
+	return x;
+}
+
+// Back substition algorithm
+// Solves the linear system U *x = b
+//
+// U is an upper triangular matrix of size NxN
+// B is a column matrix of size Nx1
+// x is the solution column matrix of size Nx1
+//
+// Note in case U is not an upper triangular matrix, the algorithm will try to
+// select only the upper triangular part of the matrix U and solve the system
+// with it
+//
+// Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
+// be solved
+mat *solvebck_lu(mat *U, mat *b)
+{
+	mat *x = mat_new(U->n_cols, 1);
+	int i = U->n_cols, j;
+	TYPE tmp;
+	while(i-- > 0){
+		tmp = b->data[i*b->n_cols];
+		for(j=i; j<U->n_cols; j++) tmp -= U->data[i*U->n_cols+j] * x->data[j*x->n_cols];
+		x->data[i*x->n_cols] = tmp / U->data[i*U->n_cols+i];
+	}
+	return x;
+}
+
+
+
+mat *solve_lu(mat_lup *lu, mat* b)
+{
+	mat *Pb, *x, *y;
+	if(lu == NULL){
+//		SLAP_ERROR(CANNOT_SOLVE_LIN_SYS_INVALID_LU);
+		return NULL;
+	}
+	if(lu->U->n_rows != b->n_rows || b->n_cols != 1){
+//		SLAP_ERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,b->n_rows,b->n_cols,lu->U->n_rows,1);
+		return NULL;
+	}
+	Pb = mat_mul(lu->P, b);
+	
+	y = solvefwd_lu(lu->L, Pb); // We solve L*y = P*b using forward substition
+	x = solvebck_lu(lu->U, y); // We solve U*x=y
+	
+	mat_free(y);
+	mat_free(Pb);
+	return x;
+}
+
+
+
+
+
+#endif // SLAP_LUP
+
+/*
+	QR decomposition
+*/
+#ifndef SLAP_QR
+#define SLAP_QR
+
+
+
+typedef struct _mat_qr {
+	mat *Q;
+	mat *R;
+} mat_qr;
+
+
+mat_qr* mat_qr_new()
+{
+	mat_qr *qr = (mat_qr*)malloc(sizeof(*qr));
+	MEM_CHECK(qr);
+	return qr;
+}
+
+void mat_qr_free(mat_qr *qr)
+{
+	if(qr){
+		if(qr->Q) mat_free(qr->Q);
+		if(qr->R) mat_free(qr->R);
+		free(qr);
+	}
+}
+
+
+
+
+
+
+//mat_qr* mat_qr_solve(mat *m)
+//{
+//	// find the QR decomposition of the matrix m
+//	mat_qr *qr = mat_qr_new();
+//	mat *Q = mat_copy(m);
+//	mat *R = mat_new(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
+//	
+//	int j, k;
+//	TYPE l2norm;
+//	mat *rkj = mat_new(1,1); // scalar MEMORY ALLOCATED!!!!
+//	mat *aj, *qk;
+//	for(j=0; j<m->n_cols; j++){
+//		aj = mat_getcol(m, j); // j-th column of the matrix m
+//		for(k=0; k<j; k++){
+//			rkj = mat_mul(mat_transpose(mat_getcol(m,j)), mat_getcol(Q,k)); // scalar product MEMORY LEAKAGE
+//			R->data[k*R->n_cols+j] = rkj->data[0];
+//			qk = mat_getcol(Q, k);
+//			mat_col_smul_r(qk, 0, rkj->data[0]);
+//			mat_sub_r(aj, qk);
+//			mat_free(rkj); mat_free(qk); // free rjk and qk each iteration
+//		}
+//		for(k=0; k<Q->n_rows; k++) Q->data[k*Q->n_cols+j] = aj->data[k]; // set the j-th column of Q
+//		l2norm = mat_l2norm(mat_getcol(Q, j)); // L2-norm (Euclidean) o the j-th column of Q MEMORY LEAKAGE!!!!!
+//		mat_col_smul_r(Q, j, 1/l2norm); // divide by the norm
+//		R->data[j*R->n_cols+j] = l2norm;
+//		mat_free(aj);
+//	}
+//	qr->Q = Q;
+//	qr->R = R;
+//	return qr;
+//}
+mat_qr* mat_qr_solve(mat *m) // without memory leakage
+{
+	// find the QR decomposition of the matrix m
+	mat_qr *qr = mat_qr_new();
+	mat *Q = mat_copy(m);
+	mat *R = mat_new(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
+	
+	int j, k;
+	TYPE l2norm;
+	mat *rkj; // scalar
+	mat *aj, *qk; // column vectors of A and Q
+	mat *tmp1, *tmp2; // temporary matrices for correct memory menagement
+	for(j=0; j<m->n_cols; j++){
+		aj = mat_getcol(m, j); // j-th column of the matrix m
+		for(k=0; k<j; k++){
+			tmp1 = mat_getcol(m,j); mat_transpose_r(tmp1); // transpose of the j-th column of matrix m (row-vector)
+			tmp2 = mat_getcol(Q,k); // k-th column of the matrix Q (column-vector)
+			rkj = mat_mul(tmp1, tmp2); // scalar product
+			mat_free(tmp1); mat_free(tmp2); // free temp mem
+			R->data[k*R->n_cols+j] = rkj->data[0];
+			qk = mat_getcol(Q, k);
+			mat_col_smul_r(qk, 0, rkj->data[0]);
+			mat_sub_r(aj, qk);
+			mat_free(rkj); mat_free(qk); // free rjk and qk each iteration
+		}
+		for(k=0; k<Q->n_rows; k++) Q->data[k*Q->n_cols+j] = aj->data[k]; // set the j-th column of Q
+		tmp1 = mat_getcol(Q, j); // j-th column of Q
+		l2norm = mat_l2norm(tmp1); // L2-norm (Euclidean)
+		mat_free(tmp1); // free temp mem
+		mat_col_smul_r(Q, j, 1/l2norm); // divide by the norm
+		R->data[j*R->n_cols+j] = l2norm;
+		mat_free(aj);
+	}
+	qr->Q = Q;
+	qr->R = R;
+	return qr;
+}
+
+mat_qr* mat_qr_solve_Gemini(mat *m) 
+{
+	if (!m || m->n_cols == 0 || m->n_rows == 0) return NULL;// Controlli di sicurezza di base
+	mat_qr *qr = mat_qr_new();
+	mat *Q = mat_copy(m); // Q inizia come una copia speculare di A (m) e verrà modificata "in-place"
+	
+	// R è una matrice triangolare superiore.
+	// Nota: idealmente R per una decomposizione "thin" è di dimensioni (n_cols x n_cols).
+	// Mantengo le dimensioni originali per non rompere il resto del tuo codice.
+	mat *R = mat_new(m->n_rows, m->n_cols); 
+
+	int i, j, k;
+	unsigned int rows = Q->n_rows;
+	unsigned int cols = Q->n_cols;
+
+	// Modified Gram-Schmidt (MGS) Algorithm
+	/* Il passaggio dalla versione Gram-Schmidt Classica (CGS) alla Gram-Schmidt Modificata (MGS)
+	consiste in una sottile differenza matematica . Nel metodo Classico, calcoli tutte le proiezioni
+	rispetto ai vettori originali. Nel metodo Modificato, aggiorni i vettori in place mano a mano che
+	trovi le basi ortogonali, riducendo immensamente l'errore di arrotondamento (cancellazione numerica). */
+	for(k=0; k<cols; k++) {
+		
+		// 1. Calcolo della norma L2 della colonna k-esima di Q
+		TYPE norm_sq = 0.0;
+		for(i=0; i<rows; i++) {
+			TYPE val = Q->data[i*cols+k];
+			norm_sq += val * val;
+		}
+		TYPE l2norm = sqrt(norm_sq);
+		R->data[k*R->n_cols+k] = l2norm; // R_{k,k} = ||q_k||
+
+		// Prevenzione della divisione per zero in caso di matrici singolari/dipendenti
+		if(l2norm < SLAP_MIN_COEF) {
+			// Se la colonna è un vettore nullo, evitiamo NaN e saltiamo la normalizzazione
+			l2norm = 1.0; 
+		}else{
+			// 2. Normalizzazione della colonna k-esima di Q: q_k = v_k / ||v_k||
+			for(i=0; i<rows; i++) {
+				Q->data[i*cols+k] /= l2norm;
+			}
+		}
+
+		// 3. Ortogonalizzazione di tutte le colonne successive j contro la colonna ortogonale k
+		for(j=k+1; j<cols; j++) {
+			TYPE dot_product = 0.0;
+			
+			// Prodotto scalare: R_{k,j} = q_k^T * v_j
+			for(i=0; i<rows; i++) {
+				dot_product += Q->data[i*cols+k] * Q->data[i*cols+j];
+			}
+			R->data[k*R->n_cols+j] = dot_product;
+
+			// Sottrazione della proiezione: v_j = v_j - R_{k,j} * q_k
+			for(i=0; i<rows; i++) {
+				Q->data[i*cols+j] -= dot_product * Q->data[i*cols+k];
+			}
+		}
+	}
+
+	qr->Q = Q;
+	qr->R = R;
+	
+	return qr;
+}
+/*
+- Zero Allocazioni all'interno del ciclo: La tua versione originale chiamava mat_getcol, mat_transpose, e mat_mul decine o centinaia di volte. Sotto al cofano, il C invocava malloc e free a ripetizione, operazione lentissima e prona alla frammentazione della memoria. Qui allochiamo solo Q e R in partenza: zero malloc nascoste nel core loop.
+- Accesso diretto in Memoria (Pointer Math): Accedendo ai valori con Q->data[i * cols + j], facciamo calcoli scalari purissimi. Il compilatore (anche quelli vecchi per MS-DOS) riesce a ottimizzare o vettorizzare questi cicli nativamente (se compili con -O2 o -O3 in GCC).
+- Stabilità (MGS): Noterai che l'indice j parte da k + 1 (guarda avanti) e modifichiamo direttamente Q per sottrarre le componenti. Questo è l'algoritmo Modified Gram-Schmidt, che preserva l'ortogonalità della matrice $Q$ molto meglio rispetto alla versione in cui k va da 0 a j.
+- Gestione dello zero: Ho aggiunto un controllo if (l2norm < SLAP_MIN_COEF). Senza questo, se calcoli il QR di una matrice non a rango massimo (con vettori linearmente dipendenti), divideresti per zero ottenendo NaN in tutta la matrice.
+*/
+
+
+#endif // SLAP_QR
+/*
+	Conjugate gradient solver
+*/
+#ifndef SLAP_CONJ_GRAD
+#define SLAP_CONJ_GRAD
+
+inline TYPE first_member(mat *m){ return m->data[0]; }
+
+
+mat* mat_conjgrad(mat *A, mat *b)
+{
+	// solve linear system A*x=b with conjugate gradient method
+	mat *x = mat_new(b->n_rows,1); // column vector (all zero)
+	mat *r, *p, *Ap;
+	TYPE rold, rnew, alpha;
+	int i;
+	
+	r = mat_mul(A, x); r = mat_sub(b, r);
+	p = mat_copy(r);
+	rold = first_member(mat_mul(mat_transpose(r), r)); // scalar product MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	
+	for(i=0; i<x->n_rows; i++){
+		Ap = mat_mul(A, p);
+		alpha = rold / first_member(mat_mul(mat_transpose(p), Ap)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		mat_add_r(x, mat_smul(p,  alpha)); // update x
+		mat_sub_r(r, mat_smul(Ap, alpha)); // update r
+		rnew = first_member(mat_mul(mat_transpose(r),r)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		if (sqrt(rnew) < 1e-10) break; // convergence on desired precision
+		p = mat_add(r, mat_smul(p, rnew/rold)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		rold = rnew; // update (r^T * r)
+	}
+	
+	mat_free(r); mat_free(p); mat_free(Ap);
+	return x;
+}
+
+
+#endif // SLAP_CONJ_GRAD
+
+// OPERATIONS:
+/*
+	matrix functions
+*/
+#ifndef SLAP_FUN
+#define SLAP_FUN
+
+
+#endif // SLAP_FUN
+
+// SOLVERS:
 /*
 	Gauss Elimination
 */
@@ -615,12 +1098,12 @@ int mat_pivot_maxid(mat *m, unsigned int col, unsigned int row)
 }
 
 
-// Retrieves the matrix in Row Echelon form using Gauss Elimination
+// Retrieves the matrix in Row Echelon form using Gauss Elimination (Row Echelon Form (REF))
 mat *mat_GaussJordan(mat *m)
 {
 	mat *r = mat_copy(m);
 	int i=0, j=0, k, pivot;
-	while(j < r->n_cols && i < r->n_cols){
+	while(j < r->n_cols && i < r->n_rows){
 		// Find the pivot - the first non-zero entry in the first column of the matrix
 		pivot = mat_pivot_maxid(r, j, i);
 		if(pivot<0){ // All elements on the column are zeros
@@ -628,7 +1111,7 @@ mat *mat_GaussJordan(mat *m)
 			continue;
 		}
 		if(pivot != i) mat_row_swap_r(r, i, pivot); // We interchange rows moving the pivot to the first row that doesn't have already a pivot in place
-		mat_row_smul_r(r, i, 1/r->data[i*r->n_cols+j]); // Multiply each element in the pivot row by the inverse of the pivot
+		mat_row_smul_r(r, i, 1.0/r->data[i*r->n_cols+j]); // Multiply each element in the pivot row by the inverse of the pivot
 		for(k=i+1; k<r->n_rows; k++){
 			if(fabs(r->data[k*r->n_cols+j]) > SLAP_MIN_COEF){
 				mat_row_addrow_r(r, k, i, -(r->data[k*r->n_cols+j])); // We add multiplies of the pivot so every element on the column equals 0
@@ -646,327 +1129,14 @@ mat *mat_GaussJordan(mat *m)
 
 
 #endif // SLAP_GAUSS
-/*
-	LU factorialization (or decomposition) with partial pivoting
-	
-	P * A = L * U
-		A : square matrix to be decomposed
-		P : represents any valid (row) permutation of the Identity I matrix, and it’s computed during the process
-		L : is a lower diagonal matrix, with all the elements of the first diagonal = 1
-		U : is an upper diagonal matrix
-*/
-#ifndef SLAP_LUP
-#define SLAP_LUP
 
-
-
-typedef struct _mat_lup {
-	mat *L;
-	mat *U;
-	mat *P;
-	unsigned int num_permutations; // useful when computing the determinant
-} mat_lup;
-
-
-mat_lup* mat_lup_new(mat *L, mat *U, mat *P, unsigned int num_permutations)
-{
-	mat_lup *m = malloc(sizeof(*m));
-	MEM_CHECK(m);
-	m->L = L;
-	m->U = U;
-	m->P = P;
-	m->num_permutations = num_permutations;
-	return m;
-}
-
-void mat_lup_free(mat_lup* lu)
-{
-	if(lu){
-		mat_free(lu->L);
-		mat_free(lu->U);
-		mat_free(lu->P);
-		free(lu);
-	}
-}
-
-
-int mat_setdiag(mat *m, TYPE value)
-{
-	// Sets all elements of the matrix to given value
-	int i;
-	if(m->n_rows != m->n_cols){ /* SLAP_ERROR(CANNOT_SET_DIAG, value); */ return 0; }
-	for(i=0; i<m->n_rows; i++) m->data[i*m->n_cols+i] = value;
-	return 1;
-}
-
-
-int mat_absmaxr(mat *m, unsigned int k)
-{
-	// Finds the id of the max on the column (starting from k -> num_rows)
-	int i;
-	TYPE max = m->data[k*m->n_cols+k];
-	int maxIdx = k;
-	for(i=k+1; i<m->n_rows; i++){
-		if(fabs(m->data[i*m->n_cols+k]) > max){
-			max = fabs(m->data[i*m->n_cols+k]);
-			maxIdx = i;
-		}
-	}
-	return maxIdx;
-}
-
-
-mat_lup* mat_lup_solve(mat *m)
-{
-	// perform the LU(P) factorization
-	mat *L, *U, *P;
-	int j,i, pivot;
-	unsigned int num_permutations = 0;
-	TYPE mul;
-	if(m->n_rows != m->n_cols){
-//		SLAP_ERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
-		return NULL;
-	}
-	L = mat_new(m->n_rows, m->n_rows);
-	U = mat_copy(m);
-	P = mat_eye(m->n_rows);
-	
-	for(j=0; j<U->n_cols; j++){
-		// Retrieves the row with the biggest element for column (j)
-		pivot = mat_absmaxr(U, j);
-//		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_MIN_COEF){ // DA PROBLEMI DI MEMORIA RUNTIME!!!!!!!
-////			SLAP_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
-//			return NULL;
-//		}
-		if(pivot!=j){
-			// Pivots LU and P accordingly to the rule
-			mat_row_swap_r(U, j, pivot);
-			mat_row_swap_r(L, j, pivot);
-			mat_row_swap_r(P, j, pivot);
-			num_permutations++; // Keep the number of permutations to easily calculate the determinant sign afterwards
-		}
-		for(i=j+1; i<U->n_rows; i++){
-			mul = U->data[i*U->n_cols+j] / U->data[j*U->n_cols+j];
-			mat_row_addrow_r(U, i, j, -mul); // Building the U upper rows
-			L->data[i*L->n_cols+j] = mul; // Store the multiplier in L
-		}
-	}
-	mat_setdiag(L, 1.0); // set the diagonal to 1.0
-	
-	return mat_lup_new(L, U, P, num_permutations);
-}
-
-
-
-// Forward substitution algorithm
-// Solves the linear system L * x = b
-//
-// L is lower triangular matrix of size NxN
-// B is column matrix of size Nx1
-// x is the solution column matrix of size Nx1
-//
-// Note: In case L is not a lower triangular matrix, the algorithm will try to
-// select only the lower triangular part of the matrix L and solve the system
-// with it.
-//
-// Note: In case any of the diagonal elements (L[i][i]) are 0 the system cannot
-// be solved
-//
-// Note: This function is usually used with an L matrix from a LU decomposition
-mat *solvefwd_lu(mat *L, mat *b)
-{
-	mat *x = mat_new(L->n_cols, 1);
-	int i,j;
-	TYPE tmp;
-	for(i=0; i<L->n_cols; i++){
-		tmp = b->data[i*b->n_cols];
-		for(j=0; j<i; j++){
-			tmp -= L->data[i*L->n_cols+j] * x->data[j*x->n_cols];
-		}
-		x->data[i*x->n_cols] = tmp / L->data[i*L->n_cols+i];
-	}
-	return x;
-}
-
-// Back substition algorithm
-// Solves the linear system U *x = b
-//
-// U is an upper triangular matrix of size NxN
-// B is a column matrix of size Nx1
-// x is the solution column matrix of size Nx1
-//
-// Note in case U is not an upper triangular matrix, the algorithm will try to
-// select only the upper triangular part of the matrix U and solve the system
-// with it
-//
-// Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
-// be solved
-mat *solvebck_lu(mat *U, mat *b)
-{
-	mat *x = mat_new(U->n_cols, 1);
-	int i = U->n_cols, j;
-	TYPE tmp;
-	while(i-- > 0){
-		tmp = b->data[i*b->n_cols];
-		for(j=i; j<U->n_cols; j++) tmp -= U->data[i*U->n_cols+j] * x->data[j*x->n_cols];
-		x->data[i*x->n_cols] = tmp / U->data[i*U->n_cols+i];
-	}
-	return x;
-}
-
-
-
-mat *solve_lu(mat_lup *lu, mat* b)
-{
-	mat *Pb, *x, *y;
-	if(lu->U->n_rows != b->n_rows || b->n_cols != 1){
-//		SLAP_ERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,b->n_rows,b->n_cols,lu->U->n_rows,1);
-		return NULL;
-	}
-	Pb = mat_mul(lu->P, b);
-	
-	y = solvefwd_lu(lu->L, Pb); // We solve L*y = P*b using forward substition
-	x = solvebck_lu(lu->U, y); // We solve U*x=y
-	
-	mat_free(y);
-	mat_free(Pb);
-	return x;
-}
-
-
-
-
-
-#endif // SLAP_LUP
-
-/*
-	QR decomposition
-*/
-#ifndef SLAP_QR
-#define SLAP_QR
-
-
-
-typedef struct _mat_qr {
-	mat *Q;
-	mat *R;
-} mat_qr;
-
-
-mat_qr* mat_qr_new()
-{
-	mat_qr *qr = (mat_qr*)malloc(sizeof(*qr));
-	MEM_CHECK(qr);
-	return qr;
-}
-
-void mat_qr_free(mat_qr *qr)
-{
-	if(qr){
-		if(qr->Q) mat_free(qr->Q);
-		if(qr->R) mat_free(qr->R);
-		free(qr);
-	}
-}
-
-
-double mat_l2norm(mat* m)
-{
-	int i;
-	TYPE sum = 0.0;
-	if(m->n_cols != 1 && m->n_rows != 1) return -1; // only vectors
-	for(i=0; i<MAX(m->n_rows,m->n_cols); i++) sum += m->data[i] * m->data[i];
-	return sqrt(sum);
-}
-
-
-
-//mat_qr* mat_qr_solve(mat *m)
-//{
-//	// find the QR decomposition of the matrix m
-//	mat_qr *qr = mat_qr_new();
-//	mat *Q = mat_copy(m);
-//	mat *R = mat_new(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
-//	
-//	int j, k;
-//	TYPE l2norm;
-//	mat *rkj = mat_new(1,1); // scalar MEMORY ALLOCATED!!!!
-//	mat *aj, *qk;
-//	for(j=0; j<m->n_cols; j++){
-//		aj = mat_getcol(m, j); // j-th column of the matrix m
-//		for(k=0; k<j; k++){
-//			rkj = mat_mul(mat_transpose(mat_getcol(m,j)), mat_getcol(Q,k)); // scalar product MEMORY LEAKAGE
-//			R->data[k*R->n_cols+j] = rkj->data[0];
-//			qk = mat_getcol(Q, k);
-//			mat_col_smul_r(qk, 0, rkj->data[0]);
-//			mat_sub_r(aj, qk);
-//			mat_free(rkj); mat_free(qk); // free rjk and qk each iteration
-//		}
-//		for(k=0; k<Q->n_rows; k++) Q->data[k*Q->n_cols+j] = aj->data[k]; // set the j-th column of Q
-//		l2norm = mat_l2norm(mat_getcol(Q, j)); // L2-norm (Euclidean) o the j-th column of Q MEMORY LEAKAGE!!!!!
-//		mat_col_smul_r(Q, j, 1/l2norm); // divide by the norm
-//		R->data[j*R->n_cols+j] = l2norm;
-//		mat_free(aj);
-//	}
-//	qr->Q = Q;
-//	qr->R = R;
-//	return qr;
-//}
-mat_qr* mat_qr_solve(mat *m) // without memory leakage
-{
-	// find the QR decomposition of the matrix m
-	mat_qr *qr = mat_qr_new();
-	mat *Q = mat_copy(m);
-	mat *R = mat_new(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
-	
-	int j, k;
-	TYPE l2norm;
-	mat *rkj; // scalar
-	mat *aj, *qk; // column vectors of A and Q
-	mat *tmp1, *tmp2; // temporary matrices for correct memory menagement
-	for(j=0; j<m->n_cols; j++){
-		aj = mat_getcol(m, j); // j-th column of the matrix m
-		for(k=0; k<j; k++){
-			tmp1 = mat_getcol(m,j); mat_transpose_r(tmp1); // transpose of the j-th column of matrix m (row-vector)
-			tmp2 = mat_getcol(Q,k); // k-th column of the matrix Q (column-vector)
-			rkj = mat_mul(tmp1, tmp2); // scalar product
-			mat_free(tmp1); mat_free(tmp2); // free temp mem
-			R->data[k*R->n_cols+j] = rkj->data[0];
-			qk = mat_getcol(Q, k);
-			mat_col_smul_r(qk, 0, rkj->data[0]);
-			mat_sub_r(aj, qk);
-			mat_free(rkj); mat_free(qk); // free rjk and qk each iteration
-		}
-		for(k=0; k<Q->n_rows; k++) Q->data[k*Q->n_cols+j] = aj->data[k]; // set the j-th column of Q
-		tmp1 = mat_getcol(Q, j); // j-th column of Q
-		l2norm = mat_l2norm(tmp1); // L2-norm (Euclidean)
-		mat_free(tmp1); // free temp mem
-		mat_col_smul_r(Q, j, 1/l2norm); // divide by the norm
-		R->data[j*R->n_cols+j] = l2norm;
-		mat_free(aj);
-	}
-	qr->Q = Q;
-	qr->R = R;
-	return qr;
-}
-
-
-#endif // SLAP_QR
+// EIGEN:
 /*
 	Eigen-analysis using QR decomposition
 */
 #ifndef SLAP_EIGEN_QR
 #define SLAP_EIGEN_QR
 
-mat* mat_get_diag(mat *m) // DA METTERE IN STRMOD!!!!!!!!!!!!!
-{
-	// returns the diagonal of the matrix m as a column vector
-	int N = MIN(m->n_rows,m->n_cols); // for non-square matrices
-	mat *d = mat_new(N,1); // column vector
-	int i;
-	for(i=0; i<N; i++) d->data[i] = m->data[i*m->n_cols+i];
-	return d;
-}
 
 mat* eigen_qr(mat *m)
 {
@@ -1001,12 +1171,12 @@ mat* mat_fromfile(FILE *f)
 	mat *m;
 	int r,c;
 	unsigned int num_rows = 0, num_cols = 0;
-	fscanf(f, "%d", &num_rows);
-	fscanf(f, "%d", &num_cols);
+	fscanf(f, "%u", &num_rows);
+	fscanf(f, "%u", &num_cols);
 	m = mat_new(num_rows, num_cols);
 	for(r=0; r<m->n_rows; r++){
 		for(c=0; c<m->n_cols; c++){
-			fscanf(f, "%lf\t", &m->data[r * m->n_cols + c]);
+			fscanf(f, SLAP_FORMAT, &m->data[r * m->n_cols + c]);
 		}
 	}
 	return m;

@@ -37,5 +37,6 @@ int main()
 	mat_free(B);
 	mat_free(tmp);
 	
+	printf("\nend program.\n");
 	return 0;
 }
