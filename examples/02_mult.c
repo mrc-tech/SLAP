@@ -18,7 +18,7 @@ int main()
 	printf("B = \n");
 	mat_print(B);
 	printf("2.5 * A =\n");
-	mat_print(mat_smul(A, 2.5));
+	mat_print(mat_scale(A, 2.5));
 	
 	printf("A * B =\n");
 	mat_print(mat_mul(A,B));

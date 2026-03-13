@@ -23,8 +23,8 @@ All the functions that return a matrix allocate new memory for the returned matr
 | `mat_sub_r(A,B)` | subtract matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ (_reference_) | $\mathbf{A}=\mathbf{A}-\mathbf{B}$ |
 | `C = mat_add(A,B)` | add matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{C}$ | $\mathbf{C}=\mathbf{A}+\mathbf{B}$ |
 | `C = mat_sub(A,B)` | subtract matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{C}$ | $\mathbf{C}=\mathbf{A}-\mathbf{B}$ |
-| `B = mat_smul(A,c)` | scale the matrix $\mathbf{A}$ with the scalar $c$ and put into $\mathbf{C}$ | $\mathbf{B}=c\mathbf{A}$ |
-| `mat_smul_r(A,c)` | scale the matrix $\mathbf{A}$ with the scalar $c$ and put into $\mathbf{A}$ (_reference_) | $\mathbf{A}=c\mathbf{A}$ |
+| `B = mat_scale(A,c)` | scale the matrix $\mathbf{A}$ with the scalar $c$ and put into $\mathbf{C}$ | $\mathbf{B}=c\mathbf{A}$ |
+| `mat_scale_r(A,c)` | scale the matrix $\mathbf{A}$ with the scalar $c$ and put into $\mathbf{A}$ (_reference_) | $\mathbf{A}=c\mathbf{A}$ |
 | `C = mat_mul(A,B)` | multiply $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{C}$; also works with scalar (row times column vector) and tensor (column times row vector) product | $\mathbf{A}=\mathbf{A}\mathbf{B}\quad$  $\mathbf{u}\cdot\mathbf{v}=\mathbf{u}^T\mathbf{v}\quad$   $\mathbf{u}\otimes\mathbf{v}=\mathbf{u}\mathbf{v}^T$ |
 | `mat_equal(A,B,tol)` | check if matrix $\mathbf{A}$ and $\mathbf{B}$ are equal | true if $abs(A_{ij}-B_{ij}) < tol$ |
 | `B = mat_transpose(A)` | transpose the matrix $\mathbf{A}$ and put into matrix $\mathbf{B}$ | $\mathbf{B}=\mathbf{A}^T$ |
@@ -139,13 +139,13 @@ void main()
 	- Permette al compilatore di fare ottimizzazioni aggressive, sapendo che quei dati in memoria non cambieranno. -->
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
-		- [ ] cache aligned (for _row-major_)
-		- [ ] Strassen
-		- [ ] Coppersmith?
+		- [ ] cache aligned (for _row-major_) <!-- Consiglio: Questo è l'upgrade più importante di tutta la tua lista.Il Problema: L'algoritmo base $O(n^3)$ fa C[i][j] += A[i][k] * B[k][j]. Poiché tu usi un array 1D row-major, leggere B[k][j] significa saltare avanti in memoria di n_cols elementi a ogni iterazione di k. Questo causa continui Cache Miss (la CPU deve aspettare la RAM lentissima).La Soluzione semplice: Prima di moltiplicare, fai la Trasposta di B. In questo modo leggerai sia A che B^T in modo sequenziale (riga per riga), sfruttando la cache L1 della CPU. Su matrici grandi, questo trucco rende la moltiplicazione anche 10x o 20x più veloce.-->
+		- [ ] Strassen <!--L'algoritmo di Strassen riduce la complessità da $O(n^3)$ a $O(n^{2.81})$. È un ottimo esercizio, ma attenzione: per via dell'overhead ricorsivo e delle allocazioni necessarie, Strassen è più lento della moltiplicazione base per matrici piccole. Di solito si usa una soglia: se $N < 64$ si usa la base, se $N \ge 64$ si attiva Strassen.Su MS-DOS: La ricorsione profonda potrebbe saturare rapidamente il piccolissimo Stack dei sistemi a 16-bit.-->
+		- [ ] Coppersmith? <!--  L'algoritmo di Coppersmith-Winograd (e i suoi successori) sono noti come Galactic Algorithms. Hanno una complessità asintotica migliore ($O(n^{2.37})$), ma le costanti nascoste sono così mostruosamente enormi che diventano più veloci di Strassen solo su matrici le cui dimensioni superano la memoria RAM esistente sul pianeta Terra. Nessuna libreria reale al mondo (nemmeno OpenBLAS o MKL) li usa. -->
 	- [x] Hadamard product
 	- [x] trace
 	- [x] diagonal square matrix from vector
-	- [ ] rename `smul` into `scale`?
+	- [x] rename `smul` into `scale`?
 	- [ ] ...
 - [ ] **DECOMPOSITION**
 	- [ ] separare l'implementazione di LU e QR dai solver (files separati)

@@ -86,7 +86,7 @@ int mat_transpose_r(mat* m)
 
 
 
-int mat_smul_r(mat *m, TYPE num)
+int mat_scale_r(mat *m, TYPE num)
 {
 	// multiply matrix by a scalar (by reference)
 	int i;
@@ -95,11 +95,11 @@ int mat_smul_r(mat *m, TYPE num)
 	return 1;
 }
 
-mat* mat_smul(const mat *m, TYPE num)
+mat* mat_scale(const mat *m, TYPE num)
 {
 	// multiply matrix by a scalar
 	mat* res = mat_copy(m);
-	mat_smul_r(res,num);
+	mat_scale_r(res,num);
 	return res;
 }
 
