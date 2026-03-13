@@ -252,6 +252,8 @@ Cosa abbiamo migliorato:
 \item    Zero Cache-Misses nel core loop: Nel ciclo \texttt{c}, \texttt{r*m->n\_cols} e \texttt{i*m2->n\_cols} sono costanti pre-calcolate. La CPU deve solo fare \texttt{array[c] += costante * array2[c]}. È l'operazione più amichevole che esista per un processore.
 \item    Lo "Zero-Skip": Ho aggiunto \texttt{if (fabs(m1\_val) < SLAP\_MIN\_COEF) continue;}. Poiché l'algebra lineare abbonda di matrici con molti zeri (matrici identità, matrici triangolari di Gauss, ecc.), se il moltiplicatore a sinistra è \texttt{0}, non ha senso calcolare il prodotto per le 100 o 1000 colonne successive. Questa riga singola fa risparmiare migliaia di operazioni.
 \end{itemize}
+Potrebbe essere fatto anche con lo stesso codice di prima, ma considerando la trasposta della matrice $B$.
+
 Ecco un grafico di confronto tra la soluzione (r,c,i) e la soluzione (r,i,c)
 
 \begin{tikzpicture}
@@ -298,6 +300,7 @@ Ecco un grafico di confronto tra la soluzione (r,c,i) e la soluzione (r,i,c)
 \\\textcolor{gray}{I risultati sono trovati con MARK2-PC.}
 
 Praticamente si riduce il tempo di calcolo di un ordine di grandezza.
+
 
 
 
