@@ -5,7 +5,7 @@
 #define SLAP_STRMOD
 
 
-mat* mat_remcol(mat *m, unsigned int column)
+mat* mat_remcol(const mat *m, unsigned int column)
 {
 	// remove the i-th column (start counting from zero)
 	mat *ret;
@@ -23,7 +23,7 @@ mat* mat_remcol(mat *m, unsigned int column)
 	return ret;
 }
 
-mat* mat_remrow(mat *m, unsigned int row)
+mat* mat_remrow(const mat *m, unsigned int row)
 {
 	// remove the i-th row (start counting from zero)
 	mat *ret;
@@ -46,7 +46,7 @@ mat* mat_remrow(mat *m, unsigned int row)
 
 
 
-mat *mat_getcol(mat *m, unsigned int col)
+mat *mat_getcol(const mat *m, unsigned int col)
 {
 	// return matrix column
 	int j;
@@ -60,7 +60,7 @@ mat *mat_getcol(mat *m, unsigned int col)
 	return res;
 }
 
-double *mat_getcol_array(mat *m, unsigned int col)
+double *mat_getcol_array(const mat *m, unsigned int col)
 {
 	// return column via array
 	int i;
@@ -71,7 +71,7 @@ double *mat_getcol_array(mat *m, unsigned int col)
 	return res;
 }
 
-mat *mat_getrow(mat *m, unsigned int row)
+mat *mat_getrow(const mat *m, unsigned int row)
 {
 	// return matrix row
 	mat *res;
@@ -84,7 +84,7 @@ mat *mat_getrow(mat *m, unsigned int row)
 	return res;
 }
 
-double *mat_getrow_array(mat *m, unsigned int row)
+double *mat_getrow_array(const mat *m, unsigned int row)
 {
 	// return a row via array
 	TYPE *res;
@@ -95,7 +95,7 @@ double *mat_getrow_array(mat *m, unsigned int row)
 }
 
 
-mat* mat_get_diag(mat *m)
+mat* mat_get_diag(const mat *m)
 {
 	// returns the diagonal of the matrix m as a column vector
 	int N = MIN(m->n_rows,m->n_cols); // for non-square matrices

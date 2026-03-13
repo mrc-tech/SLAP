@@ -92,8 +92,8 @@ void main()
 
 void main()
 {
-	mat *A = mat_init(3,3, (double[]){1,3,3,4,5,6,7,8,9});
-	mat *b = mat_init(3,1, (double[]){1,1,1});
+	mat *A = mat_init(3,3, (TYPE[]){1,3,3,4,5,6,7,8,9});
+	mat *b = mat_init(3,1, (TYPE[]){1,1,1});
 	
 	printf("A =\n"); mat_print(A);
 	printf("b =\n"); mat_print(b);
@@ -131,10 +131,12 @@ void main()
 	- [ ] BTC++ `mat_init_DOS`
 	- [ ] error handling
 	- [ ] `push_back()` like `vector<TYPE>` for vectors (column or row matrices)
-	- [ ] `__attribute__((cleanup(mat_free)))` prima della definizione delle matrici che devono auto-eliminarsi?
-	- [ ] usare `static` davanti a `mat*` di ritorno di alcune funzioni?
-	- [ ] `inline void` per `mat_free`?
-	- [ ] `const mat*` come arg alle funzioni migliora la gestione della memoria?
+	- [ ] `__attribute__((cleanup(mat_free)))` prima della definizione delle matrici che devono auto-eliminarsi? (NON COMPATIBILE CON DOS)
+	- [ ] usare `static` davanti a `mat*` di ritorno di alcune funzioni? (Gemini dice di NO) <!-- In C, restituire un puntatore a una variabile static locale la rende un "Singleton" condiviso. Se chiami la funzione due volte, la seconda chiamata sovrascriverà i dati della prima. Questo distrugge la riusabilità e rende la libreria non thread-safe. Le matrici vanno allocate con malloc/calloc e restituite normalmente. -->
+	- [ ] `inline void` per `mat_free`? Inutile. <!-- Inutile. L'istruzione inline suggerisce al compilatore di eliminare l'overhead della chiamata a funzione. Ma dentro mat_free tu chiami free(), che è un'operazione del sistema operativo molto più lenta dell'overhead della funzione. Usalo per funzioni piccolissime e chiamate milioni di volte, come mat_get(m, r, c) o mat_set(m, r, c, val). -->
+	- [x] `const mat*` come arg alle funzioni migliora la gestione della memoria? <!-- SÌ, ASSOLUTAMENTE. La Const Correctness è una best practice fondamentale. Scrivere mat_print(const mat* m) o mat_add(const mat* a, const mat* b) fa due cose magiche:
+	- Impedisce a te (autore) di modificare per sbaglio una matrice di input.
+	- Permette al compilatore di fare ottimizzazioni aggressive, sapendo che quei dati in memoria non cambieranno. -->
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
 		- [ ] cache aligned (for _row-major_)

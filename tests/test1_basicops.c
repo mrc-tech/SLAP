@@ -46,6 +46,7 @@ int main()
 	
 	
 	mat_free(A); mat_free(B); mat_free(tmp);
+	printf("\npress a key to exit...");
 	getch();
 	
 	return 0;

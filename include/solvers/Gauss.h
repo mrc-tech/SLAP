@@ -62,7 +62,7 @@ int mat_row_swap_r(mat *m, unsigned int row1, unsigned int row2)
 // Finds the first non-zero element on the col column, under the row row.
 // Used to determine the pivot
 // If not pivot is found, returns -1
-int mat_pivot_id(mat *m, unsigned int col, unsigned int row)
+inline int mat_pivot_id(const mat *m, unsigned int col, unsigned int row)
 {
 	int i;
 	for(i=row; i<m->n_rows; i++) if(fabs(m->data[i*m->n_cols+col]) > SLAP_MIN_COEF) return i;
@@ -72,7 +72,7 @@ int mat_pivot_id(mat *m, unsigned int col, unsigned int row)
 // Find the max element from the column "col" under the row "row"
 // This is needed to pivot in Gauss-Jordan elimination
 // Return the maximum pivot for numerical stability. If pivot is not found, return -1
-int mat_pivot_maxid(mat *m, unsigned int col, unsigned int row)
+int mat_pivot_maxid(const mat *m, unsigned int col, unsigned int row)
 {
 	int i, maxi;
 	TYPE micol;
@@ -90,7 +90,7 @@ int mat_pivot_maxid(mat *m, unsigned int col, unsigned int row)
 
 
 // Retrieves the matrix in Row Echelon form using Gauss Elimination (Row Echelon Form (REF))
-mat *mat_GaussJordan(mat *m)
+mat *mat_GaussJordan(const mat *m)
 {
 	mat *r = mat_copy(m);
 	int i=0, j=0, k, pivot;

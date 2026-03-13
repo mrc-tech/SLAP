@@ -2,7 +2,7 @@
 	vector product
 	multiply two vector (row or column vector) with dimension 3 (1x3 or 3x1)
 */
-mat* vec_prod(mat *u, mat *v) // CHIAMARE LA FUNZIONE "cross" ?????????????!!!!!!!!!!!!!
+mat* vec_prod(const mat *u, const mat *v) // CHIAMARE LA FUNZIONE "cross" ?????????????!!!!!!!!!!!!!
 {
 	mat* w;
 	if((u->n_rows != v->n_rows) || (u->n_cols != v->n_cols)) return NULL; // ERROR!! must be same size

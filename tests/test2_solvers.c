@@ -19,7 +19,7 @@ int main()
 	A = mat_init(3,3, (TYPE[]){1,2,3,4,5,6,7,8,9}); // nearly singular (UNSTABLE MATRIX)
 	lu = mat_lup_solve(A);
 	x = solve_lu(lu, b);
-	mat_print(x);
+//	mat_print(x);
 	tmp = mat_init(3,1, (double[]){-2,5,1.5}); // solution (MATLAB with RCOND = 1.541976e-18)
 	if(mat_equal(x,tmp,1e-15)) printf("stable-> passed\n"); else printf("unstable-> NOT PASSED!!!\n"); // PER FARLO PASSARE DOVREI METTERE "SLAP_MIN_COEF = 1.0e-20"
 //	mat_print(x);

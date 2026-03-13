@@ -5,7 +5,7 @@
 #define SLAP_EIGEN_QR
 
 
-mat* eigen_qr(mat *m)
+mat* eigen_qr(const mat *m)
 {
 	mat *A = mat_copy(m);
 	mat_qr *qr;

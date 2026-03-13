@@ -1,6 +1,6 @@
 // --- efficient matrix multiplication ---
 
-mat* mat_mul_cache1(mat* m1, mat* m2)
+mat* mat_mul_cache1(const mat* m1, const mat* m2)
 {
 	// multiply two matrices
 	// cache optimization with loop interchanging

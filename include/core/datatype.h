@@ -56,10 +56,10 @@ void mat_free(mat* matrix)
 }
 
 
-TYPE mat_get(mat* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
-void mat_set(mat* M, unsigned int row, unsigned int col, TYPE val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+inline TYPE mat_get(const mat* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+inline void mat_set(const mat* M, unsigned int row, unsigned int col, TYPE val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
 
-unsigned int mat_size(mat* M) { return M->n_rows * M->n_cols; }
+inline unsigned int mat_size(const mat* M) { return M->n_rows * M->n_cols; }
 
 
 mat* mat_init(unsigned int num_rows, unsigned int num_cols, TYPE data[])

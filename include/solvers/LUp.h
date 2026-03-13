@@ -53,7 +53,7 @@ int mat_setdiag(mat *m, TYPE value)
 }
 
 
-int mat_absmaxr(mat *m, unsigned int k)
+int mat_absmaxr(const mat *m, unsigned int k)
 {
 	// Finds the id of the max on the column (starting from k -> num_rows)
 	int i;
@@ -69,7 +69,7 @@ int mat_absmaxr(mat *m, unsigned int k)
 }
 
 
-mat_lup* mat_lup_solve(mat *m)
+mat_lup* mat_lup_solve(const mat *m)
 {
 	// perform the LU(P) factorization
 	mat *L, *U, *P;
@@ -127,7 +127,7 @@ mat_lup* mat_lup_solve(mat *m)
 // be solved
 //
 // Note: This function is usually used with an L matrix from a LU decomposition
-mat *solvefwd_lu(mat *L, mat *b)
+mat *solvefwd_lu(const mat *L, const mat *b)
 {
 	mat *x = mat_new(L->n_cols, 1);
 	int i,j;
@@ -155,7 +155,7 @@ mat *solvefwd_lu(mat *L, mat *b)
 //
 // Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
 // be solved
-mat *solvebck_lu(mat *U, mat *b)
+mat *solvebck_lu(const mat *U, const mat *b)
 {
 	mat *x = mat_new(U->n_cols, 1);
 	int i = U->n_cols, j;
@@ -170,7 +170,7 @@ mat *solvebck_lu(mat *U, mat *b)
 
 
 
-mat *solve_lu(mat_lup *lu, mat* b)
+mat *solve_lu(const mat_lup *lu, const mat* b)
 {
 	mat *Pb, *x, *y;
 	if(lu == NULL){

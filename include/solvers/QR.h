@@ -65,7 +65,7 @@ void mat_qr_free(mat_qr *qr)
 //	qr->R = R;
 //	return qr;
 //}
-mat_qr* mat_qr_solve(mat *m) // without memory leakage
+mat_qr* mat_qr_solve(const mat *m) // without memory leakage
 {
 	// find the QR decomposition of the matrix m
 	mat_qr *qr = mat_qr_new();
@@ -103,7 +103,7 @@ mat_qr* mat_qr_solve(mat *m) // without memory leakage
 	return qr;
 }
 
-mat_qr* mat_qr_solve_Gemini(mat *m) 
+mat_qr* mat_qr_solve_Gemini(const mat *m) 
 {
 	if (!m || m->n_cols == 0 || m->n_rows == 0) return NULL;// Controlli di sicurezza di base
 	mat_qr *qr = mat_qr_new();

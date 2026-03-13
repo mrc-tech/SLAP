@@ -13,7 +13,7 @@
 
 
 
-void mat_print(mat* matrix)
+void mat_print(const mat* matrix)
 {
 	// FARE IN MODO CHE STAMPA COME UNA TABELLA PREORDINATA DAL NUMERO DELLE CIFRE (tutto compatto)
 	int r,c;
@@ -30,7 +30,7 @@ void mat_print(mat* matrix)
 }
 
 
-short mat_equal(mat* m1, mat* m2, TYPE tolerance)
+short mat_equal(const mat* m1, const mat* m2, TYPE tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
 	int i;
@@ -43,18 +43,18 @@ short mat_equal(mat* m1, mat* m2, TYPE tolerance)
 }
 
 
-mat* mat_copy(mat *m)
+mat* mat_copy(const mat *m)
 {
 	// Dynamically allocates a new Matrix
 	// Initialise the matrix by copying another one
-	mat *res  = mat_new(m->n_rows, m->n_cols);
+	mat *res = mat_new(m->n_rows, m->n_cols);
 	int i;
 	for(i=0; i<res->n_rows*res->n_cols; i++) res->data[i] = m->data[i];
 	return res;
 }
 
 
-mat* mat_transpose(mat* matrix)
+mat* mat_transpose(const mat* matrix)
 {
 	// QUALCOSA NON MI CONVINCE CON LA GESTIONE DELLA MEMORIA!!!!
 	mat *m = mat_new(matrix->n_cols, matrix->n_rows); // return matrix
@@ -95,7 +95,7 @@ int mat_smul_r(mat *m, TYPE num)
 	return 1;
 }
 
-mat* mat_smul(mat *m, TYPE num)
+mat* mat_smul(const mat *m, TYPE num)
 {
 	// multiply matrix by a scalar
 	mat* res = mat_copy(m);
@@ -117,7 +117,7 @@ int mat_add_r(mat *m1, mat *m2)
 	return 1;
 }
 
-mat* mat_add(mat *m1, mat *m2)
+mat* mat_add(mat *m1, mat *m2) // forse dovrei usare const mat* ...
 {
 	mat *m = mat_copy(m1);
 	if(!mat_add_r(m, m2)) { mat_free(m); return NULL; }
@@ -137,7 +137,7 @@ int mat_sub_r(mat *m1, mat *m2)
 	return 1;
 }
 
-mat* mat_sub(mat *m1, mat *m2)
+mat* mat_sub(mat *m1, mat *m2) // forse dovrei usare const mat* ...
 {
 	mat *m = mat_copy(m1);
 	if(!mat_sub_r(m, m2)) { mat_free(m); return NULL; }
@@ -146,7 +146,7 @@ mat* mat_sub(mat *m1, mat *m2)
 
 
 
-mat* mat_mul(mat* m1, mat* m2)
+mat* mat_mul(const mat* m1, const mat* m2)
 {
 	// multiply two matrices
 	mat *m;
@@ -168,7 +168,7 @@ mat* mat_mul(mat* m1, mat* m2)
 }
 
 
-TYPE mat_trace(mat *m)
+TYPE mat_trace(const mat *m)
 {
 	// trace of the matrix m
 	TYPE tr = 0;
@@ -178,7 +178,7 @@ TYPE mat_trace(mat *m)
 }
 
 
-double mat_l2norm(mat* m)
+double mat_l2norm(const mat* m)
 {
 	// L-2 norm (Euclidean)
 	int i;

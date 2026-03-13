@@ -1,6 +1,6 @@
 // matrix norm
 
-double mat_norm_col(mat *m)
+double mat_norm_col(const mat *m)
 {
 	// matrix norm: max column sum
 	double sum;
@@ -19,7 +19,7 @@ double mat_norm_col(mat *m)
 }
 
 
-double mat_norm_row(mat *m)
+double mat_norm_row(const mat *m)
 {
 	// matrix norm: max row sum
 	double sum;
@@ -38,7 +38,7 @@ double mat_norm_row(mat *m)
 }
 
 
-double mat_norm_Frobenius(mat *m)
+double mat_norm_Frobenius(const mat *m)
 {
 	// matrix norm: Frobenius
 	mat *tmp = mat_transpose(m);

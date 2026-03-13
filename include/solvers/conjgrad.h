@@ -7,7 +7,7 @@
 inline TYPE first_member(mat *m){ return m->data[0]; }
 
 
-mat* mat_conjgrad(mat *A, mat *b)
+mat* mat_conjgrad(mat *A, mat *b) // forse dovrei usare const mat* ...
 {
 	// solve linear system A*x=b with conjugate gradient method
 	mat *x = mat_new(b->n_rows,1); // column vector (all zero)
