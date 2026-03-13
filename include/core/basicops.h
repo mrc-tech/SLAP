@@ -113,7 +113,6 @@ int mat_add_r(mat *m1, mat *m2)
 		return 0;
 	}
 	for(i=0; i<m1->n_rows*m1->n_cols; i++) m1->data[i] += m2->data[i];
-	
 	return 1;
 }
 
@@ -133,7 +132,6 @@ int mat_sub_r(mat *m1, mat *m2)
 		return 0;
 	}
 	for(i=0; i<m1->n_rows*m1->n_cols; i++) m1->data[i] -= m2->data[i];
-	
 	return 1;
 }
 
@@ -151,19 +149,22 @@ mat* mat_mul(const mat* m1, const mat* m2)
 	// multiply two matrices
 	mat *m;
 	int r, c, i;
-	if(!(m1->n_cols == m2->n_rows)){
+	TYPE m1_val; // valore temporaneo per ridurre il numero di moltiplicazioni
+	if(!(m1->n_cols == m2->n_rows)){ // Controllo compatibilità dimensioni
 //		SLAP_ERROR(CANNOT_MULTIPLY);
 		return NULL;
 	}
 	m = mat_new(m1->n_rows, m2->n_cols); // also set all values to zero
-	for(r=0; r<m->n_rows; r++){
-		for(c=0; c<m->n_cols; c++){
-			for(i=0; i<m1->n_cols; i++){
-				m->data[r*m->n_cols+c] += m1->data[r*m1->n_cols+i] * m2->data[i*m2->n_cols+c];
+	if(!m) return NULL; // Controllo sicurezza allocazione
+	for(r=0; r<m1->n_rows; r++){ // Cicli ottimizzati per Cache (Row-Major): R -> I -> C
+		for(i=0; i<m1->n_cols; i++){
+			m1_val = m1->data[r*m1->n_cols+i]; // Questo valore rimane costante per tutto l'ultimo ciclo
+			if (fabs(m1_val) < SLAP_ALMOST_ZERO) continue; // Ottimizzazione: se m1_val è "zero", possiamo saltare l'intera riga. Questo accelera incredibilmente il calcolo con matrici sparse o triangolari.
+			for(c=0; c<m2->n_cols; c++){ // prima questo era messo tra "r" e "i"
+				m->data[r*m->n_cols+c] += m1_val * m2->data[i*m2->n_cols+c];
 			}
 		}
 	}
-	
 	return m;
 }
 

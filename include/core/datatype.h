@@ -71,18 +71,31 @@ mat* mat_init(unsigned int num_rows, unsigned int num_cols, TYPE data[])
 }
 
 #ifdef SLAP_DOS
-mat* mat_init_DOS(unsigned int num_rows, unsigned int num_cols, ...)
-{
-	// non funziona con i vecchi compilatori perche` il secondo parametro di va_start(,) deve essere l'ultimo parametro passato alla funzione
-	// RISOLVERER LEGGENDO HELP DI BORLAND TURBO C!!!!!!!
+mat* mat_init_DOS(unsigned int num_rows, unsigned int num_cols, ...) {
 	va_list valist;
-	int i = num_rows*num_cols;
-	mat *m = mat_new(num_rows,num_cols);
-	va_start(valist, i); // initialize valist for num number of arguments
-	for (i=0; i<num_rows*num_cols; i++) m->data[i] = va_arg(valist, double);
-	va_end(valist); // clean memory reserved for valist
+	int i;
+	mat *m = mat_new(num_rows, num_cols);
+	if(!m) return NULL; // Controllo di sicurezza aggiuntivo
+	va_start(valist, num_cols); // L'ultimo parametro fisso è num_cols
+	for (i=0; i<num_rows*num_cols; i++) {
+		// Usa esplicitamente TYPE per far coincidere le dimensioni sullo stack
+		m->data[i] = (TYPE)va_arg(valist, TYPE); 
+	}
+	va_end(valist);
 	return m;
 }
+//mat* mat_init_DOS(unsigned int num_rows, unsigned int num_cols, ...)
+//{
+//	// non funziona con i vecchi compilatori perche` il secondo parametro di va_start(,) deve essere l'ultimo parametro passato alla funzione
+//	// RISOLVERER LEGGENDO HELP DI BORLAND TURBO C!!!!!!!
+//	va_list valist;
+//	int i = num_rows*num_cols;
+//	mat *m = mat_new(num_rows,num_cols);
+//	va_start(valist, i); // initialize valist for num number of arguments
+//	for (i=0; i<num_rows*num_cols; i++) m->data[i] = va_arg(valist, double);
+//	va_end(valist); // clean memory reserved for valist
+//	return m;
+//}
 //void matd_init(matd *m, unsigned num, ...)
 //{
 //	va_list valist;

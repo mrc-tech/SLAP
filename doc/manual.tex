@@ -14,6 +14,7 @@
 %\usepackage{pdfpages}			%per includere pezzi di pdf
 %\usepackage{float}				%per mettere le figure nel posto giusto
 \usepackage{tikz}				%per le immagini vettoriali da LateX
+\usepackage{pgfplots} % plotta i dati
 \usepackage{listings} 			%Per inserire codice
 \usepackage{pxfonts}			%per il bold nei lstlisting
 %\usepackage{scrextend}			%per labeling
@@ -193,6 +194,113 @@ La versione ottimale dell'algoritmo semplice per due matrici $\mathbf{A}$ e $\ma
 \end{algorithm}
 
 Nel modello di cache ideale l'algoritmo incorre in solamente $O(\frac{n^3}{b\sqrt{N}}$. Per le macchine moderne il denominatore $m\sqrt{N}$ ammonta a diversi ordini di grandezza, dunque il tempo necessario è quello effettivo del calcolo, invece di perdere tempo in \textit{cache misses}.
+
+\bigskip
+
+\dotfill
+
+In \texttt{SLAP.h} abbiamo definito le matrici come \textit{Row-Major} (memorizzate per righe). Significa che gli elementi di una riga sono adiacenti in memoria.
+
+Nel tuo ciclo di moltiplicazione originale \texttt{(r,c,i)}, il ciclo più interno è \texttt{i}.
+Mentre cerchi di calcolare \texttt{m2->data[i*m2->n\_cols+c]}, la variabile i aumenta, facendoti "saltare" da una riga all'altra di \texttt{m2}.
+In MS-DOS (ma anche sui PC moderni!), saltare in continuazione tra indirizzi di memoria distanti costringe il processore a svuotare e ricaricare continuamente la cache (o a leggere a frammenti lenti dalla RAM).
+
+La Soluzione: Algoritmo "Cache-Friendly" (\texttt{i-k-j} o \texttt{r-i-c}).
+Possiamo velocizzare drasticamente la funzione scambiando l'ordine dei cicli. Se mettiamo \texttt{c} come ciclo più interno, la memoria verrà letta e scritta in modo strettamente sequenziale per entrambe le matrici.
+Ecco il codice ottimizzato:
+\begin{lstlisting}
+mat* mat_mul(const mat* m1, const mat* m2)
+{
+	mat *m;
+	int r, c, i;
+	TYPE m1_val;
+
+	// Controllo compatibilita' dimensioni
+	if(!(m1->n_cols == m2->n_rows)){
+//		SLAP_ERROR(CANNOT_MULTIPLY);
+		return NULL;
+	}
+
+	// mat_new inizializza gia' tutti i valori a 0, che e' esattamente
+	// cio' che ci serve per accumulare le somme parziali.
+	m = mat_new(m1->n_rows, m2->n_cols); 
+	if(!m) return NULL; // Controllo sicurezza allocazione
+
+	// Cicli ottimizzati per Cache (Row-Major): R -> I -> C
+	for(r = 0; r < m1->n_rows; r++) {
+		for(i = 0; i < m1->n_cols; i++) {
+			// Questo valore rimane costante per tutto l'ultimo ciclo
+			m1_val = m1->data[r * m1->n_cols + i]; 
+			
+			// OTTIMIZZAZIONE EXTRA: se m1_val e' "zero", possiamo saltare l'intera riga!
+			// Questo accelera incredibilmente il calcolo con matrici sparse o triangolari.
+			if (fabs(m1_val) < SLAP_MIN_COEF) continue; 
+			
+			for(c = 0; c < m2->n_cols; c++) {
+				// Ora SIA m->data SIA m2->data vengono percorsi in modo 100% sequenziale (c++).
+				// Il processore puo' pre-caricare la memoria e volare sui calcoli.
+				m->data[r * m->n_cols + c] += m1_val * m2->data[i * m2->n_cols + c];
+			}
+		}
+	}
+	
+	return m;
+}
+\end{lstlisting}
+Cosa abbiamo migliorato:
+\begin{itemize}
+\item    Zero Cache-Misses nel core loop: Nel ciclo \texttt{c}, \texttt{r*m->n\_cols} e \texttt{i*m2->n\_cols} sono costanti pre-calcolate. La CPU deve solo fare \texttt{array[c] += costante * array2[c]}. È l'operazione più amichevole che esista per un processore.
+\item    Lo "Zero-Skip": Ho aggiunto \texttt{if (fabs(m1\_val) < SLAP\_MIN\_COEF) continue;}. Poiché l'algebra lineare abbonda di matrici con molti zeri (matrici identità, matrici triangolari di Gauss, ecc.), se il moltiplicatore a sinistra è \texttt{0}, non ha senso calcolare il prodotto per le 100 o 1000 colonne successive. Questa riga singola fa risparmiare migliaia di operazioni.
+\end{itemize}
+Ecco un grafico di confronto tra la soluzione (r,c,i) e la soluzione (r,i,c)
+
+\begin{tikzpicture}
+  \begin{axis}[
+    xlabel={dimensione matrice},
+    ylabel={tempo per moltiplicazione [ms]},
+    grid=both,
+%    xmin = 0, xmax = 20000,
+%    ymin = 0,
+    legend pos=south east,
+    ymode=log
+  ]
+    \addplot[
+      color=black,
+      very thick
+    ] coordinates {
+(1000, 2497)
+(2000, 21867)
+(3000, 78812)
+(4000, 193470)
+(5000, 410941)
+%(10000, 00)
+%(20000, 0)
+%(30000, 0)
+%(40000, 0)
+    }; \addlegendentry{(r,c,i)}
+    \addplot[
+      color=black,
+      very thick,
+      dashed
+    ] coordinates {
+(1000, 435)
+(2000, 3804)
+(3000, 13685)
+(4000, 32820)
+(7000, 176290)
+(10000, 511314)
+%(20000, 00)
+%(30000, 00)
+%(40000, 00)
+    }; \addlegendentry{(r,i,c)}
+  \end{axis}
+\end{tikzpicture}
+\\\textcolor{gray}{I risultati sono trovati con MARK2-PC.}
+
+Praticamente si riduce il tempo di calcolo di un ordine di grandezza.
+
+
+
 
 
 \paragraph{Divide-and-conquer algorithm:} Una alternativa è l'algoritmo \textit{dividi e conquista} per la moltiplicazione delle matrici che fa affidamento nella partizione delle matrici in blocchi

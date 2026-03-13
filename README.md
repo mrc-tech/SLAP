@@ -129,7 +129,7 @@ void main()
 - [ ] seguire il *Semantic Versioning* (semver.org)
 - [ ] **CORE**
 	- [ ] BTC++ `mat_init_DOS`
-	- [ ] error handling
+	- [ ] error handling <!-- Creerei una variabile globale int slap_errno; (simile allo standard errno del C) con una enum di codici di errore (SLAP_ERR_MEM, SLAP_ERR_DIM, SLAP_ERR_SINGULAR). Se una funzione fallisce, setta slap_errno e ritorna NULL. L'utente deciderà se e come crashare. -->
 	- [ ] `push_back()` like `vector<TYPE>` for vectors (column or row matrices)
 	- [ ] `__attribute__((cleanup(mat_free)))` prima della definizione delle matrici che devono auto-eliminarsi? (NON COMPATIBILE CON DOS)
 	- [ ] usare `static` davanti a `mat*` di ritorno di alcune funzioni? (Gemini dice di NO) <!-- In C, restituire un puntatore a una variabile static locale la rende un "Singleton" condiviso. Se chiami la funzione due volte, la seconda chiamata sovrascriverà i dati della prima. Questo distrugge la riusabilità e rende la libreria non thread-safe. Le matrici vanno allocate con malloc/calloc e restituite normalmente. -->
@@ -148,12 +148,12 @@ void main()
 	- [x] rename `smul` into `scale`?
 	- [ ] ...
 - [ ] **DECOMPOSITION**
-	- [ ] separare l'implementazione di LU e QR dai solver (files separati)
+	- [ ] separare l'implementazione di LU e QR dai solver (files separati) <!-- In DOS, la dimensione dell'eseguibile conta. Se tengo LU, QR, ed EIGEN in file separati (es. slap_lu.c, slap_qr.c), il linker di Borland includerà nell'eseguibile finale solo le funzioni che l'utente chiama effettivamente, risparmiando preziosi Kilobyte. -->
 	- [ ] QR
-		- [ ] Householder method
-		- [ ] Gibs rotations?
-	- [ ] Cholesky factorization
-	- [ ] Singular Value Decomposition (SVD)
+		- [ ] Householder method <!-- numericamente superiore a MGS (Gram-Schmidt modificato) -->
+		- [ ] Gibs rotations? Rotazioni di Givens? <!-- Sono eccellenti per annullare singoli elementi (utili per matrici sparse o a banda), ma per matrici dense piene, Householder richiede meno operazioni matematiche (Flops). -->
+	- [ ] Cholesky factorization <!-- Assolutamente da aggiungere. Se una matrice è Simmetrica e Definita Positiva (SPD), Cholesky (A=LLT) è grande il doppio più veloce della fattorizzazione LU e usa metà della memoria. Il codice C per Cholesky richiede a malapena 15 righe -->
+	- [ ] Singular Value Decomposition (SVD) <!-- Solitamente si riduce la matrice a forma bidiagonale (con Householder) e poi si applica un algoritmo QR iterativo implicito. Richiede molta memoria allocata per matrici di grosse dimensioni. La PCA invece sarà un gioco da ragazzi una volta che avrai un calcolatore affidabile di autovalori/autovettori o SVD (basta centrare i dati e calcolare la decomposizione). -->
 	- [ ] Principal Component Analysis (PCA)
 	- [ ] ...
 - [ ] **SOLVER**
@@ -175,10 +175,10 @@ void main()
 	- [ ] ...
 - [ ] **EIGEN**
 	- [ ] QR decomposition
-		- [ ] definire meglio quando finire la procedura iterativa
-		- [ ] forma di Hessenberg per aumentare l'efficienza
-		- [ ] implicit QR algorithm?
-	- [ ] Iterative power methods
+		- [ ] definire meglio quando finire la procedura iterativa <!-- A ogni iterazione calcolata di A_{k+1}=R_k Q_k, controlla gli elementi sotto la diagonale principale. Se il valore assoluto di A(i,i−1) scende sotto una tolleranza (il tuo SLAP_MIN_COEF), considera quell'elemento zero. Quando tutti gli elementi sotto-diagonali sono zero, hai gli autovalori sulla diagonale. -->
+		- [ ] forma di Hessenberg per aumentare l'efficienza <!-- Prima di avviare il ciclo QR, usa Householder per ridurre la matrice originale in forma di Hessenberg superiore (zeri sotto la prima sotto-diagonale). Una matrice di Hessenberg conserva questa forma attraverso le iterazioni QR, abbassando il costo iterativo da O(n^4) a O(n^3) -->
+		- [ ] implicit QR algorithm? <!-- Se non implementi uno "Shift" (es. Wilkinson Shift), l'algoritmo QR standard potrebbe convergere così lentamente da sembrare bloccato. Sottraendo una costante sI prima di QR accelera enormemente la convergenza. -->
+	- [ ] Iterative power methods <!-- Si parte da un vettore casuale x, e lo si moltiplica ripetutamente x_{k+1}=Ax_k/|Ax_k|. Converge rapidissimamente all'autovettore dominante. -->
 	- [ ] ...
 - [ ] **ADVANCED OPERATIONS**
 	- [ ] determinant
