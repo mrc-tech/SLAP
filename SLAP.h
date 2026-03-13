@@ -130,10 +130,10 @@ void mat_free(mat* matrix)
 }
 
 
-TYPE mat_get(mat* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
-void mat_set(mat* M, unsigned int row, unsigned int col, TYPE val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+inline TYPE mat_get(const mat* M, unsigned int row, unsigned int col) { return M->data[row*M->n_cols + col]; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
+inline void mat_set(const mat* M, unsigned int row, unsigned int col, TYPE val) { M->data[row*M->n_cols + col] = val; } // row-major CONTROLLARE LA VALIDITA` DEGLI INDICI!!!!!
 
-unsigned int mat_size(mat* M) { return M->n_rows * M->n_cols; }
+inline unsigned int mat_size(const mat* M) { return M->n_rows * M->n_cols; }
 
 
 mat* mat_init(unsigned int num_rows, unsigned int num_cols, TYPE data[])
@@ -191,7 +191,7 @@ mat* mat_init_DOS(unsigned int num_rows, unsigned int num_cols, ...)
 
 
 
-void mat_print(mat* matrix)
+void mat_print(const mat* matrix)
 {
 	// FARE IN MODO CHE STAMPA COME UNA TABELLA PREORDINATA DAL NUMERO DELLE CIFRE (tutto compatto)
 	int r,c;
@@ -208,7 +208,7 @@ void mat_print(mat* matrix)
 }
 
 
-short mat_equal(mat* m1, mat* m2, TYPE tolerance)
+short mat_equal(const mat* m1, const mat* m2, TYPE tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
 	int i;
@@ -221,18 +221,18 @@ short mat_equal(mat* m1, mat* m2, TYPE tolerance)
 }
 
 
-mat* mat_copy(mat *m)
+mat* mat_copy(const mat *m)
 {
 	// Dynamically allocates a new Matrix
 	// Initialise the matrix by copying another one
-	mat *res  = mat_new(m->n_rows, m->n_cols);
+	mat *res = mat_new(m->n_rows, m->n_cols);
 	int i;
 	for(i=0; i<res->n_rows*res->n_cols; i++) res->data[i] = m->data[i];
 	return res;
 }
 
 
-mat* mat_transpose(mat* matrix)
+mat* mat_transpose(const mat* matrix)
 {
 	// QUALCOSA NON MI CONVINCE CON LA GESTIONE DELLA MEMORIA!!!!
 	mat *m = mat_new(matrix->n_cols, matrix->n_rows); // return matrix
@@ -264,7 +264,7 @@ int mat_transpose_r(mat* m)
 
 
 
-int mat_smul_r(mat *m, TYPE num)
+int mat_scale_r(mat *m, TYPE num)
 {
 	// multiply matrix by a scalar (by reference)
 	int i;
@@ -273,11 +273,11 @@ int mat_smul_r(mat *m, TYPE num)
 	return 1;
 }
 
-mat* mat_smul(mat *m, TYPE num)
+mat* mat_scale(const mat *m, TYPE num)
 {
 	// multiply matrix by a scalar
 	mat* res = mat_copy(m);
-	mat_smul_r(res,num);
+	mat_scale_r(res,num);
 	return res;
 }
 
@@ -295,7 +295,7 @@ int mat_add_r(mat *m1, mat *m2)
 	return 1;
 }
 
-mat* mat_add(mat *m1, mat *m2)
+mat* mat_add(mat *m1, mat *m2) // forse dovrei usare const mat* ...
 {
 	mat *m = mat_copy(m1);
 	if(!mat_add_r(m, m2)) { mat_free(m); return NULL; }
@@ -315,7 +315,7 @@ int mat_sub_r(mat *m1, mat *m2)
 	return 1;
 }
 
-mat* mat_sub(mat *m1, mat *m2)
+mat* mat_sub(mat *m1, mat *m2) // forse dovrei usare const mat* ...
 {
 	mat *m = mat_copy(m1);
 	if(!mat_sub_r(m, m2)) { mat_free(m); return NULL; }
@@ -324,7 +324,7 @@ mat* mat_sub(mat *m1, mat *m2)
 
 
 
-mat* mat_mul(mat* m1, mat* m2)
+mat* mat_mul(const mat* m1, const mat* m2)
 {
 	// multiply two matrices
 	mat *m;
@@ -346,7 +346,7 @@ mat* mat_mul(mat* m1, mat* m2)
 }
 
 
-TYPE mat_trace(mat *m)
+TYPE mat_trace(const mat *m)
 {
 	// trace of the matrix m
 	TYPE tr = 0;
@@ -356,7 +356,7 @@ TYPE mat_trace(mat *m)
 }
 
 
-double mat_l2norm(mat* m)
+double mat_l2norm(const mat* m)
 {
 	// L-2 norm (Euclidean)
 	int i;
@@ -387,7 +387,7 @@ mat* mat_eye(unsigned int size)
 #define SLAP_STRMOD
 
 
-mat* mat_remcol(mat *m, unsigned int column)
+mat* mat_remcol(const mat *m, unsigned int column)
 {
 	// remove the i-th column (start counting from zero)
 	mat *ret;
@@ -405,7 +405,7 @@ mat* mat_remcol(mat *m, unsigned int column)
 	return ret;
 }
 
-mat* mat_remrow(mat *m, unsigned int row)
+mat* mat_remrow(const mat *m, unsigned int row)
 {
 	// remove the i-th row (start counting from zero)
 	mat *ret;
@@ -428,7 +428,7 @@ mat* mat_remrow(mat *m, unsigned int row)
 
 
 
-mat *mat_getcol(mat *m, unsigned int col)
+mat *mat_getcol(const mat *m, unsigned int col)
 {
 	// return matrix column
 	int j;
@@ -442,7 +442,7 @@ mat *mat_getcol(mat *m, unsigned int col)
 	return res;
 }
 
-double *mat_getcol_array(mat *m, unsigned int col)
+double *mat_getcol_array(const mat *m, unsigned int col)
 {
 	// return column via array
 	int i;
@@ -453,7 +453,7 @@ double *mat_getcol_array(mat *m, unsigned int col)
 	return res;
 }
 
-mat *mat_getrow(mat *m, unsigned int row)
+mat *mat_getrow(const mat *m, unsigned int row)
 {
 	// return matrix row
 	mat *res;
@@ -466,7 +466,7 @@ mat *mat_getrow(mat *m, unsigned int row)
 	return res;
 }
 
-double *mat_getrow_array(mat *m, unsigned int row)
+double *mat_getrow_array(const mat *m, unsigned int row)
 {
 	// return a row via array
 	TYPE *res;
@@ -477,7 +477,7 @@ double *mat_getrow_array(mat *m, unsigned int row)
 }
 
 
-mat* mat_get_diag(mat *m)
+mat* mat_get_diag(const mat *m)
 {
 	// returns the diagonal of the matrix m as a column vector
 	int N = MIN(m->n_rows,m->n_cols); // for non-square matrices
@@ -636,7 +636,7 @@ int mat_setdiag(mat *m, TYPE value)
 }
 
 
-int mat_absmaxr(mat *m, unsigned int k)
+int mat_absmaxr(const mat *m, unsigned int k)
 {
 	// Finds the id of the max on the column (starting from k -> num_rows)
 	int i;
@@ -652,7 +652,7 @@ int mat_absmaxr(mat *m, unsigned int k)
 }
 
 
-mat_lup* mat_lup_solve(mat *m)
+mat_lup* mat_lup_solve(const mat *m)
 {
 	// perform the LU(P) factorization
 	mat *L, *U, *P;
@@ -710,7 +710,7 @@ mat_lup* mat_lup_solve(mat *m)
 // be solved
 //
 // Note: This function is usually used with an L matrix from a LU decomposition
-mat *solvefwd_lu(mat *L, mat *b)
+mat *solvefwd_lu(const mat *L, const mat *b)
 {
 	mat *x = mat_new(L->n_cols, 1);
 	int i,j;
@@ -738,7 +738,7 @@ mat *solvefwd_lu(mat *L, mat *b)
 //
 // Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
 // be solved
-mat *solvebck_lu(mat *U, mat *b)
+mat *solvebck_lu(const mat *U, const mat *b)
 {
 	mat *x = mat_new(U->n_cols, 1);
 	int i = U->n_cols, j;
@@ -753,7 +753,7 @@ mat *solvebck_lu(mat *U, mat *b)
 
 
 
-mat *solve_lu(mat_lup *lu, mat* b)
+mat *solve_lu(const mat_lup *lu, const mat* b)
 {
 	mat *Pb, *x, *y;
 	if(lu == NULL){
@@ -846,7 +846,7 @@ void mat_qr_free(mat_qr *qr)
 //	qr->R = R;
 //	return qr;
 //}
-mat_qr* mat_qr_solve(mat *m) // without memory leakage
+mat_qr* mat_qr_solve(const mat *m) // without memory leakage
 {
 	// find the QR decomposition of the matrix m
 	mat_qr *qr = mat_qr_new();
@@ -884,7 +884,7 @@ mat_qr* mat_qr_solve(mat *m) // without memory leakage
 	return qr;
 }
 
-mat_qr* mat_qr_solve_Gemini(mat *m) 
+mat_qr* mat_qr_solve_Gemini(const mat *m) 
 {
 	if (!m || m->n_cols == 0 || m->n_rows == 0) return NULL;// Controlli di sicurezza di base
 	mat_qr *qr = mat_qr_new();
@@ -966,7 +966,7 @@ mat_qr* mat_qr_solve_Gemini(mat *m)
 inline TYPE first_member(mat *m){ return m->data[0]; }
 
 
-mat* mat_conjgrad(mat *A, mat *b)
+mat* mat_conjgrad(mat *A, mat *b) // forse dovrei usare const mat* ...
 {
 	// solve linear system A*x=b with conjugate gradient method
 	mat *x = mat_new(b->n_rows,1); // column vector (all zero)
@@ -981,11 +981,11 @@ mat* mat_conjgrad(mat *A, mat *b)
 	for(i=0; i<x->n_rows; i++){
 		Ap = mat_mul(A, p);
 		alpha = rold / first_member(mat_mul(mat_transpose(p), Ap)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		mat_add_r(x, mat_smul(p,  alpha)); // update x
-		mat_sub_r(r, mat_smul(Ap, alpha)); // update r
+		mat_add_r(x, mat_scale(p,  alpha)); // update x
+		mat_sub_r(r, mat_scale(Ap, alpha)); // update r
 		rnew = first_member(mat_mul(mat_transpose(r),r)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		if (sqrt(rnew) < 1e-10) break; // convergence on desired precision
-		p = mat_add(r, mat_smul(p, rnew/rold)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		p = mat_add(r, mat_scale(p, rnew/rold)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		rold = rnew; // update (r^T * r)
 	}
 	
@@ -1071,7 +1071,7 @@ int mat_row_swap_r(mat *m, unsigned int row1, unsigned int row2)
 // Finds the first non-zero element on the col column, under the row row.
 // Used to determine the pivot
 // If not pivot is found, returns -1
-int mat_pivot_id(mat *m, unsigned int col, unsigned int row)
+inline int mat_pivot_id(const mat *m, unsigned int col, unsigned int row)
 {
 	int i;
 	for(i=row; i<m->n_rows; i++) if(fabs(m->data[i*m->n_cols+col]) > SLAP_MIN_COEF) return i;
@@ -1081,7 +1081,7 @@ int mat_pivot_id(mat *m, unsigned int col, unsigned int row)
 // Find the max element from the column "col" under the row "row"
 // This is needed to pivot in Gauss-Jordan elimination
 // Return the maximum pivot for numerical stability. If pivot is not found, return -1
-int mat_pivot_maxid(mat *m, unsigned int col, unsigned int row)
+int mat_pivot_maxid(const mat *m, unsigned int col, unsigned int row)
 {
 	int i, maxi;
 	TYPE micol;
@@ -1099,7 +1099,7 @@ int mat_pivot_maxid(mat *m, unsigned int col, unsigned int row)
 
 
 // Retrieves the matrix in Row Echelon form using Gauss Elimination (Row Echelon Form (REF))
-mat *mat_GaussJordan(mat *m)
+mat *mat_GaussJordan(const mat *m)
 {
 	mat *r = mat_copy(m);
 	int i=0, j=0, k, pivot;
@@ -1138,7 +1138,7 @@ mat *mat_GaussJordan(mat *m)
 #define SLAP_EIGEN_QR
 
 
-mat* eigen_qr(mat *m)
+mat* eigen_qr(const mat *m)
 {
 	mat *A = mat_copy(m);
 	mat_qr *qr;
