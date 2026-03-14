@@ -1,14 +1,12 @@
 \documentclass[10pt]{article}
 
-\usepackage[a4paper,top=2.5cm,bottom=3.5cm,left=2.5cm,right=2.5cm]{geometry}
-%\usepackage[T1]{fontenc}		%implementa nei font gli accenti (crea un casino facendo tutto pixellato)
-\usepackage[utf8]{inputenc}		%importa i caratteri utf
-\usepackage{inputenc}
+%\usepackage[a4paper,margin=25mm,bottom=35mm]{geometry}
+\usepackage[a5paper,margin=15mm,bottom=25mm]{geometry}
+\usepackage[T1]{fontenc}
+%\usepackage[utf8]{inputenc}		%importa i caratteri utf
 \usepackage[italian]{babel}
 \usepackage{amsmath,amssymb}	%per visualizzare la matematica (per text{})
 \usepackage{mathtools}
-%\usepackage{graphicx}			%per le figure
-\usepackage{xcolor}				%per scrivere colorato XCOLOR per lstlisting colorato (se non c'è tikz)
 \usepackage[toc,page]{appendix}	%per l'implementazione delle appendici
 %\usepackage{subfig}				%per figure multiple in una stessa figure
 %\usepackage{pdfpages}			%per includere pezzi di pdf
@@ -23,7 +21,9 @@
 \usepackage{algpseudocode}		% per lo pseudocodice
 
 
-%\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+%\linespread{2}
+
 
 \lstset { %
 	language=C++,
@@ -307,7 +307,7 @@ Praticamente si riduce il tempo di calcolo di un ordine di grandezza.
 
 
 \paragraph{Divide-and-conquer algorithm:} Una alternativa è l'algoritmo \textit{dividi e conquista} per la moltiplicazione delle matrici che fa affidamento nella partizione delle matrici in blocchi
-\begin{equation}
+\begin{multline}
 \begin{bmatrix}
 \mathbf{C}_{11} & \mathbf{C}_{12} \\
 \mathbf{C}_{12} & \mathbf{C}_{22}
@@ -319,12 +319,13 @@ Praticamente si riduce il tempo di calcolo di un ordine di grandezza.
 \begin{bmatrix}
 \mathbf{B}_{11} & \mathbf{B}_{12} \\
 \mathbf{B}_{12} & \mathbf{B}_{22}
-\end{bmatrix} = 
+\end{bmatrix} = \\
+=
 \begin{bmatrix}
 \mathbf{A}_{11}\;\mathbf{B}_{11}+\mathbf{A}_{12}\;\mathbf{B}_{21} & \mathbf{A}_{11}\;\mathbf{B}_{12}+\mathbf{A}_{12}\;\mathbf{B}_{22} \\
 \mathbf{A}_{21}\;\mathbf{B}_{11}+\mathbf{A}_{22}\;\mathbf{B}_{21} & \mathbf{A}_{21}\;\mathbf{B}_{12}+\mathbf{A}_{22}\;\mathbf{B}_{22}
 \end{bmatrix}
-\end{equation}
+\end{multline}
 che si applica a tutte le matrici quadrate che hanno dimensione pari a una potenza di due (${2^n \times 2^n}$).
 L'algoritmo dividi e conquista calcola le moltiplicazioni più piccole ricorsivamente come un prodotto scalare $C_{11} = A_{11}B_{11}$ come caso base.
 
@@ -489,21 +490,23 @@ int matd_row_addrow_r(matd *m, unsigned int where, unsigned int row, double mult
 \end{lstlisting}
 
 Esempio:
-\begin{equation*}
-\mathtt{matd\_row\_addrow\_r} = \left( 
+\begin{align*}
+\mathtt{matd\_row\_addrow\_r} &= \left( 
 \begin{bmatrix}
 1 & 2 & 3 \\ 0 & 2 & 4 \\ 2 & 1 & 9
 \end{bmatrix}, \; 0, \; 1, \; 0.5
-\right) = 
+\right) = \\
+&=
 \begin{bmatrix}
 1+0\cdot 0.5 & 2+2\cdot 0.5 & 3+4\cdot 0.5 \\
 0 & 2 & 4 \\
 4 & 1 & 9
-\end{bmatrix} = 
+\end{bmatrix} = \\
+&=
 \begin{bmatrix}
 1 & 3 & 5 \\ 0 & 2 & 4 \\ 2 & 1 & 9
 \end{bmatrix}
-\end{equation*}
+\end{align*}
 
 
 
@@ -1083,16 +1086,24 @@ dove $\mathbf{M}_{ij}$ è la matrice minore di $\mathbf{A}$, ottenuta eliminando
 
 \section{Eigen}
 
-\begin{tabular}{lllcll}
+\noindent
+\begin{tabular}{p{28mm} p{2cm} p{3cm} p{1cm} l l}
 \textbf{metodo} & \textbf{si applica a} & \textbf{produce} & \textbf{costo} & \textbf{conv.} & \textbf{descrizione} \\
 \hline
 Lanczos algorithm & Hermitian & $m$ largest/smallest eigenpair & & & \\
+\hline
 Power iteration & general & eigenpair with largest value & $O(n^2)$ & linear & applica la matrice ripetutamente ad un vettore iniziale e rinormalizza \\
+\hline
 Inverse iteration & general & eigenpair with value closest to $\mu$ &  & linear & power iteration applicata a $(\mathbf{A} - \mu \mathbf{I})^{-1}$ \\
+\hline
 Rayleigh quotient iteration & hermitian & any eigenpair & & cubica & power iteration applicata a $(\mathbf{A} - \mu \mathbf{I})^{-1}$, dove $\mu$ ad ogni iterazione è il quoziente di Rayleigh della precedente \\
+\hline
 Preconditioned inverse iteration & Hermitiana & any eigenpair & & cubic & inverse iteration usando un precondizionatore (una specie di inversa di $\mathbf{A}$). Chiamato anche LOBPCG algorithm \\
+\hline
 Bisection method & real symmetric tridiagonal & any eigenvalue & & lineare & usa il metodo della bisezione per trovare le soluzioni del polinomio caratteristico, supportato dalla sequenza di Sturm \\
+\hline
 Laguerre iteration & real symmetric tridiagonal & any eigenvalue & & cubic & metodo di Laguerre per trovare le soluzioni del polinomio caratteristico fornito dalla sequenza di Sturm \\
+\hline
 QR algorithm & Hassenberg & all eigenvalues and all eigenpairs & $O(n^2)$ e $6n^3+O(n^2)$ & cubic & applica l'iterazione successiva a $\mathbf{R}\mathbf{Q}$ \\
 
 \end{tabular}
