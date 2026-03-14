@@ -1,0 +1,32 @@
+3. Minimi Quadrati (Least Squares)
+
+Se hai un sistema sovradeterminato Ax=b (es. più righe che colonne, tipico in statistica o data fitting), si risolve usando l'Equazione Normale:
+$$ A^T A x = A^T b $$
+
+Basta concatenare le tue macro di base esistenti.
+
+
+
+mat* mat_least_squares(const mat *A, const mat *b) {
+    mat *At, *AtA, *Atb, *x;
+    mat_lup *lu;
+    
+    // b deve essere un vettore colonna con lo stesso numero di righe di A
+    if (A->n_rows != b->n_rows || b->n_cols != 1) return NULL;
+    
+    At = mat_transpose(A);
+    AtA = mat_mul(At, A);
+    Atb = mat_mul(At, b);
+    
+    // Risolviamo il sistema quadro risultante (AtA * x = Atb)
+    lu = mat_lup_solve(AtA);
+    x = solve_lu(lu, Atb);
+    
+    // Pulizia rigorosa della memoria
+    mat_lup_free(lu);
+    mat_free(AtA);
+    mat_free(Atb);
+    mat_free(At);
+    
+    return x;
+}
