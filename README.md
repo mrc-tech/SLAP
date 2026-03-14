@@ -184,7 +184,7 @@ void main()
 	- [ ] ...
 - [ ] **ADVANCED OPERATIONS**
 	- [ ] determinant
-		- [ ] LU(P) decomposition (_nml_)
+		- [x] LU(P) decomposition (_nml_)
 		- [ ] Sviluppo di Laplace
 		- [ ] Bareiss algorithm
 		- [ ] Division-free algorithm

@@ -1069,6 +1069,46 @@ Nel caso di matrici triangolari (siano esse triangolari superiori o inferiori) i
 
 
 
+\subsection{Determinante tramite LU}
+
+La decomposizione LU calcola
+$$ \mathbf{P} \; \mathbf{A} = \mathbf{L} \; \mathbf{U} $$
+dove $\mathbf{L}$ e' una matrice triangolare inferiore con ogni elemento sulla diagonale unitario e $\mathbf{U}$ una matrice triangolare superiore.
+Sappiamo che $\det(\mathbf{L})=1$ e che il determinante di una matrice triangolare superiore $\mathbf{U}$ è il prodotto della sua diagonale. Il segno dipende dal numero di permutazioni di $\mathbf{P}$.
+Calcolare il determinante è computazionalmente quasi gratuito: costa solo $\mathcal{O}(N)$ operazioni aggiuntive rispetto alla decomposizione LU.
+\begin{lstlisting}
+TYPE mat_det(const mat *m) {
+    mat_lup *lu;
+    TYPE det = 1.0;
+    unsigned int i;
+    
+    if (m->n_rows != m->n_cols) return 0.0; // Solo matrici quadrate
+    
+    lu = mat_lup_solve(m);
+    if (!lu) return 0.0; // Matrice singolare (non invertibile/degenere)
+    
+    for (i = 0; i < lu->U->n_rows; i++) {
+        det *= lu->U->data[i * lu->U->n_cols + i];
+    }
+    
+    // Se il numero di permutazioni delle righe è dispari, il segno si inverte
+    if (lu->num_permutations % 2 != 0) {
+        det = -det;
+    }
+    
+    mat_lup_free(lu);
+    return det;
+}
+\end{lstlisting}
+
+
+
+
+
+
+
+
+
 \section{Inverse matrix}
 
 L'algoritmo peggiore in termini computazionali per trovare la matrice inversa fa uso della matrice aggiunta
@@ -1080,6 +1120,12 @@ La matrice $\text{adj}(\mathbf{A})$ è calcolata tramite la trasposta della matr
 \text{cof}_{ij}(\mathbf{A}) = (-1)^{i+j} \det\left(\mathbf{M}_{ij}\right)
 \end{equation}
 dove $\mathbf{M}_{ij}$ è la matrice minore di $\mathbf{A}$, ottenuta eliminando la $i$-esima riga e la $j$-esima colonna della matrice $\mathbf{A}$.
+
+
+
+
+
+
 
 
 
