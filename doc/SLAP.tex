@@ -1383,5 +1383,54 @@ Questa funzione puo' essere usata come:
 \textcolor{red}{metodi di sampling descritti sul mio quaderno dei ponti integrali, con qualche indicazione in piu`}
 
 
+\section{Stress test}
+
+
+
+\subsection{Matrici di Hilbert}
+
+Le matrici di Hilbert per N molto grande sono particolarmente instabili.
+Sono definite come
+\begin{equation}
+H_{i,j} = \frac{1}{i+j-1}
+\end{equation}
+Per la proprieta' transitiva tra $i$ e $j$ al denominatore, si vede chiaramente che e' simmetrica ($H_{i,j}=H_{j,i}$).
+Ad esempio la matrice di Hilbert di ordine 3 e'
+$$
+\mathbf{H}_3 =
+\begin{bmatrix}
+1   & 1/2 & 1/3 \\
+1/2 & 1/3 & 1/4 \\
+1/3 & 1/4 & 1/5
+\end{bmatrix}
+$$
+Anche per ordini piccoli ($N=5$ o $N=6$) calcolare l'inversa puo' portare a errori di arrotondamento.
+
+
+\subsection{Matrice quasi instabile}
+
+$$
+\begin{bmatrix}
+1 & 1 & 1 \\ 1 & 1.0001 & 1 \\ 1 & 1 & 1.0001
+\end{bmatrix}
+$$
+
+Questa matrice è un altro esempio fantastico, molto diverso da quello di Hilbert, ma altrettanto insidioso. Possiamo scriverla introducendo un piccolo "disturbo" $\epsilon = 0.0001$:
+
+$$A = \begin{bmatrix} 1 & 1 & 1 \\ 1 & 1 + \epsilon & 1 \\ 1 & 1 & 1 + \epsilon \end{bmatrix}$$
+Se si calcola l'inversa mantenendo $\epsilon$ come variabile, si ottiene una forma analitica molto chiara:
+
+$$A^{-1} = \begin{bmatrix} 1 + \frac{2}{\epsilon} & -\frac{1}{\epsilon} & -\frac{1}{\epsilon} \\ -\frac{1}{\epsilon} & \frac{1}{\epsilon} & 0 \\ -\frac{1}{\epsilon} & 0 & \frac{1}{\epsilon} \end{bmatrix}$$
+Sostituendo $\epsilon = 0.0001$ (il cui reciproco $\frac{1}{\epsilon} = 10000$), otteniamo esattamente la matrice indicata sopra.
+Perché questa matrice è il "boss finale" per la tua libreria SLAP?
+Se provi a dare questa matrice in pasto al tuo solutore, testerai una cosa cruciale: la tolleranza allo zero.
+\begin{itemize}
+\item \textbf{Quasi-Singolarità}: La matrice di partenza è "quasi" una matrice di tutti $1$ (che avrebbe determinante pari a $0$ e non sarebbe invertibile). Il suo determinante reale è piccolissimo: $\det(A) = \epsilon^2 = 10^{-8}$.
+\item \textbf{Il ruolo di \texttt{SLAP\_MIN\_COEF}}: Nel tuo file \texttt{SLAP\_merged.h} hai definito \verb^#define SLAP_MIN_COEF (LDBL_EPSILON * 100.0L)^. Dal momento che il determinante scende a $10^{-8}$, algoritmi mal scritti o con tolleranze troppo alte potrebbero credere che la matrice sia singolare e bloccare l'esecuzione ritornando \texttt{NULL}.
+\item \textbf{Il vantaggio del tuo long double in DOS}: Fortunatamente, i vecchi compilatori Borland C++ su MS-DOS usano la FPU x87, che mappa il long double a 80-bit in hardware. Questa precisione estesa ti salva la vita qui, garantendo che $10^{-8}$ venga gestito senza collassare nello zero macchina.
+\end{itemize}
+
+
+
 
 \end{document}

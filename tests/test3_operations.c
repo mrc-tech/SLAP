@@ -25,6 +25,12 @@ int main()
 	A = mat_init(3,3, (TYPE[]){1,2,3,2,4.1,6,3,6,9.1}); // matrice quasi singolare
 	B = mat_init(3,3, (TYPE[]){131,-20,-30,-20,10,0,-30,0,10}); // valori maggiori denotano una instabilita'
 	if(mat_equal(mat_inv(A),B,1e-10)) printf("              : passed\n"); else printf("              : NOT PASSED!!!\n");
+	A = mat_init(3,3, (TYPE[]){1.,1/2.,1/3.,1/2.,1/3.,1/4.,1/3.,1/4.,1/5.}); // matrice quasi singolare (Hilbert)
+	B = mat_init(3,3, (TYPE[]){9,-36,30,-36,192,-180,30,-180,180});
+	if(mat_equal(mat_inv(A),B,1e-10)) printf("              : passed\n"); else printf("              : NOT PASSED!!!\n");
+	A = mat_init(3,3, (TYPE[]){1,1,1,1,1.0001,1,1,1,1.0001}); // altro esempio difficile
+	B = mat_init(3,3, (TYPE[]){20001,-10000,-10000,-10000,10000,0,-10000,0,10000});
+	if(mat_equal(mat_inv(A),B,1e-8)) printf("              : passed\n"); else printf("              : NOT PASSED!!!\n");
 	
 	
 	
