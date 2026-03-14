@@ -20,6 +20,7 @@ mat* mat_conjgrad(const mat *A, const mat *b)
 	mat *x = mat_new(b->n_rows,1); // column vector (all zero)
 	
 	TYPE alpha, beta, r_dot_r, r_dot_r_new, p_Ap_dot, sum;
+	TYPE norm_b = sqrt(mat_dot(b, b)); // Prima del ciclo calcola la norma di b
 	
 	mat *rv = mat_new(1, n); // Allocazioni iniziali (vengono fatte UNA SOLA VOLTA)
 	mat *p  = mat_new(1, n); // vettori riga sono piu' veloci in row-major
@@ -35,10 +36,13 @@ mat* mat_conjgrad(const mat *A, const mat *b)
 	
 	r_dot_r = mat_dot(rv, rv); // Calcoliamo il prodotto scalare r^T * r iniziale
 	
+	if (norm_b == 0.0) norm_b = 1.0; // Evita divisioni per zero
+	
 	// CICLO PRINCIPALE
 	for(k=0; k<max_iter; k++){
 		
-		if (sqrt(r_dot_r) < 1e-10) break; // Condizione di uscita: il residuo è abbastanza vicino a zero?
+		if (sqrt(r_dot_r) / norm_b < SLAP_MIN_COEF) break; // Condizione di uscita: il residuo è abbastanza vicino a zero?
+		// in questo caso SLAP_MIN_COEF e' usata come una tolleranza normalizzata
 		
 		// -----------------------------------------------------------
 		// CALCOLO DI Ap = A * p (INLINE E IN-PLACE)
@@ -54,7 +58,7 @@ mat* mat_conjgrad(const mat *A, const mat *b)
 		p_Ap_dot = mat_dot(p, Ap); // Prodotto scalare p^T * A * p
 		
 		// Sicurezza per evitare divisioni per zero se la matrice è malcondizionata
-		if (fabs(p_Ap_dot) < SLAP_MIN_COEF) {
+		if (fabs(p_Ap_dot) < SLAP_ALMOST_ZERO) {
 			mat_free(Ap);
 			break;
 		}

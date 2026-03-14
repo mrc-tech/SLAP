@@ -87,7 +87,7 @@ mat_lup* mat_lup_solve(const mat *m)
 	for(j=0; j<U->n_cols; j++){
 		// Retrieves the row with the biggest element for column (j)
 		pivot = mat_absmaxr(U, j);
-		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_MIN_COEF){ // evita la divisione per zero
+		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_ALMOST_ZERO){ // evita la divisione per zero
 //			SLAP_ERROR(CANNOT_LU_MATRIX_DEGENERATE); // MOSTRARE ANCHE LA RIGA E COLONNA CHE HA FALLITO??
 			mat_free(L); mat_free(U); mat_free(P); // Evita il memory leak liberando la memoria prima di uscire
 			return NULL;

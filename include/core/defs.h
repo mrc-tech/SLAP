@@ -22,7 +22,7 @@
 		moderno equivale a dire "considera zero tutto ciò che è più piccolo di ~2e-14") garantisce 
 		che l'algoritmo non scambi del rumore di arrotondamento per un pivot valido, 
 		evitando divisioni disastrose.*/
-        #define SLAP_ALMOST_ZERO 1.0e-30 // FARE MEGLIO!!!!!!!!!!!
+        #define SLAP_ALMOST_ZERO 1.0e-50 // FARE MEGLIO!!!!!!!!!!!
         
     #else // other non-DOS systems
         #define TYPE double
@@ -31,7 +31,7 @@
         // Nei sistemi moderni double è 64-bit.
         // DBL_EPSILON è circa 2.22e-16.
         #define SLAP_MIN_COEF (DBL_EPSILON * 100.0)
-        #define SLAP_ALMOST_ZERO 1.0e-30 // FARE MEGLIO!!!!!!!!!!!
+        #define SLAP_ALMOST_ZERO 1.0e-100 // FARE MEGLIO!!!!!!!!!!!
         
     #endif
 #endif // TYPE

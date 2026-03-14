@@ -65,7 +65,7 @@ int mat_row_swap_r(mat *m, unsigned int row1, unsigned int row2)
 inline int mat_pivot_id(const mat *m, unsigned int col, unsigned int row)
 {
 	int i;
-	for(i=row; i<m->n_rows; i++) if(fabs(m->data[i*m->n_cols+col]) > SLAP_MIN_COEF) return i;
+	for(i=row; i<m->n_rows; i++) if(fabs(m->data[i*m->n_cols+col]) > SLAP_ALMOST_ZERO) return i;
 	return -1;
 }
 
@@ -85,7 +85,7 @@ int mat_pivot_maxid(const mat *m, unsigned int col, unsigned int row)
 			maxi = i;
 		}
 	}
-	return(max < SLAP_MIN_COEF) ? -1 : maxi;
+	return(max < SLAP_ALMOST_ZERO) ? -1 : maxi;
 }
 
 
@@ -104,7 +104,7 @@ mat *mat_GaussJordan(const mat *m)
 		if(pivot != i) mat_row_swap_r(r, i, pivot); // We interchange rows moving the pivot to the first row that doesn't have already a pivot in place
 		mat_row_smul_r(r, i, 1.0/r->data[i*r->n_cols+j]); // Multiply each element in the pivot row by the inverse of the pivot
 		for(k=i+1; k<r->n_rows; k++){
-			if(fabs(r->data[k*r->n_cols+j]) > SLAP_MIN_COEF){
+			if(fabs(r->data[k*r->n_cols+j]) > SLAP_ALMOST_ZERO){
 				mat_row_addrow_r(r, k, i, -(r->data[k*r->n_cols+j])); // We add multiplies of the pivot so every element on the column equals 0
 			}
 		}

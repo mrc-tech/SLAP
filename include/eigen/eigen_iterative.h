@@ -50,7 +50,7 @@ TYPE eigen_power_method(const mat *A, mat *eigenvec_out, TYPE tolerance, int max
 
 		// 5. Normalizziamo w per ottenere il nuovo v
 		norm = mat_l2norm(w);
-		if(norm < SLAP_MIN_COEF) break; // Evita divisioni per zero
+		if(norm < SLAP_ALMOST_ZERO) break; // Evita divisioni per zero
 		for(i = 0; i < n; i++) {
 			v->data[i] = w->data[i] / norm;
 		}

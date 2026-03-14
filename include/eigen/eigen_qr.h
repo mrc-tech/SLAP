@@ -18,7 +18,7 @@ mat* eigen_qr(const mat *m, TYPE tolerance, int max_iter)
 	}
 	
 	for(i=0; i<max_iter; i++){
-		qr = mat_qr_solve_Gemini(A);
+		qr = mat_qr_solve(A);
 		mat_free(A); // avoid memory leakage
 		A = mat_mul(qr->R, qr->Q); // update A matrix for i-th step
 		mat_qr_free(qr); // free used memory for QR decomposition

@@ -60,7 +60,7 @@ void test_qr_decomposition() {
                                      6.0, 167.0, -68.0, 
                                      -4.0, 24.0, -41.0});
     
-    mat_qr *qr = mat_qr_solve_Gemini(A);
+    mat_qr *qr = mat_qr_solve(A);
     
     // 1. Test di Ricostruzione: Q * R deve essere uguale ad A
     mat *QR = mat_mul(qr->Q, qr->R);
@@ -115,7 +115,7 @@ void test_hilbert_matrix() {
     }
     
     // Verifichiamo se il nostro QR stabile (Gemini) resiste alla matrice di Hilbert
-    mat_qr *qr = mat_qr_solve_Gemini(H);
+    mat_qr *qr = mat_qr_solve(H);
     mat *QR = mat_mul(qr->Q, qr->R);
     
     // Usiamo una tolleranza leggermente più rilassata dato il cattivo condizionamento
