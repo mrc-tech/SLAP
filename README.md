@@ -190,10 +190,11 @@ void main()
 		- [ ] Division-free algorithm
 		- [ ] Fast matrix multiplication
 	- [ ] inverse
-		- [ ] LU(P) decomposition (_nml_)
-		- [ ] matrice aggiunta e determinante
+		- [x] LU(P) decomposition (_nml_)
+		- [ ] matrice aggiunta e determinante <!-- matrice aggiunta scala malissimo, con fattoriale O(N!) o O(N^4) -->
 	- [ ] positive defined check
-		- [ ] Eigenvalues?
+		- [ ] Eigenvalues? <!-- in realta' e' lento in questo modo. Usare altri metodi -->
+		- [ ] Cholesky
 	- [x] matrix norms
 	- [ ] exponent
 	- [ ] least squares (_example_)

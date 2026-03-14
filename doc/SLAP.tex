@@ -1091,7 +1091,7 @@ TYPE mat_det(const mat *m) {
         det *= lu->U->data[i * lu->U->n_cols + i];
     }
     
-    // Se il numero di permutazioni delle righe è dispari, il segno si inverte
+    // Se il numero di permutazioni delle righe e' dispari, il segno si inverte
     if (lu->num_permutations % 2 != 0) {
         det = -det;
     }
@@ -1100,6 +1100,7 @@ TYPE mat_det(const mat *m) {
     return det;
 }
 \end{lstlisting}
+
 
 
 
@@ -1121,6 +1122,55 @@ La matrice $\text{adj}(\mathbf{A})$ è calcolata tramite la trasposta della matr
 \end{equation}
 dove $\mathbf{M}_{ij}$ è la matrice minore di $\mathbf{A}$, ottenuta eliminando la $i$-esima riga e la $j$-esima colonna della matrice $\mathbf{A}$.
 
+
+\subsection{Tramite soluzione del sistema}
+
+Troviamo l'inversa della matrice $\mathbf{A}$ risolvendo il sistema
+\begin{equation}
+\mathbf{A} \mathbf{x}_i = \mathbf{e}_i
+\label{eq:inversa_LU}
+\end{equation}
+dove $\mathbf{e}_i$ e' il vettore della base canonica (ad esempio: $\mathbf{e}_1 = [1,0,0]$).
+In questo modo troviamo l'$i$-esima colonna $\mathbf{x}_i$ della matrice inversa $\mathbf{A}^{-1}$.
+Per risolvere il sistema \eqref{eq:inversa_LU} possiamo usare la decomposizione LU.
+\begin{lstlisting}
+mat* mat_inv(const mat *m) {
+    mat_lup *lu;
+    mat *inv, *e, *col_inv;
+    unsigned int i, j;
+    
+    if (m->n_rows != m->n_cols) return NULL;
+    
+    lu = mat_lup_solve(m);
+    if (!lu) return NULL; // Matrice singolare
+    
+    inv = mat_new(m->n_rows, m->n_cols);
+    e = mat_new(m->n_rows, 1);
+    
+    for (i = 0; i < m->n_cols; i++) {
+        // Genera il vettore colonna base e_i
+        for (j = 0; j < m->n_rows; j++) {
+            e->data[j] = (i == j) ? 1.0 : 0.0;
+        }
+        
+        // Risolve il sistema per trovare la colonna i-esima dell'inversa
+        col_inv = solve_lu(lu, e);
+        
+        if (col_inv) {
+            // Copia la soluzione nel posto giusto all'interno di inv
+            for (j = 0; j < m->n_rows; j++) {
+                inv->data[j * inv->n_cols + i] = col_inv->data[j];
+            }
+            mat_free(col_inv);
+        }
+    }
+    
+    mat_free(e);
+    mat_lup_free(lu);
+    return inv;
+}
+\end{lstlisting}
+Per risolvere il sistema \eqref{eq:inversa_LU} e' stato usato il metodo LU.
 
 
 

@@ -1,0 +1,51 @@
+4. Positive Defined Check
+
+Una matrice si dice simmetrica e definita positiva (SPD) se i suoi autovalori sono tutti strettamente maggiori di zero. Calcolare gli autovalori per intero è però pesante. Un'alternativa rapidissima (O(N3)) consiste nel provare a eseguire una decomposizione di Cholesky. Se l'algoritmo non incontra mai il tentativo di fare la radice quadrata di un numero negativo (o zero), allora la matrice è definita positiva.
+
+
+
+short mat_is_posdef(const mat *m) {
+    unsigned int n = m->n_rows;
+    unsigned int i, j, k;
+    TYPE sum;
+    short is_pd = 1;
+    TYPE *L; // Array temporaneo usato al posto di una matrice intera per ridurre l'overhead
+    
+    if (m->n_rows != m->n_cols) return 0;
+    
+    // 1. Controllo preliminare di simmetria
+    for (i = 0; i < n; i++) {
+        for (j = i + 1; j < n; j++) {
+            if (fabs(m->data[i * n + j] - m->data[j * n + i]) > SLAP_MIN_COEF) {
+                return 0; // Non è simmetrica
+            }
+        }
+    }
+    
+    // 2. Tentativo silente di decomposizione di Cholesky (senza memoria strutturata eccessiva)
+    L = (TYPE*)calloc(n * n, sizeof(TYPE));
+    if (!L) return 0;
+    
+    for (i = 0; i < n; i++) {
+        for (j = 0; j <= i; j++) {
+            sum = m->data[i * n + j];
+            for (k = 0; k < j; k++) {
+                sum -= L[i * n + k] * L[j * n + k];
+            }
+            if (i == j) {
+                // Se la diagonale va a 0 o sotto lo 0, NON è definita positiva
+                if (sum <= SLAP_ALMOST_ZERO) {
+                    is_pd = 0; 
+                    break;
+                }
+                L[i * n + j] = sqrt(sum);
+            } else {
+                L[i * n + j] = sum / L[j * n + j];
+            }
+        }
+        if (!is_pd) break;
+    }
+    
+    free(L);
+    return is_pd; // 1 = Definita positiva, 0 = Non lo è
+}

@@ -18,6 +18,15 @@ int main()
 	A = mat_init(3,3, (TYPE[]){1,1,1,1,1.0001,1,1,1,1.0001}); // matrice quasi instabile (det approx. 1e-8)
 	if(fabs(mat_det(A) - 1e-8) < 1e-15) printf("              : passed\n"); else printf("              : NOT PASSED!!!\n");
 	
+	printf("mat_inv       : ");
+	A = mat_init(3,3, (TYPE[]){0,1,0,0,0,1,1,0,0});
+	B = mat_init(3,3, (TYPE[]){0,0,1,1,0,0,0,1,0});
+	if(mat_equal(mat_inv(A),B,1e-30)) printf("passed\n"); else printf("NOT PASSED!!!\n");
+	A = mat_init(3,3, (TYPE[]){1,2,3,2,4.1,6,3,6,9.1}); // matrice quasi singolare
+	B = mat_init(3,3, (TYPE[]){131,-20,-30,-20,10,0,-30,0,10}); // valori maggiori denotano una instabilita'
+	if(mat_equal(mat_inv(A),B,1e-10)) printf("              : passed\n"); else printf("              : NOT PASSED!!!\n");
+	
+	
 	
 	mat_free(A); mat_free(B); mat_free(tmp); mat_free(u); mat_free(v);
 	printf("\npress a key to exit...");
