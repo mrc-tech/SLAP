@@ -38,7 +38,7 @@ mat* eigen_qr(const mat *m, TYPE tolerance, int max_iter)
 
 		if(converged) {
 			#if SLAP_DEBUG
-			printf("QR Autovalori convergenza raggiunta in %d iterazioni.\n", iter);
+			printf("QR Autovalori convergenza raggiunta in %d iterazioni.\n", i);
 			#endif
 			break;
 		}
