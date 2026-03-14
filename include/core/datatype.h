@@ -71,6 +71,7 @@ mat* mat_init(unsigned int num_rows, unsigned int num_cols, TYPE data[])
 }
 
 #ifdef SLAP_DOS
+#include <stdarg.h>
 mat* mat_init_DOS(unsigned int num_rows, unsigned int num_cols, ...) {
 	va_list valist;
 	int i;

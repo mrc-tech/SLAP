@@ -34,7 +34,8 @@ All the functions that return a matrix allocate new memory for the returned matr
 | `U = mat_GaussJordan(A)` | transform matrix $\mathbf{A}$ in row echelon form $\mathbf{U}$ (upper triangular) via Gauss elimination | |
 | `LUP = mat_lup_solve(A)` | find the LU(P) decomposition of $\mathbf{A}$; $\mathbf{L}$ is a lower triangular, $\mathbf{U}$ an upper triangular and $\mathbf{P}$ a permutation matrix (return a `lup` struct) | $\{\mathbf{L},\mathbf{U},\mathbf{P}\}\gets\mathbf{A}\quad$ $\mathbf{P}\mathbf{A}=\mathbf{L}\mathbf{U}$ |
 | `QR = mat_qr_solve(A)` | find the QR decomposition of $\mathbf{A}$; $\mathbf{Q}$ is a orthogonal, $\mathbf{R}$ an upper triangular matrix (return a `qr` struct) | $\{\mathbf{Q},\mathbf{R}\}\gets\mathbf{A}\quad$ $\mathbf{A}=\mathbf{Q}\mathbf{R}$ |
-| `a = eigen_qr(A)` | calculate eigenvalues of $\mathbf{A}$ with QR decomposition and put the result in $\mathbf{a}$ | |
+| `a = eigen_qr(A,tol,max_iter)` | calculate eigenvalues of $\mathbf{A}$ with QR decomposition and put the result in $\mathbf{a}$. Approximate the solution between tolerance `tol` and maximum number of steps `max_iter` | |
+| `a = eigen_power_method(A,eigv,tol,max_iter)` | calculate eigenvalues of $\mathbf{A}$ with power iteration method and put the result in $\mathbf{a}$. Evaluates also eigenvector `eigv`. Approximate the solution between tolerance `tol` and maximum number of steps `max_iter` | |
 | `mat_print(A)` | print matrix $\mathbf{A}$ | |
 
 
@@ -140,12 +141,12 @@ void main()
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
 		- [x] cache aligned (for _row-major_)
-		- [ ] Strassen <!--L'algoritmo di Strassen riduce la complessità da $O(n^3)$ a $O(n^{2.81})$. È un ottimo esercizio, ma attenzione: per via dell'overhead ricorsivo e delle allocazioni necessarie, Strassen è più lento della moltiplicazione base per matrici piccole. Di solito si usa una soglia: se $N < 64$ si usa la base, se $N \ge 64$ si attiva Strassen.Su MS-DOS: La ricorsione profonda potrebbe saturare rapidamente il piccolissimo Stack dei sistemi a 16-bit.-->
+		- [ ] Strassen <!--L'algoritmo di Strassen riduce la complessità da $O(n^3)$ a $O(n^{2.81})$. È un ottimo esercizio, ma attenzione: per via dell'overhead ricorsivo e delle allocazioni necessarie, Strassen è più lento della moltiplicazione base per matrici piccole. Di solito si usa una soglia: se $N < 64$ si usa la base, se $N \ge 64$ si attiva Strassen. Su MS-DOS: La ricorsione profonda potrebbe saturare rapidamente il piccolissimo Stack dei sistemi a 16-bit.-->
 		- [ ] Coppersmith? <!--  L'algoritmo di Coppersmith-Winograd (e i suoi successori) sono noti come Galactic Algorithms. Hanno una complessità asintotica migliore ($O(n^{2.37})$), ma le costanti nascoste sono così mostruosamente enormi che diventano più veloci di Strassen solo su matrici le cui dimensioni superano la memoria RAM esistente sul pianeta Terra. Nessuna libreria reale al mondo (nemmeno OpenBLAS o MKL) li usa. -->
 	- [x] Hadamard product
 	- [x] trace
 	- [x] diagonal square matrix from vector
-	- [x] rename `smul` into `scale`?
+	- [x] rename `smul` into `scale`
 	- [ ] ...
 - [ ] **DECOMPOSITION**
 	- [ ] separare l'implementazione di LU e QR dai solver (files separati) <!-- In DOS, la dimensione dell'eseguibile conta. Se tengo LU, QR, ed EIGEN in file separati (es. slap_lu.c, slap_qr.c), il linker di Borland includerà nell'eseguibile finale solo le funzioni che l'utente chiama effettivamente, risparmiando preziosi Kilobyte. -->
@@ -175,10 +176,11 @@ void main()
 	- [ ] ...
 - [ ] **EIGEN**
 	- [ ] QR decomposition
-		- [ ] definire meglio quando finire la procedura iterativa <!-- A ogni iterazione calcolata di A_{k+1}=R_k Q_k, controlla gli elementi sotto la diagonale principale. Se il valore assoluto di A(i,i−1) scende sotto una tolleranza (il tuo SLAP_MIN_COEF), considera quell'elemento zero. Quando tutti gli elementi sotto-diagonali sono zero, hai gli autovalori sulla diagonale. -->
+		- [x] definire meglio quando finire la procedura iterativa
+		- [ ] valori di default per tolleranza e massimo numero di iterazioni
 		- [ ] forma di Hessenberg per aumentare l'efficienza <!-- Prima di avviare il ciclo QR, usa Householder per ridurre la matrice originale in forma di Hessenberg superiore (zeri sotto la prima sotto-diagonale). Una matrice di Hessenberg conserva questa forma attraverso le iterazioni QR, abbassando il costo iterativo da O(n^4) a O(n^3) -->
 		- [ ] implicit QR algorithm? <!-- Se non implementi uno "Shift" (es. Wilkinson Shift), l'algoritmo QR standard potrebbe convergere così lentamente da sembrare bloccato. Sottraendo una costante sI prima di QR accelera enormemente la convergenza. -->
-	- [ ] Iterative power methods <!-- Si parte da un vettore casuale x, e lo si moltiplica ripetutamente x_{k+1}=Ax_k/|Ax_k|. Converge rapidissimamente all'autovettore dominante. -->
+	- [x] Iterative power methods
 	- [ ] ...
 - [ ] **ADVANCED OPERATIONS**
 	- [ ] determinant

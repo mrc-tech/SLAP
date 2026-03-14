@@ -33,7 +33,7 @@
 	breaklines= true, % va a capo automatico
 	numbers=left, % numera le righe
 	commentstyle=\color{gray}, % commenti grigi
-	stringstyle=\color{mymauve}, % string literal style
+	stringstyle=\color{violet}, % string literal style
 	numberstyle=\footnotesize\ttfamily, %formato dei numeri a lato delle righe
 	keywordstyle=\color{black}\bfseries, % style for keywords
 }
@@ -801,6 +801,74 @@ Fattorizzata la matrice $\mathbf{A}=\mathbf{Q}\mathbf{R}$ di un sistema lineare 
 Il calcolo del vettore temporaneo $\mathbf{y} = \mathbf{Q}^T \mathbf{b}$ richiede $O(n^2)$ operazioni per la moltiplicazione matrice-vettore, mentre il calcolo di $\mathbf{x}=\mathbf{R}^{-1}\mathbf{y}$ si può eseguire attraverso un algoritmo di sostituzione all'indietro con un tempo computazionale sempre di $O(n^2)$ operazioni. Il costo computazionale maggiore, dunque, è quello della fattorizzazione (pari a $O(n^3)$ operazioni).
 
 
+\dotfill
+
+2. Il Collo di Bottiglia: L'incubo di malloc nella QR
+
+Questa è la cosa più importante da migliorare per le performance.
+Nella tua funzione \texttt{mat\_qr\_solve}, ci sono queste righe dentro ai cicli \texttt{for} annidati:
+
+\begin{lstlisting}
+mat *q_j = mat_get_col(Q, j);
+TYPE r_ji = mat_dot(q_j, v_i);
+mat *proj = mat_mul_scalar(q_j, r_ji);
+mat *v_i_new = mat_sub(v_i, proj);
+mat_free(v_i);
+v_i = v_i_new;
+mat_free(q_j);
+mat_free(proj);
+\end{lstlisting}
+
+Il codice fa esattamente ciò che deve fare matematicamente, e gestisce bene la memoria liberandola. Ma in MS-DOS, chiamare \texttt{malloc} e \texttt{free} (tramite \texttt{mat\_get\_col}, \texttt{mat\_mul}, ecc.) migliaia di volte al secondo in un ciclo interno distruggerà le performance e frammenterà l'heap fino al blocco totale.
+
+Soluzione (QR "In-Place"):
+Possiamo fare i calcoli matematici leggendo e scrivendo direttamente i numeri nell'array \texttt{data}, senza allocare mai nessun vettore intermedio. Sostituisci l'intero contenuto di \texttt{mat\_qr\_solve} con questo. È spaventosamente più veloce:
+
+\begin{lstlisting}
+mat_qr* mat_qr_solve_Gemini(const mat *A)
+{
+	mat_qr *qr = (mat_qr*)malloc(sizeof(mat_qr));
+	int i, j, r;
+	TYPE norm, dot;
+
+	qr->Q = mat_copy(A);          // Q inizia come copia esatta di A
+	qr->R = mat_new(A->n_cols, A->n_cols); 
+
+	for(i = 0; i < A->n_cols; i++) {
+		// 1. Calcola la norma della colonna i di Q
+		norm = 0.0;
+		for(r = 0; r < A->n_rows; r++) {
+			norm += qr->Q->data[r * qr->Q->n_cols + i] * qr->Q->data[r * qr->Q->n_cols + i];
+		}
+		norm = sqrt(norm);
+		qr->R->data[i * qr->R->n_cols + i] = norm;
+
+		if (norm < SLAP_MIN_COEF) continue; // Evita divisioni per zero
+
+		// 2. Normalizza la colonna i di Q
+		for(r = 0; r < A->n_rows; r++) {
+			qr->Q->data[r * qr->Q->n_cols + i] /= norm;
+		}
+
+		// 3. Ortogonalizza le colonne successive (Gram-Schmidt Modificato)
+		for(j = i + 1; j < A->n_cols; j++) {
+			dot = 0.0;
+			// Prodotto scalare tra colonna i e colonna j
+			for(r = 0; r < A->n_rows; r++) {
+				dot += qr->Q->data[r * qr->Q->n_cols + i] * qr->Q->data[r * qr->Q->n_cols + j];
+			}
+			qr->R->data[i * qr->R->n_cols + j] = dot;
+
+			// Sottrai la proiezione dalla colonna j
+			for(r = 0; r < A->n_rows; r++) {
+				qr->Q->data[r * qr->Q->n_cols + j] -= dot * qr->Q->data[r * qr->Q->n_cols + i];
+			}
+		}
+	}
+	return qr;
+}
+\end{lstlisting}
+
 
 
 
@@ -997,6 +1065,154 @@ Notare che tutte le matrici $\mathbf{A}_k$ sono simili e quindi hanno sempre gli
 Sotto certe condizioni le matrici $\mathbf{A}_k$ convergono ad una matrice triangolare, la \emph{forma di Schur} di $\mathbf{A}$ (gli autovalori sono gli elementi sulla diagonale).
 
 In questa forma grezza il calcolo delle iterazioni può essere computazionalmente oneroso e questo può essere ridotto trasformando inizialmente la matrice $\mathbf{A}$ in una forma di Hessenberg superiore. Questa trasformazione costa $\frac{10}{9}n^3+O(n^2)$ operazioni aritmetiche usando una riduzione di Householder. Il calcolo della decomposizione QR di una matrice di Hessenberg superiore ha un costo di $6n^2+O(n)$. Inoltre essendo la forma di Hessenberg una sorta di triangolare superiore questo riduce anche il numero di iterazioni per arrivare a convergenza.
+
+\begin{lstlisting}
+mat* eigen_qr(const mat *m, TYPE tolerance, int max_iter)
+{
+	mat *A = mat_copy(m);
+	mat_qr *qr;
+	int iter, r, c;
+	short converged;
+
+	if(m->n_rows != m->n_cols) {
+        mat_free(A);
+        return NULL; // ERROR!! nxn square matrix
+    }
+
+	for(iter = 0; iter < max_iter; iter++){ 
+		qr = mat_qr_solve_Gemini(A); // Usa la nostra versione MGS per maggiore stabilita'!
+		mat_free(A); // avoid memory leakage
+		A = mat_mul(qr->R, qr->Q); // update A matrix for i-th step
+		mat_qr_free(qr); // free used memory for QR decomposition
+
+		// --- NUOVO CONTROLLO DI CONVERGENZA ---
+		converged = 1; // Assumiamo sia convergente
+		
+		// Esaminiamo solo la parte SOTTO la diagonale principale
+		for(c = 0; c < A->n_cols - 1; c++) {
+			for(r = c + 1; r < A->n_rows; r++) {
+				if(fabs(A->data[r * A->n_cols + c]) > tolerance) {
+					converged = 0; // Trovato un elemento troppo grande, non ha ancora finito!
+					break; 
+				}
+			}
+			if(!converged) break;
+		}
+
+		if(converged) {
+			#if SLAP_DEBUG
+			printf("QR Autovalori convergenza raggiunta in %d iterazioni.\n", iter);
+			#endif
+			break; 
+		}
+	}
+	
+	mat *diag = mat_get_diag(A); // Estrae gli autovalori
+	mat_free(A);
+	return diag;
+}
+\end{lstlisting}
+
+A ogni iterazione calcolata di $\mathbf{A}_{k+1}=\mathbf{R}_k \mathbf{Q}_k$, controlla gli elementi sotto la diagonale principale. Se il valore assoluto di $A(i,i-1)$ scende sotto una tolleranza (il tuo \texttt{SLAP\_ALMOST\_ZERO}), considera quell'elemento zero. Quando tutti gli elementi sotto-diagonali sono zero, hai gli autovalori sulla diagonale.
+
+Nota bene: L'algoritmo QR puro (senza shift) converge infallibilmente ad una matrice diagonale per matrici simmetriche. Per matrici non-simmetriche che possiedono autovalori complessi, potresti notare che l'algoritmo non convergerà mai del tutto e si arresterà al \texttt{max\_iter}, poiché gli autovalori complessi in C reale si manifestano come blocchi $2 \times 2$ sulla diagonale che non vanno a zero.
+
+
+
+\subsection{Metodo delle potenze}
+
+Il metodo delle potenze serve a trovare l'autovalore dominante (quello con valore assoluto maggiore) e il suo corrispondente autovettore. È un algoritmo iterativo.
+
+Si parte da un vettore casuale $\mathbf{x}$, e lo si moltiplica ripetutamente
+$$ \mathbf{x}_{k+1} = \frac{\mathbf{A} \mathbf{x}_k}{||\mathbf{A} \mathbf{x}_k||} $$
+Converge rapidissimamente all'autovettore dominante.
+
+Il Metodo delle Potenze è uno degli algoritmi più eleganti dell'algebra lineare numerica. Risponde a una domanda specifica: Come trovo l'autovalore dominante (quello col valore assoluto più grande) senza calcolarli tutti?
+L'algoritmo si basa su un'intuizione geometrica bellissima. Immagina di avere una matrice $\mathbf{A}$. Un autovettore è un vettore speciale che, se moltiplicato per $\mathbf{A}$, non cambia direzione, ma cambia solo lunghezza (di un fattore pari all'autovalore $\lambda$).
+Se tu prendi un vettore totalmente casuale $\mathbf{v}_0$ e lo moltiplichi per $\mathbf{A}$, poi ancora per $\mathbf{A}$, poi ancora per $\mathbf{A}$ (da qui "metodo delle potenze", perché calcoli $\mathbf{A}^k \mathbf{v}_0$), cosa succede?
+\begin{enumerate}
+\item Il vettore casuale $\mathbf{v}_0$ può essere visto come un mix (combinazione lineare) di tutti i veri autovettori della matrice.
+\item Ogni volta che moltiplichi per $\mathbf{A}$, l'autovettore associato all'autovalore più grande ($\lambda_1$) viene "stirato" più degli altri.
+\item Iterazione dopo iterazione, la componente del vettore casuale che punta nella direzione dell'autovalore dominante diventerà sempre più immensa, schiacciando tutte le altre componenti (che sono legate ad autovalori più piccoli).
+\item Alla fine, il vettore "punta" esattamente nella direzione dell'autovettore dominante.
+\end{enumerate}
+Perché normalizziamo ad ogni iterazione?
+Nel codice abbiamo inserito una divisione per la norma ad ogni ciclo: v->data[i] = w->data[i] / norm;.
+Se non lo facessimo, continuando a moltiplicare per una matrice, i numeri nel vettore diventerebbero enormi (se $\lambda > 1$) causando un Overflow in MS-DOS, oppure piccolissimi (se $\lambda < 1$) finendo in Underflow e azzerandosi. Normalizzare mantiene il vettore di lunghezza 1 a ogni passo, permettendoci di estrarre l'autovalore calcolando il cosiddetto Quoziente di Rayleigh ($\lambda = \mathbf{v}^T \mathbf{A} \mathbf{v}$).
+I due limiti del Power Method:
+\begin{itemize}
+\item Trova solo il più grande: Ti dà un solo autovalore (il tuo 16.366). Per trovare il secondo, dovresti usare una tecnica chiamata "Deflation" (sottrarre l'influenza del primo autovalore dalla matrice e ricominciare).
+\item Velocità di convergenza: Il metodo converge velocemente se c'è un forte "distacco" tra il primo autovalore e il secondo (cioè se $|\lambda_1| \gg |\lambda_2|$). Se i due autovalori più grandi sono quasi identici in valore assoluto (es. 10.0 e 9.9), la convergenza sarà lentissima e il limite di 1000 iterazioni potrebbe non bastare.
+\end{itemize}
+
+
+
+
+L'ottimizzazione per MS-DOS: Invece di usare le funzioni \texttt{mat\_mul} e \texttt{mat\_transpose} dentro al ciclo iterativo (che causerebbero continue e lente chiamate a \texttt{malloc} e \texttt{free}), di seguito e' riportato il calcolo matriciale "inline". Zero allocazioni nel ciclo = maggiore velocità e minore frammentazione della RAM.
+\begin{lstlisting}
+TYPE eigen_power_method(const mat *A, mat *eigenvec_out, TYPE tolerance, int max_iter) 
+{
+	/* * Trova l'autovalore dominante e il suo autovettore.
+	 * A: Matrice quadrata
+	 * eigenvec_out: (Opzionale) Vettore colonna pre-allocato nx1 dove salvare l'autovettore
+	 * tolerance: Tolleranza per la convergenza (es. 1e-6)
+	 * max_iter: Limite di sicurezza (es. 1000)
+	 */
+	int n = A->n_rows;
+	mat *v = mat_new(n, 1);
+	mat *w = mat_new(n, 1);
+	int i, r, c, iter;
+	TYPE lambda = 0.0, lambda_old = 0.0, norm;
+
+	if(A->n_rows != A->n_cols) return 0.0; // Solo matrici quadrate
+
+	// 1. Inizializziamo il vettore v con tutti 1.0 e lo normalizziamo
+	for(i=0; i<n; i++) v->data[i] = 1.0;
+	norm = mat_l2norm(v);
+	for(i=0; i<n; i++) v->data[i] /= norm;
+
+	for(iter = 0; iter < max_iter; iter++) {
+		
+		// 2. w = A * v (Fatto "inline" per evitare malloc/free lente in DOS)
+		for(r = 0; r < n; r++) {
+			w->data[r] = 0.0;
+			for(c = 0; c < n; c++) {
+				w->data[r] += A->data[r * A->n_cols + c] * v->data[c];
+			}
+		}
+
+		// 3. Calcolo del Quoziente di Rayleigh (lambda = v^T * w)
+		lambda = 0.0;
+		for(i = 0; i < n; i++) {
+			lambda += v->data[i] * w->data[i];
+		}
+
+		// 4. Controllo di convergenza
+		if (fabs(lambda - lambda_old) < tolerance) break;
+		lambda_old = lambda;
+
+		// 5. Normalizziamo w per ottenere il nuovo v
+		norm = mat_l2norm(w);
+		if(norm < SLAP_MIN_COEF) break; // Evita divisioni per zero
+		for(i = 0; i < n; i++) {
+			v->data[i] = w->data[i] / norm;
+		}
+	}
+
+	// Se l'utente ha passato un vettore output, salviamo l'autovettore
+	if(eigenvec_out && eigenvec_out->n_rows == n && eigenvec_out->n_cols == 1) {
+		for(i = 0; i < n; i++) eigenvec_out->data[i] = v->data[i];
+	}
+
+	mat_free(v);
+	mat_free(w);
+	return lambda;
+}
+\end{lstlisting}
+Questa funzione puo' essere usata come:
+
+\texttt{TYPE max\_eig = eigen\_power\_method(A, autovettore, 1e-6, 1000);}
+
 
 
 

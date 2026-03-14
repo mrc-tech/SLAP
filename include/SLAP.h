@@ -28,7 +28,7 @@
 
 // EIGEN:
 #include "eigen/eigen_qr.h" // Eigen-analysis using QR decomposition
-
+#include "eigen/eigen_iterative.h" // metodi iterativi
 
 
 // UTILITIES:
