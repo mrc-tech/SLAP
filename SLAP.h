@@ -32,6 +32,7 @@
 		moderno equivale a dire "considera zero tutto ciò che è più piccolo di ~2e-14") garantisce 
 		che l'algoritmo non scambi del rumore di arrotondamento per un pivot valido, 
 		evitando divisioni disastrose.*/
+        #define SLAP_ALMOST_ZERO 1.0e-50 // FARE MEGLIO!!!!!!!!!!!
         
     #else // other non-DOS systems
         #define TYPE double
@@ -40,6 +41,7 @@
         // Nei sistemi moderni double è 64-bit.
         // DBL_EPSILON è circa 2.22e-16.
         #define SLAP_MIN_COEF (DBL_EPSILON * 100.0)
+        #define SLAP_ALMOST_ZERO 1.0e-100 // FARE MEGLIO!!!!!!!!!!!
         
     #endif
 #endif // TYPE
@@ -145,18 +147,32 @@ mat* mat_init(unsigned int num_rows, unsigned int num_cols, TYPE data[])
 }
 
 #ifdef SLAP_DOS
-mat* mat_init_DOS(unsigned int num_rows, unsigned int num_cols, ...)
-{
-	// non funziona con i vecchi compilatori perche` il secondo parametro di va_start(,) deve essere l'ultimo parametro passato alla funzione
-	// RISOLVERER LEGGENDO HELP DI BORLAND TURBO C!!!!!!!
+#include <stdarg.h>
+mat* mat_init_DOS(unsigned int num_rows, unsigned int num_cols, ...) {
 	va_list valist;
-	int i = num_rows*num_cols;
-	mat *m = mat_new(num_rows,num_cols);
-	va_start(valist, i); // initialize valist for num number of arguments
-	for (i=0; i<num_rows*num_cols; i++) m->data[i] = va_arg(valist, double);
-	va_end(valist); // clean memory reserved for valist
+	int i;
+	mat *m = mat_new(num_rows, num_cols);
+	if(!m) return NULL; // Controllo di sicurezza aggiuntivo
+	va_start(valist, num_cols); // L'ultimo parametro fisso è num_cols
+	for (i=0; i<num_rows*num_cols; i++) {
+		// Usa esplicitamente TYPE per far coincidere le dimensioni sullo stack
+		m->data[i] = (TYPE)va_arg(valist, TYPE); 
+	}
+	va_end(valist);
 	return m;
 }
+//mat* mat_init_DOS(unsigned int num_rows, unsigned int num_cols, ...)
+//{
+//	// non funziona con i vecchi compilatori perche` il secondo parametro di va_start(,) deve essere l'ultimo parametro passato alla funzione
+//	// RISOLVERER LEGGENDO HELP DI BORLAND TURBO C!!!!!!!
+//	va_list valist;
+//	int i = num_rows*num_cols;
+//	mat *m = mat_new(num_rows,num_cols);
+//	va_start(valist, i); // initialize valist for num number of arguments
+//	for (i=0; i<num_rows*num_cols; i++) m->data[i] = va_arg(valist, double);
+//	va_end(valist); // clean memory reserved for valist
+//	return m;
+//}
 //void matd_init(matd *m, unsigned num, ...)
 //{
 //	va_list valist;
@@ -291,7 +307,6 @@ int mat_add_r(mat *m1, mat *m2)
 		return 0;
 	}
 	for(i=0; i<m1->n_rows*m1->n_cols; i++) m1->data[i] += m2->data[i];
-	
 	return 1;
 }
 
@@ -311,7 +326,6 @@ int mat_sub_r(mat *m1, mat *m2)
 		return 0;
 	}
 	for(i=0; i<m1->n_rows*m1->n_cols; i++) m1->data[i] -= m2->data[i];
-	
 	return 1;
 }
 
@@ -323,25 +337,41 @@ mat* mat_sub(mat *m1, mat *m2) // forse dovrei usare const mat* ...
 }
 
 
+TYPE mat_dot(const mat *v1, const mat *v2)
+{
+	// Prodotto scalare tra due vettori (senza allocazioni)
+	// i vettori possono essere sia due vettori riga che due vettori colonna
+	// se sono delle matrici, sono convertite in vettori equivalenti 
+	// formati dalla concatenzazione di tutte le righe.
+	TYPE sum = 0.0;
+	int i;
+	if(v1->n_rows * v1->n_cols != v2->n_rows * v2->n_cols) return 0.0;
+	for(i=0; i < v1->n_rows * v1->n_cols; i++) sum += v1->data[i] * v2->data[i];
+	return sum;
+}
+
 
 mat* mat_mul(const mat* m1, const mat* m2)
 {
 	// multiply two matrices
 	mat *m;
 	int r, c, i;
-	if(!(m1->n_cols == m2->n_rows)){
+	TYPE m1_val; // valore temporaneo per ridurre il numero di moltiplicazioni
+	if(!(m1->n_cols == m2->n_rows)){ // Controllo compatibilità dimensioni
 //		SLAP_ERROR(CANNOT_MULTIPLY);
 		return NULL;
 	}
 	m = mat_new(m1->n_rows, m2->n_cols); // also set all values to zero
-	for(r=0; r<m->n_rows; r++){
-		for(c=0; c<m->n_cols; c++){
-			for(i=0; i<m1->n_cols; i++){
-				m->data[r*m->n_cols+c] += m1->data[r*m1->n_cols+i] * m2->data[i*m2->n_cols+c];
+	if(!m) return NULL; // Controllo sicurezza allocazione
+	for(r=0; r<m1->n_rows; r++){ // Cicli ottimizzati per Cache (Row-Major): R -> I -> C
+		for(i=0; i<m1->n_cols; i++){
+			m1_val = m1->data[r*m1->n_cols+i]; // Questo valore rimane costante per tutto l'ultimo ciclo
+			if (fabs(m1_val) < SLAP_ALMOST_ZERO) continue; // Ottimizzazione: se m1_val è "zero", possiamo saltare l'intera riga. Questo accelera incredibilmente il calcolo con matrici sparse o triangolari.
+			for(c=0; c<m2->n_cols; c++){ // prima questo era messo tra "r" e "i"
+				m->data[r*m->n_cols+c] += m1_val * m2->data[i*m2->n_cols+c];
 			}
 		}
 	}
-	
 	return m;
 }
 
@@ -640,7 +670,7 @@ int mat_absmaxr(const mat *m, unsigned int k)
 {
 	// Finds the id of the max on the column (starting from k -> num_rows)
 	int i;
-	TYPE max = m->data[k*m->n_cols+k];
+	TYPE max = fabs(m->data[k*m->n_cols+k]);
 	int maxIdx = k;
 	for(i=k+1; i<m->n_rows; i++){
 		if(fabs(m->data[i*m->n_cols+k]) > max){
@@ -670,7 +700,7 @@ mat_lup* mat_lup_solve(const mat *m)
 	for(j=0; j<U->n_cols; j++){
 		// Retrieves the row with the biggest element for column (j)
 		pivot = mat_absmaxr(U, j);
-		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_MIN_COEF){ // evita la divisione per zero
+		if(fabs(U->data[pivot*U->n_cols+j]) < SLAP_ALMOST_ZERO){ // evita la divisione per zero
 //			SLAP_ERROR(CANNOT_LU_MATRIX_DEGENERATE); // MOSTRARE ANCHE LA RIGA E COLONNA CHE HA FALLITO??
 			mat_free(L); mat_free(U); mat_free(P); // Evita il memory leak liberando la memoria prima di uscire
 			return NULL;
@@ -846,45 +876,8 @@ void mat_qr_free(mat_qr *qr)
 //	qr->R = R;
 //	return qr;
 //}
-mat_qr* mat_qr_solve(const mat *m) // without memory leakage
-{
-	// find the QR decomposition of the matrix m
-	mat_qr *qr = mat_qr_new();
-	mat *Q = mat_copy(m);
-	mat *R = mat_new(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
-	
-	int j, k;
-	TYPE l2norm;
-	mat *rkj; // scalar
-	mat *aj, *qk; // column vectors of A and Q
-	mat *tmp1, *tmp2; // temporary matrices for correct memory menagement
-	for(j=0; j<m->n_cols; j++){
-		aj = mat_getcol(m, j); // j-th column of the matrix m
-		for(k=0; k<j; k++){
-			tmp1 = mat_getcol(m,j); mat_transpose_r(tmp1); // transpose of the j-th column of matrix m (row-vector)
-			tmp2 = mat_getcol(Q,k); // k-th column of the matrix Q (column-vector)
-			rkj = mat_mul(tmp1, tmp2); // scalar product
-			mat_free(tmp1); mat_free(tmp2); // free temp mem
-			R->data[k*R->n_cols+j] = rkj->data[0];
-			qk = mat_getcol(Q, k);
-			mat_col_smul_r(qk, 0, rkj->data[0]);
-			mat_sub_r(aj, qk);
-			mat_free(rkj); mat_free(qk); // free rjk and qk each iteration
-		}
-		for(k=0; k<Q->n_rows; k++) Q->data[k*Q->n_cols+j] = aj->data[k]; // set the j-th column of Q
-		tmp1 = mat_getcol(Q, j); // j-th column of Q
-		l2norm = mat_l2norm(tmp1); // L2-norm (Euclidean)
-		mat_free(tmp1); // free temp mem
-		mat_col_smul_r(Q, j, 1/l2norm); // divide by the norm
-		R->data[j*R->n_cols+j] = l2norm;
-		mat_free(aj);
-	}
-	qr->Q = Q;
-	qr->R = R;
-	return qr;
-}
 
-mat_qr* mat_qr_solve_Gemini(const mat *m) 
+mat_qr* mat_qr_solve(const mat *m) 
 {
 	if (!m || m->n_cols == 0 || m->n_rows == 0) return NULL;// Controlli di sicurezza di base
 	mat_qr *qr = mat_qr_new();
@@ -916,7 +909,7 @@ mat_qr* mat_qr_solve_Gemini(const mat *m)
 		R->data[k*R->n_cols+k] = l2norm; // R_{k,k} = ||q_k||
 
 		// Prevenzione della divisione per zero in caso di matrici singolari/dipendenti
-		if(l2norm < SLAP_MIN_COEF) {
+		if(l2norm < SLAP_ALMOST_ZERO) {
 			// Se la colonna è un vettore nullo, evitiamo NaN e saltiamo la normalizzazione
 			l2norm = 1.0; 
 		}else{
@@ -956,6 +949,46 @@ mat_qr* mat_qr_solve_Gemini(const mat *m)
 */
 
 
+
+//mat_qr* mat_qr_solve(const mat *m) // without memory leakage
+//{
+//	// find the QR decomposition of the matrix m
+//	mat_qr *qr = mat_qr_new();
+//	mat *Q = mat_copy(m);
+//	mat *R = mat_new(m->n_rows, m->n_cols); // n_cols and n_rows have to be equal
+//	
+//	int j, k;
+//	TYPE l2norm;
+//	mat *rkj; // scalar
+//	mat *aj, *qk; // column vectors of A and Q
+//	mat *tmp1, *tmp2; // temporary matrices for correct memory menagement
+//	for(j=0; j<m->n_cols; j++){
+//		aj = mat_getcol(m, j); // j-th column of the matrix m
+//		for(k=0; k<j; k++){
+//			tmp1 = mat_getcol(m,j); mat_transpose_r(tmp1); // transpose of the j-th column of matrix m (row-vector)
+//			tmp2 = mat_getcol(Q,k); // k-th column of the matrix Q (column-vector)
+//			rkj = mat_mul(tmp1, tmp2); // scalar product
+//			mat_free(tmp1); mat_free(tmp2); // free temp mem
+//			R->data[k*R->n_cols+j] = rkj->data[0];
+//			qk = mat_getcol(Q, k);
+//			mat_col_smul_r(qk, 0, rkj->data[0]);
+//			mat_sub_r(aj, qk);
+//			mat_free(rkj); mat_free(qk); // free rjk and qk each iteration
+//		}
+//		for(k=0; k<Q->n_rows; k++) Q->data[k*Q->n_cols+j] = aj->data[k]; // set the j-th column of Q
+//		tmp1 = mat_getcol(Q, j); // j-th column of Q
+//		l2norm = mat_l2norm(tmp1); // L2-norm (Euclidean)
+//		mat_free(tmp1); // free temp mem
+//		mat_col_smul_r(Q, j, 1/l2norm); // divide by the norm
+//		R->data[j*R->n_cols+j] = l2norm;
+//		mat_free(aj);
+//	}
+//	qr->Q = Q;
+//	qr->R = R;
+//	return qr;
+//}
+
+
 #endif // SLAP_QR
 /*
 	Conjugate gradient solver
@@ -966,32 +999,114 @@ mat_qr* mat_qr_solve_Gemini(const mat *m)
 inline TYPE first_member(mat *m){ return m->data[0]; }
 
 
-mat* mat_conjgrad(mat *A, mat *b) // forse dovrei usare const mat* ...
+mat* mat_conjgrad(const mat *A, const mat *b)
 {
-	// solve linear system A*x=b with conjugate gradient method
+	/* * Risolve il sistema lineare Ax = b usando il Gradiente Coniugato.
+	 * A deve essere Simmetrica e Definita Positiva.
+	 * x è il vettore "initial guess" (di solito inizializzato a zero) e 
+	 * conterrà il risultato finale.
+	 */
+	int n = A->n_rows;
+	int i, k, c, r;
+	int max_iter = n * 2; // Limite di sicurezza classico per CG
 	mat *x = mat_new(b->n_rows,1); // column vector (all zero)
-	mat *r, *p, *Ap;
-	TYPE rold, rnew, alpha;
-	int i;
 	
-	r = mat_mul(A, x); r = mat_sub(b, r);
-	p = mat_copy(r);
-	rold = first_member(mat_mul(mat_transpose(r), r)); // scalar product MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	TYPE alpha, beta, r_dot_r, r_dot_r_new, p_Ap_dot, sum;
+	TYPE norm_b = sqrt(mat_dot(b, b)); // Prima del ciclo calcola la norma di b
 	
-	for(i=0; i<x->n_rows; i++){
-		Ap = mat_mul(A, p);
-		alpha = rold / first_member(mat_mul(mat_transpose(p), Ap)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		mat_add_r(x, mat_scale(p,  alpha)); // update x
-		mat_sub_r(r, mat_scale(Ap, alpha)); // update r
-		rnew = first_member(mat_mul(mat_transpose(r),r)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		if (sqrt(rnew) < 1e-10) break; // convergence on desired precision
-		p = mat_add(r, mat_scale(p, rnew/rold)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		rold = rnew; // update (r^T * r)
+	mat *rv = mat_new(1, n); // Allocazioni iniziali (vengono fatte UNA SOLA VOLTA)
+	mat *p  = mat_new(1, n); // vettori riga sono piu' veloci in row-major
+	mat *Ap = mat_new(1, n); 
+	
+	// 1. Inizializzazione: r = b - A*x
+	mat *Ax = mat_mul(A, x);
+	for(i = 0; i < n; i++) {
+		rv->data[i] = b->data[i] - Ax->data[i];
+		p->data[i] = rv->data[i]; // All'inizio, la direzione p_0 è uguale al residuo r_0
+	}
+	mat_free(Ax); // Liberiamo subito Ax, non ci serve più
+	
+	r_dot_r = mat_dot(rv, rv); // Calcoliamo il prodotto scalare r^T * r iniziale
+	
+	if (norm_b == 0.0) norm_b = 1.0; // Evita divisioni per zero
+	
+	// CICLO PRINCIPALE
+	for(k=0; k<max_iter; k++){
+		
+		if (sqrt(r_dot_r) / norm_b < SLAP_MIN_COEF) break; // Condizione di uscita: il residuo è abbastanza vicino a zero?
+		// in questo caso SLAP_MIN_COEF e' usata come una tolleranza normalizzata
+		
+		// -----------------------------------------------------------
+		// CALCOLO DI Ap = A * p (INLINE E IN-PLACE)
+		// -----------------------------------------------------------
+		// Niente chiamate a funzione, niente malloc. Calcolo puro.
+		for(r = 0; r < n; r++) {
+			sum = 0.0;
+			for(c=0; c<n; c++) sum += A->data[r*A->n_cols+c] * p->data[c];
+			Ap->data[r] = sum; // Scriviamo nel vettore pre-allocato!
+		}
+		// -----------------------------------------------------------
+		
+		p_Ap_dot = mat_dot(p, Ap); // Prodotto scalare p^T * A * p
+		
+		// Sicurezza per evitare divisioni per zero se la matrice è malcondizionata
+		if (fabs(p_Ap_dot) < SLAP_ALMOST_ZERO) {
+			mat_free(Ap);
+			break;
+		}
+		alpha = r_dot_r / p_Ap_dot; // alpha = (r^T * r) / (p^T * A * p)
+		
+		// AGGIORNAMENTO VETTORIALE INLINE
+		// Sostituisce mat_add, mat_sub, mat_scale risparmiando 4 allocazioni a ciclo!
+		for(i = 0; i < n; i++) {
+			x ->data[i] += alpha * p->data[i];  // x_{k+1} = x_k + alpha * p_k
+			rv->data[i] -= alpha * Ap->data[i]; // r_{k+1} = r_k - alpha * A * p_k
+		}
+		r_dot_r_new = mat_dot(rv, rv); // r_{k+1}^T * r_{k+1}
+		beta = r_dot_r_new / r_dot_r; // beta = (r_{k+1}^T * r_{k+1}) / (r_k^T * r_k)
+		
+		// AGGIORNAMENTO DIREZIONE INLINE
+		for(i = 0; i < n; i++) {
+			p->data[i] = rv->data[i] + beta * p->data[i]; // p_{k+1} = r_{k+1} + beta * p_k
+		}
+		r_dot_r = r_dot_r_new; // Prepariamo r_dot_r per il prossimo ciclo
 	}
 	
-	mat_free(r); mat_free(p); mat_free(Ap);
+	// Pulizia finale della memoria
+	mat_free(rv);
+	mat_free(p);
+	mat_free(Ap);
+	
 	return x;
 }
+
+
+//mat* mat_conjgrad(mat *A, mat *b) // forse dovrei usare const mat* ...
+//{
+//	// solve linear system A*x=b with conjugate gradient method
+//	mat *x = mat_new(b->n_rows,1); // column vector (all zero)
+//	mat *r, *p, *Ap;
+//	TYPE rold, rnew, alpha;
+//	int i;
+//	
+//	r = mat_mul(A, x); r = mat_sub(b, r);
+//	p = mat_copy(r);
+//	rold = first_member(mat_mul(mat_transpose(r), r)); // scalar product MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//	
+//	for(i=0; i<x->n_rows; i++){
+//		Ap = mat_mul(A, p);
+//		alpha = rold / first_member(mat_mul(mat_transpose(p), Ap)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//		mat_add_r(x, mat_scale(p,  alpha)); // update x
+//		mat_sub_r(r, mat_scale(Ap, alpha)); // update r
+//		rnew = first_member(mat_mul(mat_transpose(r),r)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//		if (sqrt(rnew) < 1e-10) break; // convergence on desired precision
+//		p = mat_add(r, mat_scale(p, rnew/rold)); // MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//		rold = rnew; // update (r^T * r)
+//	}
+//	
+//	mat_free(r); mat_free(p); mat_free(Ap);
+//	return x;
+//}
 
 
 #endif // SLAP_CONJ_GRAD
@@ -1074,7 +1189,7 @@ int mat_row_swap_r(mat *m, unsigned int row1, unsigned int row2)
 inline int mat_pivot_id(const mat *m, unsigned int col, unsigned int row)
 {
 	int i;
-	for(i=row; i<m->n_rows; i++) if(fabs(m->data[i*m->n_cols+col]) > SLAP_MIN_COEF) return i;
+	for(i=row; i<m->n_rows; i++) if(fabs(m->data[i*m->n_cols+col]) > SLAP_ALMOST_ZERO) return i;
 	return -1;
 }
 
@@ -1094,7 +1209,7 @@ int mat_pivot_maxid(const mat *m, unsigned int col, unsigned int row)
 			maxi = i;
 		}
 	}
-	return(max < SLAP_MIN_COEF) ? -1 : maxi;
+	return(max < SLAP_ALMOST_ZERO) ? -1 : maxi;
 }
 
 
@@ -1113,7 +1228,7 @@ mat *mat_GaussJordan(const mat *m)
 		if(pivot != i) mat_row_swap_r(r, i, pivot); // We interchange rows moving the pivot to the first row that doesn't have already a pivot in place
 		mat_row_smul_r(r, i, 1.0/r->data[i*r->n_cols+j]); // Multiply each element in the pivot row by the inverse of the pivot
 		for(k=i+1; k<r->n_rows; k++){
-			if(fabs(r->data[k*r->n_cols+j]) > SLAP_MIN_COEF){
+			if(fabs(r->data[k*r->n_cols+j]) > SLAP_ALMOST_ZERO){
 				mat_row_addrow_r(r, k, i, -(r->data[k*r->n_cols+j])); // We add multiplies of the pivot so every element on the column equals 0
 			}
 		}
@@ -1138,25 +1253,122 @@ mat *mat_GaussJordan(const mat *m)
 #define SLAP_EIGEN_QR
 
 
-mat* eigen_qr(const mat *m)
+mat* eigen_qr(const mat *m, TYPE tolerance, int max_iter)
 {
 	mat *A = mat_copy(m);
 	mat_qr *qr;
-	int i;
-	if(m->n_rows != m->n_cols) return NULL; // ERROR!! nxn square matrix
-	for(i=0; i<100; i++){ // IL NUMERO DI ITERAZIONI DIPENDE DALLA CONVERGENZA CERCATA!!!!!!
+	int i, r, c;
+	short converged;
+	
+	if(m->n_rows != m->n_cols) {
+		mat_free(A);
+		return NULL; // ERROR!! not square matrix
+	}
+	
+	for(i=0; i<max_iter; i++){
 		qr = mat_qr_solve(A);
 		mat_free(A); // avoid memory leakage
 		A = mat_mul(qr->R, qr->Q); // update A matrix for i-th step
 		mat_qr_free(qr); // free used memory for QR decomposition
+		
+		converged = 1; // Assumiamo sia convergente
+		
+		// Esaminiamo solo la parte SOTTO la diagonale principale
+		for(c=0; c<A->n_cols-1; c++) {
+			for(r=c+1; r<A->n_rows; r++) {
+				if(fabs(A->data[r*A->n_cols+c]) > tolerance) {
+					converged = 0; // Trovato un elemento troppo grande, non ha ancora finito!
+					break; 
+				}
+			}
+			if(!converged) break;
+		}
+
+		if(converged) {
+			#if SLAP_DEBUG
+			printf("QR Autovalori convergenza raggiunta in %d iterazioni.\n", i);
+			#endif
+			break;
+		}
 	}
 //	mat_print(A);
-	return mat_get_diag(A);
+	mat *diag = mat_get_diag(A);
+	mat_free(A); // libera la memoria prima di uscire
+	return diag;
 }
 
 
 #endif // SLAP_EIGEN_QR
+/*
+	Eigen-analysis using iterative methods
+*/
+#ifndef SLAP_EIGEN_ITERATIVE
+#define SLAP_EIGEN_ITERATIVE
 
+
+
+
+TYPE eigen_power_method(const mat *A, mat *eigenvec_out, TYPE tolerance, int max_iter) 
+{
+	/* * Trova l'autovalore dominante e il suo autovettore.
+	 * A: Matrice quadrata
+	 * eigenvec_out: (Opzionale) Vettore colonna pre-allocato nx1 dove salvare l'autovettore
+	 * tolerance: Tolleranza per la convergenza (es. 1e-6)
+	 * max_iter: Limite di sicurezza (es. 1000)
+	 */
+	int n = A->n_rows;
+	mat *v = mat_new(n, 1);
+	mat *w = mat_new(n, 1);
+	int i, r, c, iter;
+	TYPE lambda = 0.0, lambda_old = 0.0, norm;
+
+	if(A->n_rows != A->n_cols) return 0.0; // Solo matrici quadrate
+
+	// 1. Inizializziamo il vettore v con tutti 1.0 e lo normalizziamo
+	for(i=0; i<n; i++) v->data[i] = 1.0;
+	norm = mat_l2norm(v);
+	for(i=0; i<n; i++) v->data[i] /= norm;
+
+	for(iter = 0; iter < max_iter; iter++) {
+		
+		// 2. w = A * v (Fatto "inline" per evitare malloc/free lente in DOS)
+		for(r = 0; r < n; r++) {
+			w->data[r] = 0.0;
+			for(c = 0; c < n; c++) {
+				w->data[r] += A->data[r * A->n_cols + c] * v->data[c];
+			}
+		}
+
+		// 3. Calcolo del Quoziente di Rayleigh (lambda = v^T * w)
+		lambda = 0.0;
+		for(i = 0; i < n; i++) {
+			lambda += v->data[i] * w->data[i];
+		}
+
+		// 4. Controllo di convergenza
+		if (fabs(lambda - lambda_old) < tolerance) break;
+		lambda_old = lambda;
+
+		// 5. Normalizziamo w per ottenere il nuovo v
+		norm = mat_l2norm(w);
+		if(norm < SLAP_ALMOST_ZERO) break; // Evita divisioni per zero
+		for(i = 0; i < n; i++) {
+			v->data[i] = w->data[i] / norm;
+		}
+	}
+
+	// Se l'utente ha passato un vettore output, salviamo l'autovettore
+	if(eigenvec_out && eigenvec_out->n_rows == n && eigenvec_out->n_cols == 1) {
+		for(i = 0; i < n; i++) eigenvec_out->data[i] = v->data[i];
+	}
+
+	mat_free(v);
+	mat_free(w);
+	return lambda;
+}
+
+
+#endif // SLAP_EIGEN_ITERATIVE
 
 
 // UTILITIES:
