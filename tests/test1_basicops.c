@@ -20,9 +20,9 @@ int main()
 	tmp = mat_init(3,3, (double[]){1,4,7,2,5,8,3,6,9});
 	if(mat_equal(mat_transpose(A),tmp,0))				printf("passed\n"); else printf("NOT PASSED!!!\n");
 	
-	printf("mat_smul      : ");
+	printf("mat_scale     : ");
 	tmp = mat_init(3,3, (double[]){2,4,6,8,10,12,14,16,18});
-	mat_smul_r(tmp,0.5); // divide by two
+	mat_scale_r(tmp,0.5); // divide by two
 	if(mat_equal(A,tmp,0))								printf("passed\n"); else printf("NOT PASSED!!!\n");
 	
 	printf("mat_add       : ");

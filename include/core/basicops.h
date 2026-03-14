@@ -143,6 +143,19 @@ mat* mat_sub(mat *m1, mat *m2) // forse dovrei usare const mat* ...
 }
 
 
+TYPE mat_dot(const mat *v1, const mat *v2)
+{
+	// Prodotto scalare tra due vettori (senza allocazioni)
+	// i vettori possono essere sia due vettori riga che due vettori colonna
+	// se sono delle matrici, sono convertite in vettori equivalenti 
+	// formati dalla concatenzazione di tutte le righe.
+	TYPE sum = 0.0;
+	int i;
+	if(v1->n_rows * v1->n_cols != v2->n_rows * v2->n_cols) return 0.0;
+	for(i=0; i < v1->n_rows * v1->n_cols; i++) sum += v1->data[i] * v2->data[i];
+	return sum;
+}
+
 
 mat* mat_mul(const mat* m1, const mat* m2)
 {

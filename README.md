@@ -168,7 +168,7 @@ void main()
 		- [ ] Gauss-Seidel iterative method
 		- [ ] Successive over Relaxation SOR method
 		- [x] Conjugate gradient
-			- [ ] Fix for 3x3 example (2x2 works)
+			- [x] Fix for 3x3 example (2x2 works)
 		- [ ] Bi-conjugate gradient
 	- [ ] Sparse solvers
 		- [ ] conjugate gradient?

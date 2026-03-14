@@ -990,6 +990,51 @@ function x = conjgrad(A, b, x)
 end
 \end{verbatim}
 
+\dotfill
+
+SPIEGAZIONE DA GEMINI:
+
+La Teoria del Metodo del Gradiente Coniugato (CG)
+Il metodo del Gradiente Coniugato è uno degli algoritmi iterativi più efficienti per la risoluzione di grandi sistemi di equazioni lineari della forma:
+
+$$A \mathbf{x} = \mathbf{b}$$
+Affinché il metodo converga e sia matematicamente ben definito, la matrice $A$ di dimensioni $n \times n$ deve essere Simmetrica ($A = A^T$) e Definita Positiva ($\mathbf{x}^T A \mathbf{x} > 0$ per ogni $\mathbf{x} \neq \mathbf{0}$).
+1. Riformulazione come Problema di Ottimizzazione
+L'intuizione fondamentale alla base del Gradiente Coniugato è che risolvere il sistema lineare $A \mathbf{x} = \mathbf{b}$ equivale a trovare il punto di minimo di una specifica funzione quadratica. Definiamo la forma quadratica:
+
+$$f(\mathbf{x}) = \frac{1}{2} \mathbf{x}^T A \mathbf{x} - \mathbf{b}^T \mathbf{x}$$
+Se calcoliamo il gradiente di questa funzione rispetto a $\mathbf{x}$, otteniamo:
+
+$$\nabla f(\mathbf{x}) = A \mathbf{x} - \mathbf{b}$$
+Il minimo della funzione si trova ponendo il gradiente uguale a zero, il che ci riporta esattamente al nostro sistema originale $A \mathbf{x} = \mathbf{b}$. Inoltre, in ogni punto $\mathbf{x}_k$, la direzione di massima pendenza (Steepest Descent) è l'opposto del gradiente, che coincide con il residuo del sistema lineare:
+
+$$\mathbf{r}_k = \mathbf{b} - A \mathbf{x}_k = - \nabla f(\mathbf{x}_k)$$
+2. Il Limite della Discesa del Gradiente (Steepest Descent)
+Nel classico metodo di discesa del gradiente, ci si muove sempre nella direzione del residuo $\mathbf{r}_k$. Tuttavia, questo approccio porta spesso a un fenomeno di "zig-zag" inefficiente: l'algoritmo finisce per percorrere più volte le stesse direzioni, specialmente se la matrice $A$ è malcondizionata (cioè se le linee di livello della funzione quadratica sono ellissi molto allungate).
+3. Direzioni A-Ortogonali (Coniugate)
+Per evitare di ricalcolare correzioni lungo direzioni già esplorate, il Gradiente Coniugato introduce il concetto di direzioni coniugate (o $A$-ortogonali). Un insieme di vettori non nulli $\{ \mathbf{p}_0, \mathbf{p}_1, \dots, \mathbf{p}_{n-1} \}$ si dice $A$-ortogonale se:
+
+$$\mathbf{p}_i^T A \mathbf{p}_j = 0 \quad \text{per } i \neq j$$
+Se scegliamo di muoverci lungo queste direzioni coniugate, l'algoritmo garantisce di trovare la soluzione esatta in al massimo $n$ passi (supponendo aritmetica esatta, senza errori di arrotondamento).
+4. Le Equazioni dell'Algoritmo
+Ad ogni passo $k$, l'algoritmo aggiorna la soluzione $\mathbf{x}_k$ muovendosi lungo la direzione di ricerca $\mathbf{p}_k$ di una quantità $\alpha_k$:
+
+$$\mathbf{x}_{k+1} = \mathbf{x}_k + \alpha_k \mathbf{p}_k$$
+Il parametro $\alpha_k$ (la lunghezza del passo) è scelto per minimizzare $f(\mathbf{x})$ lungo la direzione $\mathbf{p}_k$, e si calcola come:
+
+$$\alpha_k = \frac{\mathbf{r}_k^T \mathbf{r}_k}{\mathbf{p}_k^T A \mathbf{p}_k}$$
+Il nuovo residuo si aggiorna di conseguenza:
+
+$$\mathbf{r}_{k+1} = \mathbf{r}_k - \alpha_k A \mathbf{p}_k$$
+Il vero "trucco" magico del CG sta nel modo in cui calcola la nuova direzione $\mathbf{p}_{k+1}$. Invece di dover salvare tutti i vettori precedenti per applicare l'ortogonalizzazione di Gram-Schmidt, il CG richiede solo l'ultima direzione $\mathbf{p}_k$ e il nuovo residuo $\mathbf{r}_{k+1}$:
+
+$$\mathbf{p}_{k+1} = \mathbf{r}_{k+1} + \beta_k \mathbf{p}_k$$
+dove il coefficiente $\beta_k$ assicura che $\mathbf{p}_{k+1}$ sia $A$-ortogonale a $\mathbf{p}_k$:
+
+$$\beta_k = \frac{\mathbf{r}_{k+1}^T \mathbf{r}_{k+1}}{\mathbf{r}_k^T \mathbf{r}_k}$$
+Questa eleganza matematica si traduce in una straordinaria efficienza informatica: per ogni iterazione è sufficiente mantenere in memoria solo pochi vettori ($\mathbf{x}, \mathbf{r}, \mathbf{p}$) ed eseguire un'unica moltiplicazione matrice-vettore ($A \mathbf{p}_k$).
+
+
 
 
 \section{Determinante}

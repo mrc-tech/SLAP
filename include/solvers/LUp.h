@@ -57,7 +57,7 @@ int mat_absmaxr(const mat *m, unsigned int k)
 {
 	// Finds the id of the max on the column (starting from k -> num_rows)
 	int i;
-	TYPE max = m->data[k*m->n_cols+k];
+	TYPE max = fabs(m->data[k*m->n_cols+k]);
 	int maxIdx = k;
 	for(i=k+1; i<m->n_rows; i++){
 		if(fabs(m->data[i*m->n_cols+k]) > max){

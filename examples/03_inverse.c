@@ -24,7 +24,7 @@ int main()
 //	A = mat_init(2,2, (TYPE[]){4,1,1,3});
 //	b = mat_init(2,1, (TYPE[]){1,2});
 	printf("\nConjugate gradient:\n");
-	x = mat_conjgrad(A, b);
+	x = mat_conjgrad(A, b); // DEFINITO PER MATRICI SIMMETRICHE DEFINITE POSITIVE
 	printf("x =\n"); mat_print(x);
 	
 //	return 0;
