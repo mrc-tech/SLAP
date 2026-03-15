@@ -1433,4 +1433,21 @@ Se provi a dare questa matrice in pasto al tuo solutore, testerai una cosa cruci
 
 
 
+\section{Note}
+
+\subsection{`const mat*` come arg alle funzioni migliora la gestione della memoria}
+
+SÌ, ASSOLUTAMENTE. La Const Correctness è una best practice fondamentale. Scrivere mat\_print(const mat* m) o mat\_add(const mat* a, const mat* b) fa due cose magiche:
+
+	- Impedisce a te (autore) di modificare per sbaglio una matrice di input.
+
+	- Permette al compilatore di fare ottimizzazioni aggressive, sapendo che quei dati in memoria non cambieranno.
+
+
+
+
+
+
+
+
 \end{document}

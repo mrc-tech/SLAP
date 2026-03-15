@@ -126,7 +126,7 @@ void main()
 
 
 # ToDo
-<!--  v0.2  to  v0.3  -->
+<!--  v0.3-beta  to  v0.4-beta  -->
 - [ ] seguire il *Semantic Versioning* (semver.org)
 - [ ] **CORE**
 	- [ ] BTC++ `mat_init_DOS`
@@ -135,18 +135,10 @@ void main()
 	- [ ] `__attribute__((cleanup(mat_free)))` prima della definizione delle matrici che devono auto-eliminarsi? (NON COMPATIBILE CON DOS)
 	- [ ] usare `static` davanti a `mat*` di ritorno di alcune funzioni? (Gemini dice di NO) <!-- In C, restituire un puntatore a una variabile static locale la rende un "Singleton" condiviso. Se chiami la funzione due volte, la seconda chiamata sovrascriverà i dati della prima. Questo distrugge la riusabilità e rende la libreria non thread-safe. Le matrici vanno allocate con malloc/calloc e restituite normalmente. -->
 	- [ ] `inline void` per `mat_free`? Inutile. <!-- Inutile. L'istruzione inline suggerisce al compilatore di eliminare l'overhead della chiamata a funzione. Ma dentro mat_free tu chiami free(), che è un'operazione del sistema operativo molto più lenta dell'overhead della funzione. Usalo per funzioni piccolissime e chiamate milioni di volte, come mat_get(m, r, c) o mat_set(m, r, c, val). -->
-	- [x] `const mat*` come arg alle funzioni migliora la gestione della memoria? <!-- SÌ, ASSOLUTAMENTE. La Const Correctness è una best practice fondamentale. Scrivere mat_print(const mat* m) o mat_add(const mat* a, const mat* b) fa due cose magiche:
-	- Impedisce a te (autore) di modificare per sbaglio una matrice di input.
-	- Permette al compilatore di fare ottimizzazioni aggressive, sapendo che quei dati in memoria non cambieranno. -->
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
-		- [x] cache aligned (for _row-major_)
 		- [ ] Strassen <!--L'algoritmo di Strassen riduce la complessità da $O(n^3)$ a $O(n^{2.81})$. È un ottimo esercizio, ma attenzione: per via dell'overhead ricorsivo e delle allocazioni necessarie, Strassen è più lento della moltiplicazione base per matrici piccole. Di solito si usa una soglia: se $N < 64$ si usa la base, se $N \ge 64$ si attiva Strassen. Su MS-DOS: La ricorsione profonda potrebbe saturare rapidamente il piccolissimo Stack dei sistemi a 16-bit.-->
 		- [ ] Coppersmith? <!--  L'algoritmo di Coppersmith-Winograd (e i suoi successori) sono noti come Galactic Algorithms. Hanno una complessità asintotica migliore ($O(n^{2.37})$), ma le costanti nascoste sono così mostruosamente enormi che diventano più veloci di Strassen solo su matrici le cui dimensioni superano la memoria RAM esistente sul pianeta Terra. Nessuna libreria reale al mondo (nemmeno OpenBLAS o MKL) li usa. -->
-	- [x] Hadamard product
-	- [x] trace
-	- [x] diagonal square matrix from vector
-	- [x] rename `smul` into `scale`
 	- [ ] ...
 - [ ] **DECOMPOSITION**
 	- [ ] separare l'implementazione di LU e QR dai solver (files separati) <!-- In DOS, la dimensione dell'eseguibile conta. Se tengo LU, QR, ed EIGEN in file separati (es. slap_lu.c, slap_qr.c), il linker di Borland includerà nell'eseguibile finale solo le funzioni che l'utente chiama effettivamente, risparmiando preziosi Kilobyte. -->
@@ -167,8 +159,6 @@ void main()
 		- [ ] Jacobi iterative method
 		- [ ] Gauss-Seidel iterative method
 		- [ ] Successive over Relaxation SOR method
-		- [x] Conjugate gradient
-			- [x] Fix for 3x3 example (2x2 works)
 		- [ ] Bi-conjugate gradient
 	- [ ] Sparse solvers
 		- [ ] conjugate gradient?
@@ -176,30 +166,24 @@ void main()
 	- [ ] ...
 - [ ] **EIGEN**
 	- [ ] QR decomposition
-		- [x] definire meglio quando finire la procedura iterativa
 		- [ ] valori di default per tolleranza e massimo numero di iterazioni
 		- [ ] forma di Hessenberg per aumentare l'efficienza <!-- Prima di avviare il ciclo QR, usa Householder per ridurre la matrice originale in forma di Hessenberg superiore (zeri sotto la prima sotto-diagonale). Una matrice di Hessenberg conserva questa forma attraverso le iterazioni QR, abbassando il costo iterativo da O(n^4) a O(n^3) -->
 		- [ ] implicit QR algorithm? <!-- Se non implementi uno "Shift" (es. Wilkinson Shift), l'algoritmo QR standard potrebbe convergere così lentamente da sembrare bloccato. Sottraendo una costante sI prima di QR accelera enormemente la convergenza. -->
-	- [x] Iterative power methods
 	- [ ] ...
 - [ ] **ADVANCED OPERATIONS**
 	- [ ] determinant
-		- [x] LU(P) decomposition (_nml_)
 		- [ ] Sviluppo di Laplace
 		- [ ] Bareiss algorithm
 		- [ ] Division-free algorithm
 		- [ ] Fast matrix multiplication
 	- [ ] inverse
-		- [x] LU(P) decomposition (_nml_)
 		- [ ] matrice aggiunta e determinante <!-- matrice aggiunta scala malissimo, con fattoriale O(N!) o O(N^4) -->
 	- [ ] positive defined check
 		- [ ] Eigenvalues? <!-- in realta' e' lento in questo modo. Usare altri metodi -->
 		- [ ] Cholesky
-	- [x] matrix norms
 	- [ ] exponent
 	- [ ] least squares (_example_)
 	- [ ] order of a matrix
-	- [x] vector product `vec3 * vec3`
 	- [ ] conjugate matrix
 	- [ ] Hessenberg form
 	- [ ] Vandermonde, Hankel, etc.
@@ -228,4 +212,32 @@ void main()
 		- [ ] generalized minimum residual (`gmres`)
 		- [ ] quasi-minimal residual (`qmr`)
 		- [ ] transpose-free quasi-minimal residual (`tfqmr`)
+-->
+
+
+<!-- v0.3-beta
+- [ ] **CORE**
+	- [x] `const mat*` come arg alle funzioni migliora la gestione della memoria?
+- [ ] **BASIC OPERATIONS**
+	- [ ] multiplication
+		- [x] cache aligned (for _row-major_)
+	- [x] Hadamard product
+	- [x] trace
+	- [x] diagonal square matrix from vector
+	- [x] rename `smul` into `scale`
+- [ ] **SOLVER**
+	- [ ] iterative algorithms (for large scale problems)
+		- [x] Conjugate gradient
+			- [x] Fix for 3x3 example (2x2 works)
+- [ ] **EIGEN**
+	- [ ] QR decomposition
+		- [x] definire meglio quando finire la procedura iterativa
+	- [x] Iterative power methods
+- [ ] **ADVANCED OPERATIONS**
+	- [ ] determinant
+		- [x] LU(P) decomposition (_nml_)
+	- [ ] inverse
+		- [x] LU(P) decomposition (_nml_)
+	- [x] matrix norms
+	- [x] vector product `vec3 * vec3`
 -->
