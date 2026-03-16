@@ -133,15 +133,12 @@ void main()
 	- [ ] error handling <!-- Creerei una variabile globale int slap_errno; (simile allo standard errno del C) con una enum di codici di errore (SLAP_ERR_MEM, SLAP_ERR_DIM, SLAP_ERR_SINGULAR). Se una funzione fallisce, setta slap_errno e ritorna NULL. L'utente deciderà se e come crashare. -->
 	- [ ] `push_back()` like `vector<TYPE>` for vectors (column or row matrices)
 	- [ ] `__attribute__((cleanup(mat_free)))` prima della definizione delle matrici che devono auto-eliminarsi? (NON COMPATIBILE CON DOS)
-	- [ ] usare `static` davanti a `mat*` di ritorno di alcune funzioni? (Gemini dice di NO) <!-- In C, restituire un puntatore a una variabile static locale la rende un "Singleton" condiviso. Se chiami la funzione due volte, la seconda chiamata sovrascriverà i dati della prima. Questo distrugge la riusabilità e rende la libreria non thread-safe. Le matrici vanno allocate con malloc/calloc e restituite normalmente. -->
-	- [ ] `inline void` per `mat_free`? Inutile. <!-- Inutile. L'istruzione inline suggerisce al compilatore di eliminare l'overhead della chiamata a funzione. Ma dentro mat_free tu chiami free(), che è un'operazione del sistema operativo molto più lenta dell'overhead della funzione. Usalo per funzioni piccolissime e chiamate milioni di volte, come mat_get(m, r, c) o mat_set(m, r, c, val). -->
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
-		- [ ] Strassen <!--L'algoritmo di Strassen riduce la complessità da $O(n^3)$ a $O(n^{2.81})$. È un ottimo esercizio, ma attenzione: per via dell'overhead ricorsivo e delle allocazioni necessarie, Strassen è più lento della moltiplicazione base per matrici piccole. Di solito si usa una soglia: se $N < 64$ si usa la base, se $N \ge 64$ si attiva Strassen. Su MS-DOS: La ricorsione profonda potrebbe saturare rapidamente il piccolissimo Stack dei sistemi a 16-bit.-->
-		- [ ] Coppersmith? <!--  L'algoritmo di Coppersmith-Winograd (e i suoi successori) sono noti come Galactic Algorithms. Hanno una complessità asintotica migliore ($O(n^{2.37})$), ma le costanti nascoste sono così mostruosamente enormi che diventano più veloci di Strassen solo su matrici le cui dimensioni superano la memoria RAM esistente sul pianeta Terra. Nessuna libreria reale al mondo (nemmeno OpenBLAS o MKL) li usa. -->
+		- [ ] Strassen
+		- [ ] Coppersmith? <!--   -->
 	- [ ] ...
 - [ ] **DECOMPOSITION**
-	- [ ] separare l'implementazione di LU e QR dai solver (files separati) <!-- In DOS, la dimensione dell'eseguibile conta. Se tengo LU, QR, ed EIGEN in file separati (es. slap_lu.c, slap_qr.c), il linker di Borland includerà nell'eseguibile finale solo le funzioni che l'utente chiama effettivamente, risparmiando preziosi Kilobyte. -->
 	- [ ] QR
 		- [ ] Householder method <!-- numericamente superiore a MGS (Gram-Schmidt modificato) -->
 		- [ ] Gibs rotations? Rotazioni di Givens? <!-- Sono eccellenti per annullare singoli elementi (utili per matrici sparse o a banda), ma per matrici dense piene, Householder richiede meno operazioni matematiche (Flops). -->
@@ -177,7 +174,7 @@ void main()
 		- [ ] Division-free algorithm
 		- [ ] Fast matrix multiplication
 	- [ ] inverse
-		- [ ] matrice aggiunta e determinante <!-- matrice aggiunta scala malissimo, con fattoriale O(N!) o O(N^4) -->
+		- [ ] matrice aggiunta e determinante
 	- [ ] positive defined check
 		- [ ] Eigenvalues? <!-- in realta' e' lento in questo modo. Usare altri metodi -->
 		- [ ] Cholesky

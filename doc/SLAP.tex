@@ -22,6 +22,8 @@
 \usepackage{algorithm}			% per la descrizione degli algoritmi
 \usepackage{algpseudocode}		% per lo pseudocodice
 %\usepackage{fancyvrb} % aggiunge file verbatim "VerbatimInput"
+\usepackage{longtable}
+\usepackage{booktabs}
 
 
 %\linespread{2}
@@ -136,6 +138,229 @@ void matd_set(matd matrix, unsigned int row, unsigned int col, double val) {
 \section{Basic operations}
 
 \textcolor{red}{Mettere un pannello (anche una tabella) che riassume le operazioni, il nome delle funzioni e come si usano.}
+
+All the functions that return a matrix allocate new memory for the returned matrix.
+
+\vspace{1em}
+\noindent
+% Utilizziamo tabularx per gestire automaticamente la colonna centrale (X)
+% e assegniamo una larghezza fissa per le funzioni e le formule.
+\begin{longtable}{@{} p{3cm} p{5cm} p{3cm} @{}}
+\toprule
+\textbf{function} & \textbf{operation} & \textbf{math} \\
+\midrule
+
+\texttt{mat\_new(n,m)} & allocate memory for $n\times m$ matrix ($n$ rows and $m$ cols); set all values to zero & \\
+\addlinespace
+\texttt{mat\_free(A)} & free the allocated memory for matrix $\mathbf{A}$ & \\
+\addlinespace
+\texttt{mat\_set(A,i,j,a)} & set the member of $\mathbf{A}$ at row $i$ and column $j$ equal to $a$ & $A_{ij}=a$ \\
+\addlinespace
+\texttt{a = mat\_get(A,i,j)} & get the member of $\mathbf{A}$ at row $i$ and column $j$ & $a=A_{ij}$ \\
+\addlinespace
+\texttt{B = mat\_copy(A)} & copy the matrix $\mathbf{A}$ into $\mathbf{B}$ allocating memory & \\
+\addlinespace
+\texttt{mat\_add\_r(A,B)} & add matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ (\textit{reference}) & $\mathbf{A}=\mathbf{A}+\mathbf{B}$ \\
+\addlinespace
+\texttt{mat\_sub\_r(A,B)} & subtract matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ (\textit{reference}) & $\mathbf{A}=\mathbf{A}-\mathbf{B}$ \\
+\addlinespace
+\texttt{C = mat\_add(A,B)} & add matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{C}$ & $\mathbf{C}=\mathbf{A}+\mathbf{B}$ \\
+\addlinespace
+\texttt{C = mat\_sub(A,B)} & subtract matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{C}$ & $\mathbf{C}=\mathbf{A}-\mathbf{B}$ \\
+\addlinespace
+\texttt{B = mat\_scale(A,c)} & scale the matrix $\mathbf{A}$ with the scalar $c$ and put into $\mathbf{C}$ & $\mathbf{B}=c\mathbf{A}$ \\
+\addlinespace
+\texttt{mat\_scale\_r(A,c)} & scale the matrix $\mathbf{A}$ with the scalar $c$ and put into $\mathbf{A}$ (\textit{reference}) & $\mathbf{A}=c\mathbf{A}$ \\
+\addlinespace
+\texttt{C = mat\_mul(A,B)} & multiply $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{C}$; also works with scalar (row times column vector) and tensor (column times row vector) product & $\mathbf{A}=\mathbf{A}\mathbf{B}\newline \mathbf{u}\cdot\mathbf{v}=\mathbf{u}^T\mathbf{v}\newline \mathbf{u}\otimes\mathbf{v}=\mathbf{u}\mathbf{v}^T$ \\
+\addlinespace
+\texttt{mat\_equal(A,B,tol)} & check if matrix $\mathbf{A}$ and $\mathbf{B}$ are equal & true if $\operatorname{abs}(A_{ij}-B_{ij}) < tol$ \\
+\addlinespace
+\texttt{B = mat\_transpose(A)} & transpose the matrix $\mathbf{A}$ and put into matrix $\mathbf{B}$ & $\mathbf{B}=\mathbf{A}^T$ \\
+\addlinespace
+\texttt{mat\_transpose\_r(A)} & transpose the matrix $\mathbf{A}$ without allocating memory (\textit{reference}) & $\mathbf{A}=\mathbf{A}^T$ \\
+\addlinespace
+\texttt{t = mat\_trace(A)} & return the trace of $\mathbf{A}$ & $a = \operatorname{tr}(\mathbf{A}) = \sum_{i=1}^{\min(n,m)} A_{ii}$ \\
+\addlinespace
+\texttt{I = mat\_eye(n)} & create an $n\times n$ identity matrix & \\
+\addlinespace
+\texttt{U = mat\_GaussJordan(A)} & transform matrix $\mathbf{A}$ in row echelon form $\mathbf{U}$ (upper triangular) via Gauss elimination & \\
+\addlinespace
+\texttt{LUP = mat\_lup\_solve(A)} & find the LU(P) decomposition of $\mathbf{A}$; $\mathbf{L}$ is a lower triangular, $\mathbf{U}$ an upper triangular and $\mathbf{P}$ a permutation matrix (return a \texttt{lup} struct) & $\{\mathbf{L},\mathbf{U},\mathbf{P}\}\gets\mathbf{A}\newline \mathbf{P}\mathbf{A}=\mathbf{L}\mathbf{U}$ \\
+\addlinespace
+\texttt{QR = mat\_qr\_solve(A)} & find the QR decomposition of $\mathbf{A}$; $\mathbf{Q}$ is a orthogonal, $\mathbf{R}$ an upper triangular matrix (return a \texttt{qr} struct) & $\{\mathbf{Q},\mathbf{R}\}\gets\mathbf{A}\newline \mathbf{A}=\mathbf{Q}\mathbf{R}$ \\
+\addlinespace
+\texttt{a = eigen\_qr(A,tol,max\_iter)} & calculate eigenvalues of $\mathbf{A}$ with QR decomposition and put the result in $\mathbf{a}$. Approximate the solution between tolerance \texttt{tol} and maximum number of steps \texttt{max\_iter} & \\
+\addlinespace
+\texttt{a = eigen\_power\_method(A,eigv,tol,max\_iter)} & calculate eigenvalues of $\mathbf{A}$ with power iteration method and put the result in $\mathbf{a}$. Evaluates also eigenvector \texttt{eigv}. Approximate the solution between tolerance \texttt{tol} and maximum number of steps \texttt{max\_iter} & \\
+\addlinespace
+\texttt{mat\_print(A)} & print matrix $\mathbf{A}$ & \\
+\bottomrule
+\end{longtable}
+
+\textcolor{red}{Forse la migliore tabella e' proprio questa. Forse ha senso messa in "verticale"...}
+
+
+\newpage
+
+\textcolor{red}{PROVA2}
+
+\begin{longtable}{@{} p{4cm} p{7cm} @{}}
+\toprule
+\multicolumn{2}{l}{\texttt{ mat\_new(n,m) }} \\
+ &
+allocate memory for $n\times m$ matrix ($n$ rows and $m$ cols); set all values to zero \\
+\hline
+\multicolumn{2}{l}{\texttt{ mat\_free(A)} } \\
+ &
+free the allocated memory for matrix $\mathbf{A}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ mat\_set(A,i,j,a) } \hfill \textit{(reference)}} \\
+$A_{ij}=a$ &
+set the member of $\mathbf{A}$ at row $i$ and column $j$ equal to $a$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ a = mat\_get(A,i,j) }} \\
+$a=A_{ij}$ &
+get the member of $\mathbf{A}$ at row $i$ and column $j$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ B = mat\_copy(A) }} \\
+ &
+copy the matrix $\mathbf{A}$ into $\mathbf{B}$ allocating memory \\
+\hline
+\multicolumn{2}{l}{\texttt{ mat\_add\_r(A,B) } \hfill \textit{(reference)}} \\
+$\mathbf{A}=\mathbf{A}+\mathbf{B}$ &
+add matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ mat\_sub\_r(A,B) } \hfill \textit{(reference)}} \\
+$\mathbf{A}=\mathbf{A}-\mathbf{B}$ &
+subtract matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{comando}} \\
+Matematica &
+descrizione \\
+\hline
+\multicolumn{2}{l}{\texttt{comando}} \\
+Matematica &
+descrizione \\
+
+\bottomrule
+
+\end{longtable}
+
+\newpage
+
+\textcolor{red}{PROVA 3 :}
+
+\begin{longtable}{@{} p{1.5cm} p{7cm} p{3cm} @{}}
+\toprule
+\multicolumn{2}{l}{\texttt{ \textbf{mat\_new}(n,m) }} \\
+& allocate memory for $n\times m$ matrix ($n$ rows and $m$ cols); set all values to zero & \\
+\hline
+\multicolumn{2}{l}{\texttt{ \textbf{mat\_free}(A)} } \\
+& free the allocated memory for matrix $\mathbf{A}$ & \\
+\hline
+\multicolumn{2}{l}{\texttt{ \textbf{mat\_set}(A,i,j,a) } \hfill \textit{\textcolor{gray}{(reference)}}} \\
+& set the member of $\mathbf{A}$ at row $i$ and column $j$ equal to $a$ &
+$A_{ij}=a$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ a = \textbf{mat\_get}(A,i,j) }} \\
+& get the member of $\mathbf{A}$ at row $i$ and column $j$ &
+$a=A_{ij}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ B = \textbf{mat\_copy}(A) }} \\
+& copy the matrix $\mathbf{A}$ into $\mathbf{B}$ allocating memory & 
+$\mathbf{B} \gets \mathbf{A}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ \textbf{mat\_add\_r}(A,B) } \hfill \textit{\textcolor{gray}{(reference)}}} \\
+& add matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ &
+$\mathbf{A}=\mathbf{A}+\mathbf{B}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ \textbf{mat\_sub\_r}(A,B) } \hfill \textit{\textcolor{gray}{(reference)}}} \\
+& subtract matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{A}$ &
+$\mathbf{A}=\mathbf{A}-\mathbf{B}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ C = \textbf{mat\_add}(A,B) }} \\
+& add matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{C}$ &
+$\mathbf{C}=\mathbf{A}+\mathbf{B}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ C = \textbf{mat\_sub}(A,B) }} \\
+& subtract matrix $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{C}$ &
+$\mathbf{C}=\mathbf{A}-\mathbf{B}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ B = \textbf{mat\_scale}(A,c) }} \\
+& scale the matrix $\mathbf{A}$ with the scalar $c$ and put into $\mathbf{C}$ &
+$\mathbf{B}=c\mathbf{A}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ \textbf{mat\_scale\_r}(A,c) } \hfill \textit{\textcolor{gray}{(reference)}}} \\
+& scale the matrix $\mathbf{A}$ with the scalar $c$ and put into $\mathbf{A}$ &
+$\mathbf{A}=c\mathbf{A}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ C = \textbf{mat\_mul}(A,B) }} \\
+& multiply $\mathbf{A}$ and $\mathbf{B}$ and put the result in $\mathbf{C}$; also works with scalar (row times column vector) and tensor (column times row vector) product &
+$\mathbf{A}=\mathbf{A}\mathbf{B}\quad$  $\mathbf{u}\cdot\mathbf{v}=\mathbf{u}^T\mathbf{v}\quad$   $\mathbf{u}\otimes\mathbf{v}=\mathbf{u}\mathbf{v}^T$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ \textbf{mat\_equal}(A,B,tol) }} \\
+& check if matrix $\mathbf{A}$ and $\mathbf{B}$ are equal &
+true if $abs(A_{ij}-B_{ij}) < tol$ $\forall i,j$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ B = \textbf{mat\_transpose}(A) }} \\
+& transpose the matrix $\mathbf{A}$ and put into matrix $\mathbf{B}$ &
+$\mathbf{B}=\mathbf{A}^T$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ \textbf{mat\_transpose\_r}(A) } \hfill \textit{\textcolor{gray}{(reference)}}} \\
+& transpose the matrix $\mathbf{A}$ without allocating memory &
+$\mathbf{A}=\mathbf{A}^T$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ t = \textbf{mat\_trace}(A) }} \\
+& return the trace of $\mathbf{A}$ &
+$a = tr(\mathbf{A}) = \sum_{i=1}^{min(n,m)} A_{ii}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ I = \textbf{mat\_eye}(n) }} \\
+& create an $n\times n$ identity matrix &
+$I_{ij} =
+\begin{cases}
+1 & i=j \\
+0 & i\neq j
+\end{cases}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ U = \textbf{mat\_GaussJordan}(A) }} \\
+& transform matrix $\mathbf{A}$ in row echelon form $\mathbf{U}$ (upper triangular) via Gauss elimination & \\
+\hline
+\multicolumn{2}{l}{\texttt{ LUP = \textbf{mat\_lup\_solve}(A) }} \\
+& find the LU(P) decomposition of $\mathbf{A}$; $\mathbf{L}$ is a lower triangular, $\mathbf{U}$ an upper triangular and $\mathbf{P}$ a permutation matrix (return a ``lup'' struct) &
+$\{\mathbf{L},\mathbf{U},\mathbf{P}\}\gets\mathbf{A}\quad$ $\mathbf{P}\mathbf{A}=\mathbf{L}\mathbf{U}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ QR = \textbf{mat\_qr\_solve}(A) }} \\
+& find the QR decomposition of $\mathbf{A}$; $\mathbf{Q}$ is a orthogonal, $\mathbf{R}$ an upper triangular matrix (return a `qr` struct) &
+$\{\mathbf{Q},\mathbf{R}\}\gets\mathbf{A}\quad$ $\mathbf{A}=\mathbf{Q}\mathbf{R}$ \\
+\hline
+\multicolumn{2}{l}{\texttt{ a = \textbf{eigen\_qr}(A,tol,max\_iter) }} \\
+& calculate eigenvalues of $\mathbf{A}$ with QR decomposition and put the result in $\mathbf{a}$. Approximate the solution between tolerance `tol` and maximum number of steps `max\_iter` & \\
+\hline
+\multicolumn{2}{l}{\texttt{ a = \textbf{eigen\_power\_method}(A,eigv,tol,max\_iter) }} \\
+& calculate eigenvalues of $\mathbf{A}$ with power iteration method and put the result in $\mathbf{a}$. Evaluates also eigenvector `eigv`. Approximate the solution between tolerance `tol` and maximum number of steps `max\_iter` &
+matematica \\
+\hline
+\multicolumn{2}{l}{\texttt{comando}} \\
+& descrizione &
+matematica \\
+\hline
+\multicolumn{2}{l}{\texttt{comando}} \\
+& descrizione &
+matematica \\
+
+
+\hline
+\multicolumn{2}{l}{\texttt{ \textbf{mat\_print}(A) }} \\
+& print matrix $\mathbf{A}$ & \\
+
+
+
+
+\bottomrule
+
+\end{longtable}
+
 
 \subsection{Equality}
 
@@ -367,6 +592,18 @@ L'osservazione chiave è che per matrici $2\times 2$ le moltiplicazioni necessar
 La stabilità è inferiore rispetto all'algoritmo naive, ma più veloce nel caso in cui $n>100$ circa.
 
 \textcolor{red}{continuare a scrivere...}
+
+\textcolor{red}{L'algoritmo di Strassen riduce la complessità da $O(n^3)$ a $O(n^{2.81})$. È un ottimo esercizio, ma attenzione: per via dell'overhead ricorsivo e delle allocazioni necessarie, Strassen è più lento della moltiplicazione base per matrici piccole. Di solito si usa una soglia: se $N < 64$ si usa la base, se $N \ge 64$ si attiva Strassen. Su MS-DOS: La ricorsione profonda potrebbe saturare rapidamente il piccolissimo Stack dei sistemi a 16-bit.}
+
+
+\paragraph{Coppersmith}
+
+L'algoritmo di Coppersmith-Winograd (e i suoi successori) sono noti come \textit{Galactic Algorithms}. Hanno una complessità asintotica migliore ($O(n^{2.37})$), ma le costanti nascoste sono così mostruosamente enormi che diventano più veloci di Strassen solo su matrici le cui dimensioni superano la memoria RAM esistente sul pianeta Terra. Nessuna libreria reale al mondo (nemmeno OpenBLAS o MKL) li usa.
+
+Questo perche' dire che la complessita' e' $O(n^{2.37})$ vuol dire che il numero di operazioni e' proporzionale alla quantita'
+$$ C_1 + C_2 n^\alpha $$
+dove, in questo caso, $\alpha = 2.37$. Il problema di questo algoritmo e' che il valore della costante $C_1$ e' talmente alto che il numero di operazioni risulta piccolo solo se $n$ e' gigantesco.
+
 
 
 
@@ -1572,6 +1809,27 @@ SÌ, ASSOLUTAMENTE. La Const Correctness è una best practice fondamentale. Scri
 
 	- Permette al compilatore di fare ottimizzazioni aggressive, sapendo che quei dati in memoria non cambieranno.
 
+\subsection{usare \texttt{static} davanti a \texttt{mat*} di ritorno di alcune funzioni?}
+
+Gemini dice di NO
+
+In C, restituire un puntatore a una variabile static locale la rende un "Singleton" condiviso. Se chiami la funzione due volte, la seconda chiamata sovrascriverà i dati della prima. Questo distrugge la riusabilità e rende la libreria non thread-safe. Le matrici vanno allocate con \texttt{malloc}/\texttt{calloc} e restituite normalmente.
+
+\subsection{\texttt{inline void} per \texttt{mat\_free}?}
+
+Inutile. 
+
+L'istruzione inline suggerisce al compilatore di eliminare l'overhead della chiamata a funzione. Ma dentro \texttt{mat\_free} tu chiami \texttt{free()}, che è un'operazione del sistema operativo molto più lenta dell'overhead della funzione. Usalo per funzioni piccolissime e chiamate milioni di volte, come \texttt{mat\_get(m,r,c)} o \texttt{mat\_set(m,r,c,val)}.
+
+
+\subsection{separare l'implementazione di LU e QR dai solver (files separati)}
+
+In DOS, la dimensione dell'eseguibile conta. Se tengo LU, QR, ed EIGEN in file separati (es. \texttt{slap\_lu.c}, \texttt{slap\_qr.c}), il linker di Borland includerà nell'eseguibile finale solo le funzioni che l'utente chiama effettivamente, risparmiando preziosi Kilobyte.
+
+
+\subsection{Matrice aggiunta}
+
+matrice aggiunta scala malissimo, con fattoriale $\mathcal{O}(N!)$ o $\mathcal{O}(N^4)$.
 
 
 
