@@ -14,28 +14,34 @@
 \usepackage{tikz}				%per le immagini vettoriali da LateX
 \usepackage{pgfplots} % plotta i dati
 \usepackage{listings} 			%Per inserire codice
-\usepackage{pxfonts}			%per il bold nei lstlisting
+%\usepackage{pxfonts}			%per il bold nei lstlisting
+%\usepackage{lmodern}
+\usepackage{inconsolata} 		% versione moderna del bold nel listing
 %\usepackage{scrextend}			%per labeling
 \usepackage{enumitem}			% per [noitemsep]
 \usepackage{algorithm}			% per la descrizione degli algoritmi
 \usepackage{algpseudocode}		% per lo pseudocodice
-
+%\usepackage{fancyvrb} % aggiunge file verbatim "VerbatimInput"
 
 
 %\linespread{2}
 
 
 \lstset { %
-	language=C++,
+	language=C,
+	morekeywords={mat,TYPE},
 	backgroundcolor=\color{black!5}, % set backgroundcolor
 	basicstyle=\footnotesize\ttfamily, % basic font setting
 	frame=shadowbox,
+	tabsize=3,
 	breaklines= true, % va a capo automatico
 	numbers=left, % numera le righe
 	commentstyle=\color{gray}, % commenti grigi
 	stringstyle=\color{violet}, % string literal style
 	numberstyle=\footnotesize\ttfamily, %formato dei numeri a lato delle righe
-	keywordstyle=\color{black}\bfseries, % style for keywords
+	keywordstyle=\bfseries, % style for keywords
+%	inputencoding=utf8,
+%    extendedchars=true
 }
 
 
@@ -51,6 +57,13 @@
 
 \tableofcontents
 
+
+\textcolor{red}{\begin{itemize}
+\Large
+\item Ricopiare i video su Youtube (\textit{Nick Space Cowboy})
+\item Mettere una sezione sulla \textit{Notazione}
+\item 
+\end{itemize}}
 
 
 \section{Data type}
@@ -509,6 +522,32 @@ Esempio:
 \end{align*}
 
 
+\subsection{Structured Gaussian Elimination}
+
+\textcolor{red}{codice Python:}
+\begin{lstlisting}[language=Python, tabsize=3, caption={Structured Gaussian Elimination}]
+def SGE(A,b):
+	n = len(A)
+	l = np.zeros([n,n]) # mi salvo i moltiplicatori nelle relative righe (matrice NxN inizialmente tutta posta a zero)
+	for i in range(0,n):
+		for j in range(i+1,n):
+			l[j,i] = A[j,i] / A[i,i] # moltiplicatore per eliminare il termine A[j,i]
+			A[j] = A[j] - (l[j,i] * A[i]) # sottrae la riga i moltiplicate per il moltiplicatore
+			b[j] = b[j] - (l[j,i] * b[i]) # dobbiamo applicare l'eliminazione di Gauss a tutto il sistema, anche al vettore dei termini noti b
+	return A, b # ritorna una matrice triangolare superiore e il vettore dei termini noti cambiato
+\end{lstlisting}
+\textcolor{red}{mi sa che è tipo una funzione "reference", che cambia gli input}
+La matrice $\mathbf{L}$ è una matrice triangolare inferiore, dove tutti gli elementi della diagonale sono nulli.
+
+Una volta trasformato, tramite eliminazione di Gauss, il sistema $\mathbf{Ax}=\mathbf{b}$ ne sistema equivalente
+$$ \mathbf{A} \mathbf{x} = \mathbf{b}
+\qquad \rightarrow \qquad
+\mathbf{U} \mathbf{x} = \mathbf{c}
+$$
+Possiamo risolvere il sistema tramite la sostituzione all'indietro \textcolor{red}{riferimento alla sezione in cui ne parlo.}
+
+
+
 
 \section{Matrix factorizations}
 
@@ -667,6 +706,96 @@ vuol dire trovare il vettore colonna incognito $\mathbf{x}$ sapendo la matrice $
 \end{equation}
 Dal punto di vista dell'implementazione il principale problema risiede nel fatto che calcolare la matrice inversa$\mathbf{A}^{-1}$ attraverso il metodo di \textcolor{red}{Come si chiamava? (quello lentissimo esatto)} è un'operazione molto dispendiosa.
 Per questo esistono molti metodi per calcolare velocemente il vettore ignoto $\mathbf{x}$ in maniera computazionalmente efficiente.
+
+
+\subsection{Matrici triangolari}
+
+Matrici triangolari sono tipo
+$$
+\mathbf{L} = 
+\begin{bmatrix}
+a_{11} & 0 & 0 \\
+a_{21} & a_{22} & 0 \\
+a_{31} & a_{32} & a_{33}
+\end{bmatrix}
+\qquad
+\mathbf{L} = 
+\begin{bmatrix}
+a_{11} & a_{13} & a_{13} \\
+0 & a_{22} & a_{23} \\
+0 & 0 & a_{33}
+\end{bmatrix}
+$$
+dove $\mathbf{L}$ sta per \textit{Lower triangular} e $\mathbf{U}$ per \textit{Upper triangular}.
+
+Se abbiamo un sistema di equazioni in cui la matrice è una matrice triangolare abbiamo
+$$ \mathbf{L} \mathbf{x} = \mathbf{b}
+\qquad \rightarrow \qquad
+\begin{bmatrix}
+a_{11} & 0 & 0 \\
+a_{21} & a_{22} & 0 \\
+a_{31} & a_{32} & a_{33}
+\end{bmatrix}
+\begin{bmatrix}
+x_1 \\ x_2 \\ x_3
+\end{bmatrix}
+=
+\begin{bmatrix}
+b_1 	\\ b_2 \\ b_3
+\end{bmatrix}
+$$
+partendo dalla prima equazione abbiamo subito che
+$$ a_{11} x_1 = b_1 \qquad \rightarrow \qquad x_1 = \frac{b_1}{a_{11}} $$
+Per la riga successiva abbiamo
+$$ a_{21}x_1 + a_{22}x_2 = b_2 \qquad \rightarrow \qquad x_2 = a_{22}^{-1} (b_2 - a_{21}x_1) $$
+Abbiamo due incognite, ma la prima incognita $x_1$ la abbiamo già trovata con l'equazione precedente.
+Nella terza riga abbiamo
+$$ a_{31}x_1 + a_{32}x_2 + a_{33}x_3 = b_2 \qquad \rightarrow \qquad x_3 = a_{33}^{-1} (b_3 - a_{31}x_1 - a_{32}x_2) $$
+Possiamo generalizzare la soluzione per la generica $x_i$
+\begin{equation}
+x_i = \frac{1}{a_{ii}} \left( b_i - \sum_{j=1}^{i-1} a_{ij} x_j \right)
+\end{equation}
+Questa è la formula per risolvere sistemi di equazioni retti da matrici triangolari inferiori $\mathbf{Lx}=\mathbf{b}$ riportata nell'Algoritmo~\ref{alg:solve_Lforward}.
+\textcolor{red}{la \textit{Forward Substitution} glà la descrivo dopo..}
+
+\begin{algorithm}
+\caption{Solve $\mathbf{Lx}=\mathbf{b}$ (forward)}\label{alg:solve_Lforward}
+\begin{algorithmic}[1]
+\Require matrix $\mathbf{L}$, vector $\mathbf{b}$ \Comment{$\mathbf{L}$ è una matrice triangolare inferiore $n\times n$}
+%\State $\mathbf{x} \gets \mathbf{0}$ \Comment{setta come vettore di zeri lungo $n$}
+\For{$i \gets 1$ to $n$} \Comment{$i$ è l'indice per la riga della matrice $\mathbf{L}$}
+	\State $x_i \gets {b_i}$
+	\For{$j \gets 1$ to $i-1$} \Comment{$j$ itera sulle colonne non nulle (somma)}
+		\State $x_i \gets x_i - L_{ij}x_j$
+	\EndFor
+	\State $x_i \gets x_i / L_{ii}$ \Comment{Divide la fa solo alla fine per risparmiare operazioni}
+\EndFor
+\State return $\mathbf{x}$ as the result
+\end{algorithmic}
+\end{algorithm}
+
+
+Per la matrice triangolare superiore $\mathbf{U}$ il procedimento è lo stesso, ma partendo dall'ultima equazione arrivando fino alla prima.
+La formula generale per trovare le soluzioni per un sistema di equazioni retto da una matrice triangolare superiore $\mathbf{Ux}=\mathbf{b}$ è
+\begin{equation}
+x_i = \frac{1}{a_{ii}} \left( b_i - \sum \right)
+\end{equation}
+Riportata nell'Algoritmo~\ref{alg:solve_Uback}.
+
+\begin{algorithm}
+\caption{Solve $\mathbf{Ux}=\mathbf{b}$ (backward). \textcolor{red}{gli indici dei for sono sbagliati!!}}\label{alg:solve_Uback}
+\begin{algorithmic}[1]
+\Require matrix $\mathbf{U}$, vector $\mathbf{b}$ \Comment{$\mathbf{U}$ è una matrice triangolare superiore $n\times n$}
+\State $\mathbf{x} \gets \mathbf{0}$ \Comment{setta come vettore di zeri lungo $n$}
+\For{$i \gets 1$ to $n$} \Comment{$i$ è l'indice per la riga della matrice $\mathbf{U}$}
+	\State $x_i \gets x_i + {b_i}/{U_{ii}}$
+	\For{$j \gets i$ to $n-1$} \Comment{$j$ itera sulle colonne non nulle (somma)}
+		\State $x_i \gets x_i - U_{ij}x_j / U_{ii}$
+	\EndFor
+\EndFor
+\State return $\mathbf{x}$ as the result
+\end{algorithmic}
+\end{algorithm}
 
 
 
@@ -1446,8 +1575,27 @@ SÌ, ASSOLUTAMENTE. La Const Correctness è una best practice fondamentale. Scri
 
 
 
+\newpage
+%\lstinputlisting{../SLAP.h}
+%\VerbatimInput[fontsize=\footnotesize, numbers=left]{../SLAP.h}
 
+\lstinputlisting[caption=SLAP.h]{../include/SLAP.h}
+\lstinputlisting[caption=core/defs.h]{../include/core/defs.h}
+\lstinputlisting[caption=core/datatype.h]{../include/core/datatype.h}
+\lstinputlisting[caption=core/basicops.h]{../include/core/basicops.h}
+\lstinputlisting[caption=core/strmod.h]{../include/core/strmod.h}
+%\lstinputlisting[caption=solvers/LUp.h]{../include/solvers/LUp.h}
+%\lstinputlisting[caption=solvers/QR.h]{../include/solvers/QR.h}
+%\lstinputlisting[caption=solvers/conjgrad.h]{../include/solvers/conjgrad.h}
+%... mi sono rotto, non credo vada bene questa cosa...
 
+\lstinputlisting[caption=fun/FUN.h]{../include/fun/FUN.h}
+
+\lstinputlisting[caption=solvers/Gauss.h]{../include/solvers/Gauss.h}
+
+\lstinputlisting[caption=utils/utils.h]{../include/utils/utils.h}
+\lstinputlisting[caption=utils/random.h]{../include/utils/random.h}
+\lstinputlisting[caption=utils/constant.h]{../include/utils/constant.h}
 
 
 \end{document}

@@ -34,7 +34,7 @@ short mat_equal(const mat* m1, const mat* m2, TYPE tolerance)
 {
 	// return 1 if m1 = m2, else returns 0
 	int i;
-	if(m1==NULL || m2==NULL) return 0; // basta che uno è nullo per dire che sono diversi
+	if(m1==NULL || m2==NULL) return 0; // basta che uno e' nullo per dire che sono diversi
 	if((m1->n_rows != m2->n_rows) || (m1->n_cols != m2->n_cols)) return 0; // check dimensions
 	for(i=0; i<m1->n_rows*m1->n_cols; i++){
 		if(fabs(m1->data[i] - m2->data[i]) > tolerance) return 0;
@@ -163,7 +163,7 @@ mat* mat_mul(const mat* m1, const mat* m2)
 	mat *m;
 	int r, c, i;
 	TYPE m1_val; // valore temporaneo per ridurre il numero di moltiplicazioni
-	if(!(m1->n_cols == m2->n_rows)){ // Controllo compatibilità dimensioni
+	if(!(m1->n_cols == m2->n_rows)){ // Controllo compatibilita' dimensioni
 //		SLAP_ERROR(CANNOT_MULTIPLY);
 		return NULL;
 	}
@@ -172,7 +172,7 @@ mat* mat_mul(const mat* m1, const mat* m2)
 	for(r=0; r<m1->n_rows; r++){ // Cicli ottimizzati per Cache (Row-Major): R -> I -> C
 		for(i=0; i<m1->n_cols; i++){
 			m1_val = m1->data[r*m1->n_cols+i]; // Questo valore rimane costante per tutto l'ultimo ciclo
-			if (fabs(m1_val) < SLAP_ALMOST_ZERO) continue; // Ottimizzazione: se m1_val è "zero", possiamo saltare l'intera riga. Questo accelera incredibilmente il calcolo con matrici sparse o triangolari.
+			if (fabs(m1_val) < SLAP_ALMOST_ZERO) continue; // Ottimizzazione: se m1_val e' "zero", possiamo saltare l'intera riga. Questo accelera incredibilmente il calcolo con matrici sparse o triangolari.
 			for(c=0; c<m2->n_cols; c++){ // prima questo era messo tra "r" e "i"
 				m->data[r*m->n_cols+c] += m1_val * m2->data[i*m2->n_cols+c];
 			}

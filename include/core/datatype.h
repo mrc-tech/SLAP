@@ -77,7 +77,7 @@ mat* mat_init_DOS(unsigned int num_rows, unsigned int num_cols, ...) {
 	int i;
 	mat *m = mat_new(num_rows, num_cols);
 	if(!m) return NULL; // Controllo di sicurezza aggiuntivo
-	va_start(valist, num_cols); // L'ultimo parametro fisso è num_cols
+	va_start(valist, num_cols); // L'ultimo parametro fisso e' num_cols
 	for (i=0; i<num_rows*num_cols; i++) {
 		// Usa esplicitamente TYPE per far coincidere le dimensioni sullo stack
 		m->data[i] = (TYPE)va_arg(valist, TYPE); 
