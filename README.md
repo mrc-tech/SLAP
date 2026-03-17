@@ -133,10 +133,10 @@ void main()
 	- [ ] error handling <!-- Creerei una variabile globale int slap_errno; (simile allo standard errno del C) con una enum di codici di errore (SLAP_ERR_MEM, SLAP_ERR_DIM, SLAP_ERR_SINGULAR). Se una funzione fallisce, setta slap_errno e ritorna NULL. L'utente deciderà se e come crashare. -->
 	- [ ] `push_back()` like `vector<TYPE>` for vectors (column or row matrices)
 	- [ ] `__attribute__((cleanup(mat_free)))` prima della definizione delle matrici che devono auto-eliminarsi? (NON COMPATIBILE CON DOS)
+	- [ ] capire se i vettori colonna in _row-major_ li mette comunque in posti contigui nella RAM (fare un test vedendo i puntatori ai valori)
 - [ ] **BASIC OPERATIONS**
 	- [ ] multiplication
 		- [ ] Strassen
-		- [ ] Coppersmith? <!--   -->
 	- [ ] ...
 - [ ] **DECOMPOSITION**
 	- [ ] QR
@@ -178,6 +178,7 @@ void main()
 	- [ ] positive defined check
 		- [ ] Eigenvalues? <!-- in realta' e' lento in questo modo. Usare altri metodi -->
 		- [ ] Cholesky
+		- [ ] altri metodi definiti nei video Youtube?
 	- [ ] exponent
 	- [ ] least squares (_example_)
 	- [ ] order of a matrix
@@ -193,7 +194,7 @@ void main()
 	- [ ] random number generator
 		- [ ] simple mod-type pseudo-random generator
    		- [ ] sample from gaussian distribution
-	- [ ] complex matrices
+	- [ ] complex matrices <!-- questo mi sembra un po troppo fuori luogo, non saprei poi cosa farci -->
 	- [ ] ...
 
 <!--
@@ -213,27 +214,27 @@ void main()
 
 
 <!-- v0.3-beta
-- [ ] **CORE**
+- [x] **CORE**
 	- [x] `const mat*` come arg alle funzioni migliora la gestione della memoria?
-- [ ] **BASIC OPERATIONS**
-	- [ ] multiplication
+- [x] **BASIC OPERATIONS**
+	- [x] multiplication
 		- [x] cache aligned (for _row-major_)
 	- [x] Hadamard product
 	- [x] trace
 	- [x] diagonal square matrix from vector
 	- [x] rename `smul` into `scale`
-- [ ] **SOLVER**
-	- [ ] iterative algorithms (for large scale problems)
+- [x] **SOLVER**
+	- [x] iterative algorithms (for large scale problems)
 		- [x] Conjugate gradient
 			- [x] Fix for 3x3 example (2x2 works)
-- [ ] **EIGEN**
-	- [ ] QR decomposition
+- [x] **EIGEN**
+	- [x] QR decomposition
 		- [x] definire meglio quando finire la procedura iterativa
 	- [x] Iterative power methods
-- [ ] **ADVANCED OPERATIONS**
-	- [ ] determinant
+- [x] **ADVANCED OPERATIONS**
+	- [x] determinant
 		- [x] LU(P) decomposition (_nml_)
-	- [ ] inverse
+	- [x] inverse
 		- [x] LU(P) decomposition (_nml_)
 	- [x] matrix norms
 	- [x] vector product `vec3 * vec3`
