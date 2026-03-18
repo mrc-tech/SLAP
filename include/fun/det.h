@@ -14,7 +14,7 @@ TYPE mat_det(const mat *m)
 		det *= lu->U->data[i * lu->U->n_cols + i];
 	}
 	
-	// Se il numero di permutazioni delle righe è dispari, il segno si inverte
+	// Se il numero di permutazioni delle righe e' dispari, il segno si inverte
 	if(lu->num_permutations % 2 != 0){
 		det = -det;
 	}
